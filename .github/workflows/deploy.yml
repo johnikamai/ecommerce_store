@@ -25,7 +25,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_API_BASE_URL: https://ecommerce-backend-o9eg.onrender.com/api
+          VITE_API_BASE_URL: https://ecommerce-backend-2gas.onrender.com/api
 
       - name: Deploy to Netlify
         run: npx --yes netlify-cli deploy --site 8a6d1112-07cf-427b-8096-b89765a85122 --dir dist --functions netlify/functions --prod --message "Auto-deploy from GitHub Actions (monorepo)"
