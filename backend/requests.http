@@ -1,0 +1,170 @@
+@token = eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbjEiLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3ODc5Mzg4NjUsImV4cCI6MTc4ODAyNTI2NX0.V3fCxGy0i4WxsmWEYpYuMw7I7BffToeGFtfq9j8ZaPxgMZsNft8D2KMKkCsEN59y
+
+### Get all customers
+GET http://localhost:8080/api/customers
+Authorization: Bearer {{token}}
+
+### Create a customer
+POST http://localhost:8080/api/customers
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "name": "Ravi Kumar",
+    "email": "ravi3@example.com",
+    "phone": "9876543210",
+    "shippingAddress": "12 MG Road, Guntur"
+}
+
+### Test duplicate email rejection
+POST http://localhost:8080/api/customers
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "name": "Duplicate Test",
+    "email": "ravi@example.com",
+    "phone": "1111111111",
+    "shippingAddress": "Test Address"
+}
+
+### Create a product
+POST http://localhost:8080/api/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "name": "Phone",
+    "description": "Smartphone",
+    "category": "Electronics",
+    "price": 20000,
+    "stockQuantity": 15
+}
+
+### Place an order
+POST http://localhost:8080/api/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "customerId": 1,
+    "items": [
+        { "productId": 1, "quantity": 1 }
+    ]
+}
+
+### Try ordering more than available stock
+POST http://localhost:8080/api/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "customerId": 1,
+    "items": [
+        { "productId": 1, "quantity": 999 }
+    ]
+}
+
+### Create inventory record for a product
+POST http://localhost:8080/api/inventory
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "product": { "id": 1 },
+    "quantityAvailable": 5,
+    "reorderLevel": 10
+}
+
+### Check low stock alerts
+GET http://localhost:8080/api/inventory/low-stock
+Authorization: Bearer {{token}}
+
+### Record a payment
+POST http://localhost:8080/api/payments
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "order": { "id": 1 },
+    "paymentMode": "UPI"
+}
+
+### Mark payment as paid
+PUT http://localhost:8080/api/payments/1/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "status": "PAID"
+}
+
+### Send a notification
+POST http://localhost:8080/api/notifications
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "customer": { "id": 1 },
+    "message": "Your order has been placed successfully!",
+    "type": "ORDER_CONFIRMATION"
+}
+
+### Get a customer's notifications
+GET http://localhost:8080/api/notifications/customer/1
+Authorization: Bearer {{token}}
+
+### Admin dashboard summary
+GET http://localhost:8080/api/admin/dashboard
+Authorization: Bearer {{token}}
+
+### Sales report by status
+GET http://localhost:8080/api/admin/sales-report
+Authorization: Bearer {{token}}
+
+### Register an admin user
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+    "username": "admin1",
+    "password": "adminPass123",
+    "role": "ADMIN"
+}
+
+### Login as admin1
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+    "username": "admin1",
+    "password": "adminPass123"
+}
+
+### Test: request with NO token at all (should fail with 401)
+GET http://localhost:8080/api/customers
+
+### Register a customer (not admin)
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+    "username": "customer1",
+    "password": "custPass123",
+    "role": "CUSTOMER"
+}
+
+@customerToken = eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJjdXN0b21lcjEiLCJyb2xlIjoiQ1VTVE9NRVIiLCJpYXQiOjE3ODc4MTQ1NDMsImV4cCI6MTc4NzkwMDk0M30.DyH2b_n387HPfxVFDokpm2HZbPJpGz-_zF1BaE2o-bBhF7Ys5pSY-Hqlpzijm5VH
+
+### Customer tries to create a product (should be BLOCKED)
+POST http://localhost:8080/api/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "name": "Unauthorized Product",
+    "description": "This should not be allowed",
+    "category": "Test",
+    "price": 100,
+    "stockQuantity": 1
+}

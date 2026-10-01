@@ -1,0 +1,135 @@
+@import "tailwindcss";
+
+/*
+ * Design system defined in UI_DESIGN_SYSTEM.md
+ */
+@theme {
+  --font-heading: 'Sora', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* Color */
+  --color-primary: #7C6AE8;
+  --color-primary-hover: #6A57DE;
+  --color-primary-active: #5A46C9;
+  --color-secondary: #F6A6C1;
+  --color-accent: #FFC98B;
+  --color-info: #7FB6E8;
+  --color-background: #F8F6FB;
+  --color-surface: #FFFFFF;
+  --color-card-bg: #FFFFFF;
+  --color-card-bg-tint: #F1EDFB;
+  --color-border: #E9E4F5;
+  --color-text-primary: #221B3A;
+  --color-text-secondary: #5B5470;
+  --color-text-muted: #9791AE;
+  --color-text-on-primary: #FFFFFF;
+  --color-success: #4CAF7D;
+  --color-warning: #E8A93B;
+  --color-error: #E0607A;
+  --color-success-bg: #E9F7EF;
+  --color-warning-bg: #FDF3E3;
+  --color-error-bg: #FBEAEE;
+  --color-info-bg: #EAF3FC;
+
+  /* Spacing (4px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+  --space-9: 48px;
+  --space-10: 64px;
+  --space-11: 80px;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 999px;
+
+  /* Shadow */
+  --shadow-xs: 0 1px 2px rgba(34,27,58,0.04);
+  --shadow-sm: 0 2px 8px rgba(34,27,58,0.06);
+  --shadow-md: 0 8px 20px rgba(34,27,58,0.08);
+  --shadow-lg: 0 16px 40px rgba(34,27,58,0.12);
+  --shadow-glow-primary: 0 0 0 4px rgba(124,106,232,0.15);
+  --shadow-glow-secondary: 0 0 0 4px rgba(246,166,193,0.2);
+
+  /* Gradients */
+  --gradient-hero: linear-gradient(135deg, #EDE8FB 0%, #FBEAF1 100%);
+  --gradient-promo: linear-gradient(135deg, #FFF3E0 0%, #FDE7EF 100%);
+  --gradient-premium: linear-gradient(135deg, #7C6AE8 0%, #A78BFA 100%);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms ease;
+}
+
+:root {
+  --container-max: 1320px;
+  --z-dropdown: 100;
+  --z-sticky-header: 200;
+  --z-drawer: 300;
+  --z-modal-backdrop: 400;
+  --z-modal: 410;
+  --z-toast: 500;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+
+  :focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-glow-primary);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Shared utility-ish helpers driven by design tokens */
+.container-x {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--space-6);
+}
+
+/* Gradient backgrounds as classes. `bg-[var(--gradient-*)]` silently renders
+   TRANSPARENT (the var holds a gradient, but Tailwind treats it as a color),
+   so use these instead. */
+.bg-gradient-hero {
+  background-image: var(--gradient-hero);
+}
+
+.bg-gradient-promo {
+  background-image: var(--gradient-promo);
+}
+
+.bg-gradient-premium {
+  background-image: var(--gradient-premium);
+}
+
+@media (max-width: 640px) {
+  .container-x {
+    padding-inline: var(--space-4);
+  }
+}
