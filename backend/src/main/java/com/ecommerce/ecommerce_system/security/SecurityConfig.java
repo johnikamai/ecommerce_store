@@ -50,6 +50,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/health", "/api/health").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
+                        // Error dispatch must not 403 to anonymous users
+                        .requestMatchers("/error").permitAll()
                         // Public reads
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()

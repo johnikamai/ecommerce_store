@@ -279,12 +279,13 @@ public class AuthController {
         System.out.println("[OTP] Reset for " + user.getUsername() + ": " + code);
         boolean emailed = user.getEmail() != null && mailService.sendOtp(user.getEmail(), code);
 
-        return ResponseEntity.ok(Map.of(
-                "message", emailed ? "We emailed a reset code to " + user.getEmail() : "Reset code generated (demo mode)",
-                "emailSentTo", user.getEmail(),
-                "emailDelivered", emailed,
-                "devOtp", code
-        ));
+        // HashMap (not Map.of) because email can be null for old accounts.
+        Map<String, Object> body = new HashMap<>();
+        body.put("message", emailed ? "We emailed a reset code to " + user.getEmail() : "Reset code generated (demo mode)");
+        body.put("emailSentTo", user.getEmail());
+        body.put("emailDelivered", emailed);
+        body.put("devOtp", code);
+        return ResponseEntity.ok(body);
     }
 
     // "Forgot password" step 2: confirm the reset code, then set the new password.
