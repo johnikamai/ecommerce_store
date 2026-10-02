@@ -86,10 +86,17 @@ public class OrderController {
         if (rawStatus == null || rawStatus.isBlank()) {
             return ResponseEntity.badRequest().body("Status is required");
         }
+        OrderStatus newStatus;
         try {
-            return ResponseEntity.ok(orderService.updateStatus(id, OrderStatus.valueOf(rawStatus.toUpperCase())));
+            newStatus = OrderStatus.valueOf(rawStatus.toUpperCase());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Invalid status: " + rawStatus);
+        }
+        // Illegal transitions (e.g. changing a CANCELLED order) surface their own reason.
+        try {
+            return ResponseEntity.ok(orderService.updateStatus(id, newStatus));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }

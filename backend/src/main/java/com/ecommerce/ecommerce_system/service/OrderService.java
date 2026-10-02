@@ -8,6 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.EnumSet;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 public class OrderService {
@@ -215,11 +218,7 @@ public class OrderService {
         boolean refunded = refundIfPaid(order);
 
         // Release the reserved stock back.
-        for (OrderItem item : order.getOrderItems()) {
-            Product product = item.getProduct();
-            product.setStockQuantity((product.getStockQuantity() == null ? 0 : product.getStockQuantity()) + item.getQuantity());
-            productRepository.save(product);
-        }
+        releaseStock(order);
 
         Order saved = orderRepository.save(order);
 
@@ -246,6 +245,27 @@ public class OrderService {
         return false;
     }
 
+    /** Puts every ordered unit back into inventory. */
+    private void releaseStock(Order order) {
+        for (OrderItem item : order.getOrderItems()) {
+            Product product = item.getProduct();
+            product.setStockQuantity((product.getStockQuantity() == null ? 0 : product.getStockQuantity()) + item.getQuantity());
+            productRepository.save(product);
+        }
+    }
+
+    /**
+     * Legal status moves. DELIVERED and CANCELLED are terminal, so an order can
+     * never be flipped back to CANCELLED twice (which would release its stock twice)
+     * nor reopened after it closed.
+     */
+    private static final Map<OrderStatus, Set<OrderStatus>> ALLOWED_TRANSITIONS = Map.of(
+            OrderStatus.PLACED, EnumSet.of(OrderStatus.SHIPPED, OrderStatus.DELIVERED, OrderStatus.CANCELLED),
+            OrderStatus.SHIPPED, EnumSet.of(OrderStatus.DELIVERED, OrderStatus.CANCELLED),
+            OrderStatus.DELIVERED, EnumSet.noneOf(OrderStatus.class),
+            OrderStatus.CANCELLED, EnumSet.noneOf(OrderStatus.class)
+    );
+
     /**
      * Shared status transition used by both the admin console and the shipping flow.
      * Emits SHIPPING / DELIVERY notifications.
@@ -254,6 +274,12 @@ public class OrderService {
     public Order updateStatus(Long orderId, OrderStatus newStatus) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
+
+        OrderStatus previous = order.getStatus();
+        if (!ALLOWED_TRANSITIONS.getOrDefault(previous, EnumSet.noneOf(OrderStatus.class)).contains(newStatus)) {
+            throw new IllegalArgumentException("Cannot change order #" + orderId + " from "
+                    + previous + " to " + newStatus);
+        }
 
         order.setStatus(newStatus);
         Order saved = orderRepository.save(order);
@@ -264,12 +290,12 @@ public class OrderService {
         } else if (newStatus == OrderStatus.DELIVERED) {
             notificationService.delivered(customer, saved.getId());
         } else if (newStatus == OrderStatus.CANCELLED) {
-            // Release the reserved stock back, same as customer-initiated cancels.
             boolean refunded = refundIfPaid(order);
-            for (OrderItem item : order.getOrderItems()) {
-                Product product = item.getProduct();
-                product.setStockQuantity((product.getStockQuantity() == null ? 0 : product.getStockQuantity()) + item.getQuantity());
-                productRepository.save(product);
+            // Stock is only reserved while the order is still PLACED. Once it has
+            // shipped the units have left the warehouse, so cancelling must not
+            // put them back on the shelf.
+            if (previous == OrderStatus.PLACED) {
+                releaseStock(order);
             }
             notificationService.orderCancelled(customer, saved.getId());
             if (refunded) {
