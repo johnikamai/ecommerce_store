@@ -13,9 +13,16 @@ export default function AdminCategories() {
   const [error, setError] = useState('');
 
   const load = async () => {
-    const res = await axiosClient.get('/categories');
-    setCategories(res.data);
-    setLoading(false);
+    setLoading(true);
+    setError('');
+    try {
+      const res = await axiosClient.get('/categories');
+      setCategories(res.data);
+    } catch {
+      setError('Failed to load categories. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { load(); }, []);
@@ -60,6 +67,8 @@ export default function AdminCategories() {
   const inputClass = 'w-full px-3 py-2 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] bg-white focus:border-[var(--color-primary)] outline-none text-sm';
 
   if (loading) return <p className="py-12 text-center text-[var(--color-text-muted)]">Loading categories...</p>;
+
+  if (error) return <p className="py-12 text-center text-[var(--color-error)]">{error}</p>;
 
   return (
     <div>

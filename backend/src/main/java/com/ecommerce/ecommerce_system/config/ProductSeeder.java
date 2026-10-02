@@ -38,6 +38,7 @@ public class ProductSeeder implements CommandLineRunner {
                 productRepository.save(p);
             }
         }
+        seedExpandedCatalog();
         System.out.println("[ProductSeeder] Catalog ready: " + productRepository.count() + " products.");
         syncCategories();
     }
@@ -79,6 +80,36 @@ public class ProductSeeder implements CommandLineRunner {
         p.setSustainabilityScore("n".equals(row[5]) ? null : Integer.parseInt(row[5]));
         p.setImageUrl(image(row[0], row[6]));
         productRepository.save(p);
+    }
+
+    /**
+     * Expands the store to 500+ products by generating 5 deterministic variants
+     * (Classic / Lite / Pro / Ultra / Max) of every base catalog entry.
+     * Idempotent: the generated names are unique, so re-runs never duplicate.
+     */
+    private void seedExpandedCatalog() {
+        String[] variants = {"Classic", "Lite", "Pro", "Ultra", "Max"};
+        double[] priceFactor = {1.0, 0.85, 1.35, 1.7, 2.1};
+        String[] blurb = {
+                "Everyday favourite",
+                "Popular pick on a budget",
+                "Best-selling upgrade",
+                "Top-tier premium edition",
+                "Maxed-out flagship model"
+        };
+        for (String[] base : CATALOG) {
+            for (int v = 0; v < variants.length; v++) {
+                upsert(new String[]{
+                        base[0] + " " + variants[v],
+                        blurb[v] + " — " + base[1],
+                        base[2],
+                        String.valueOf((int) (Double.parseDouble(base[3]) * priceFactor[v])),
+                        String.valueOf(Math.abs((base[0] + variants[v]).hashCode() % 109) + 12),
+                        base[5],
+                        base[6]
+                });
+            }
+        }
     }
 
     /** placehold.co image: pastel category colour with a dark label. */

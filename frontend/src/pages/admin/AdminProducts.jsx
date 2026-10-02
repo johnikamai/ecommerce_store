@@ -128,6 +128,7 @@ export default function AdminProducts() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs uppercase tracking-wide text-[var(--color-text-muted)] border-b border-[var(--color-border)]">
+                <th className="py-3 px-4">Image</th>
                 <th className="py-3 px-4">Product</th>
                 <th className="py-3 px-4">Category</th>
                 <th className="py-3 px-4 text-right">Price</th>
@@ -139,6 +140,13 @@ export default function AdminProducts() {
             <tbody>
               {pageItems.map((p) => (
                 <tr key={p.id} className="border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-card-bg-tint)]">
+                  <td className="py-3 px-4">
+                    {p.imageUrl ? (
+                      <img src={p.imageUrl} alt={p.name} loading="lazy"
+                        className="w-12 h-12 rounded-[var(--radius-md)] object-cover border border-[var(--color-border)]"
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                    ) : null}
+                  </td>
                   <td className="py-3 px-4">
                     <div className="font-semibold text-[var(--color-text-primary)]">{p.name}</div>
                     <div className="text-xs text-[var(--color-text-muted)] max-w-xs truncate">{p.description}</div>

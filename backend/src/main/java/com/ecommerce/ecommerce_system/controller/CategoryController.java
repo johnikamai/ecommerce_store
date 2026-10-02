@@ -29,16 +29,17 @@ public class CategoryController {
     @GetMapping
     public List<Map<String, Object>> getAll() {
         List<Category> all = categoryRepository.findAll();
+        Map<String, Long> counts = new HashMap<>();
+        for (Object[] row : productRepository.countByCategory()) {
+            counts.put((String) row[0], ((Number) row[1]).longValue());
+        }
         List<Map<String, Object>> result = new ArrayList<>();
         for (Category c : all) {
-            long productCount = productRepository.findAll().stream()
-                    .filter(p -> c.getName().equals(p.getCategory()))
-                    .count();
             Map<String, Object> row = new HashMap<>();
             row.put("id", c.getId());
             row.put("name", c.getName());
             row.put("parentId", c.getParentId());
-            row.put("productCount", productCount);
+            row.put("productCount", counts.getOrDefault(c.getName(), 0L));
             result.add(row);
         }
         result.sort(Comparator.comparing(m -> (String) m.get("name")));
@@ -97,9 +98,11 @@ public class CategoryController {
     public ResponseEntity<?> delete(@PathVariable Long id) {
         return categoryRepository.findById(id)
                 .map(category -> {
-                    long productCount = productRepository.findAll().stream()
-                            .filter(p -> category.getName().equals(p.getCategory()))
-                            .count();
+                    long productCount = productRepository.countByCategory().stream()
+                            .filter(r -> category.getName().equals(r[0]))
+                            .mapToLong(r -> ((Number) r[1]).longValue())
+                            .findFirst()
+                            .orElse(0L);
                     if (productCount > 0) {
                         return ResponseEntity.badRequest()
                                 .body("Cannot delete: " + productCount + " product(s) are in this category. Rename or reassign them first.");
