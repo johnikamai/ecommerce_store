@@ -461,14 +461,17 @@ function CustomerContent() {
         </>
       ) : (
         <>
-{devOtp && (
-        <p className="text-sm bg-[var(--color-warning-bg)] text-[var(--color-warning)] rounded-[var(--radius-md)] px-4 py-2.5">
-          {emailDelivered
-            ? `Check ${emailSentTo || 'your inbox'} for the code (spam folder too). If it doesn't arrive, use this one:`
-            : 'Demo mode — no real email gateway configured, use this code:'}
-          {' '}<span className="font-bold tracking-[0.2em]">{devOtp}</span>
-        </p>
-      )}
+{emailDelivered ? (
+          <p className="text-sm bg-[var(--color-info-bg)] text-[var(--color-info)] rounded-[var(--radius-md)] px-4 py-2.5">
+            We sent a 6-digit code to <span className="font-semibold">{emailSentTo}</span> — check your inbox
+            (and the spam folder too).
+          </p>
+        ) : devOtp ? (
+          <p className="text-sm bg-[var(--color-warning-bg)] text-[var(--color-warning)] rounded-[var(--radius-md)] px-4 py-2.5">
+            Demo mode — no real email gateway configured, use this code:{' '}
+            <span className="font-bold tracking-[0.2em]">{devOtp}</span>
+          </p>
+        ) : null}
 
           <div className="flex justify-center gap-2">
             {otp.map((digit, i) => (
