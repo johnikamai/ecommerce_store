@@ -68,6 +68,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/customers/*").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/customers/*").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/payments/customer/**").authenticated()
+                        // Receipts are the customer's own document, so any signed-in user may
+                        // fetch one; CustomerGuard inside the controller enforces ownership.
+                        // Must sit above the blanket /api/payments/** admin rule below.
+                        .requestMatchers(HttpMethod.GET, "/api/payments/*/receipt").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/payments/order/*").authenticated()
                         .requestMatchers("/api/notifications/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/returns").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/returns/customer/**").authenticated()

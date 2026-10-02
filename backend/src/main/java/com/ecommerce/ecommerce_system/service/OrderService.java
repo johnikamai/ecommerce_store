@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class OrderService {
@@ -189,7 +190,11 @@ public class OrderService {
                 payment.setPaymentStatus(PaymentStatus.PENDING);
             } else {
                 payment.setPaymentStatus(PaymentStatus.PAID);
+                // Stand-in for the gateway reference a real integration would return.
+                payment.setTransactionRef("MOCK-" + saved.getId() + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
             }
+            payment.setStatusUpdatedAt(LocalDateTime.now());
+            payment.setStatusUpdatedBy("checkout");
             paymentRepository.save(payment);
 
             saved.setPaymentStatus(payment.getPaymentStatus());

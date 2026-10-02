@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axiosClient from '../api/axiosClient';
 import { getCustomerId } from '../utils/customer';
+import ReceiptModal from '../components/ReceiptModal';
 
 const STATUS_STEPS = ['PLACED', 'SHIPPED', 'DELIVERED'];
 
@@ -91,6 +92,7 @@ function Orders() {
   const [returnForms, setReturnForms] = useState({});
   const [copied, setCopied] = useState(false);
   const [cancelling, setCancelling] = useState({});
+  const [receiptFor, setReceiptFor] = useState(null);
 
   const role = localStorage.getItem('role');
   const customerId = getCustomerId();
@@ -206,6 +208,16 @@ function Orders() {
       setNotifications((prev) => prev.map((x) => (x.id === n.id ? { ...x, isRead: true } : x)));
     } catch (err) {
       // ignore
+    }
+  };
+
+  // The order carries no payment id, so resolve it before opening the receipt.
+  const openReceipt = async (orderId) => {
+    try {
+      const res = await axiosClient.get(`/payments/order/${orderId}`);
+      setReceiptFor(res.data.id);
+    } catch {
+      setError('No payment record found for this order.');
     }
   };
 
@@ -384,6 +396,17 @@ function Orders() {
               </div>
             )}
 
+            {/* Digital receipt for the order's payment */}
+            <div className="flex gap-2 mb-4">
+              <button
+                type="button"
+                onClick={() => openReceipt(order.id)}
+                className="rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] text-[var(--color-text-secondary)] px-4 py-2 text-xs font-semibold hover:bg-[var(--color-border)] transition-colors"
+              >
+                View Receipt
+              </button>
+            </div>
+
             {role === 'ADMIN' && order.status !== 'CANCELLED' && order.status !== 'DELIVERED' && (
               <div className="flex gap-2 mb-4">
                 {order.status === 'PLACED' && (
@@ -442,6 +465,8 @@ function Orders() {
           </div>
         ))}
       </div>
+
+      {receiptFor != null && <ReceiptModal paymentId={receiptFor} onClose={() => setReceiptFor(null)} />}
     </div>
   );
 }

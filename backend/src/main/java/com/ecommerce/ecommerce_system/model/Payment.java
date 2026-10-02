@@ -32,5 +32,14 @@ public class Payment {
 
     private BigDecimal amount;
 
+    // Gateway reference: UPI txn id, card auth code, or the cash receipt number.
+    // Null for Cash on Delivery until the money is actually collected.
+    private String transactionRef;
+
     private LocalDateTime transactionDate = LocalDateTime.now();
+
+    // Who last moved the status, and when. Keeps the ledger auditable.
+    private LocalDateTime statusUpdatedAt = LocalDateTime.now();
+
+    private String statusUpdatedBy;
 }

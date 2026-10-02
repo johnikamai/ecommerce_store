@@ -3,6 +3,8 @@ package com.ecommerce.ecommerce_system.service;
 import com.ecommerce.ecommerce_system.model.*;
 import com.ecommerce.ecommerce_system.repository.CustomerRepository;
 import com.ecommerce.ecommerce_system.repository.OrderItemRepository;
+import com.ecommerce.ecommerce_system.repository.OrderRepository;
+import com.ecommerce.ecommerce_system.repository.PaymentRepository;
 import com.ecommerce.ecommerce_system.repository.ProductRepository;
 import com.ecommerce.ecommerce_system.repository.ReturnRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,12 @@ public class ReturnService {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
 
     @Autowired
     private StockAlertService stockAlertService;
@@ -118,9 +126,20 @@ public class ReturnService {
         String productName = req.getOrderItem().getProduct().getName();
         notificationService.refunded(req.getCustomer(), req.getId(), productName);
 
-        // Update the order's payment status to REFUNDED.
-        if (order.getPaymentStatus() != null) {
-            order.setPaymentStatus(PaymentStatus.REFUNDED);
+        // Refund is money leaving the business, so it has to move on the payment
+        // record as well - otherwise the payments ledger still reports this order
+        // as PAID and revenue counts refunded money.
+        PaymentStatus previous = order.getPaymentStatus();
+        order.setPaymentStatus(PaymentStatus.REFUNDED);
+        orderRepository.save(order);
+
+        if (previous == PaymentStatus.PAID) {
+            paymentRepository.findByOrderId(order.getId()).ifPresent(payment -> {
+                payment.setPaymentStatus(PaymentStatus.REFUNDED);
+                payment.setStatusUpdatedAt(LocalDateTime.now());
+                payment.setStatusUpdatedBy("return:" + req.getId());
+                paymentRepository.save(payment);
+            });
         }
 
         return returnRequestRepository.save(req);
