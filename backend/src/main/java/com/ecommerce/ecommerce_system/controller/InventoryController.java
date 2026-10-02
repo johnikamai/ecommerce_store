@@ -9,7 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/inventory")
@@ -21,9 +23,28 @@ public class InventoryController {
     @Autowired
     private ProductRepository productRepository;
 
+    /**
+     * Reports warehouse stock derived from Product.stockQuantity, which is the
+     * single source of truth for availability (it is what orders deduct from and
+     * cancellations restore to).
+     */
+    private List<Map<String, Object>> viewOf(List<Product> products) {
+        return products.stream().map(p -> {
+            Map<String, Object> row = new HashMap<>();
+            row.put("productId", p.getId());
+            row.put("name", p.getName());
+            row.put("category", p.getCategory());
+            row.put("quantityAvailable", p.getStockQuantity());
+            row.put("reorderLevel", p.getEffectiveReorderLevel());
+            row.put("lowStock", p.isLowStock());
+            row.put("outOfStock", p.isOutOfStock());
+            return row;
+        }).toList();
+    }
+
     @GetMapping
-    public List<Inventory> getAll() {
-        return inventoryRepository.findAll();
+    public List<Map<String, Object>> getAll() {
+        return viewOf(productRepository.findAll());
     }
 
     @PostMapping
@@ -39,9 +60,7 @@ public class InventoryController {
 
     // GET /api/inventory/low-stock
     @GetMapping("/low-stock")
-    public List<Inventory> getLowStock() {
-        return inventoryRepository.findAll().stream()
-                .filter(Inventory::isLowStock)
-                .toList();
+    public List<Map<String, Object>> getLowStock() {
+        return viewOf(productRepository.findAll().stream().filter(Product::isLowStock).toList());
     }
 }

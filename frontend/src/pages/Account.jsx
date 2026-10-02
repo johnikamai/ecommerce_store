@@ -10,6 +10,7 @@ const NOTIF_TYPE_LABELS = {
   SHIPPING: 'Shipping',
   DELIVERY: 'Delivery',
   RESTOCK: 'Restock',
+  LOW_STOCK: 'Low stock',
   OFFER: 'Offer',
 };
 

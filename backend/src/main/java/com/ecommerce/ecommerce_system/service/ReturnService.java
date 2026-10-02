@@ -29,7 +29,7 @@ public class ReturnService {
     private ProductRepository productRepository;
 
     @Autowired
-    private RestockService restockService;
+    private StockAlertService stockAlertService;
 
     @Autowired
     private NotificationService notificationService;
@@ -84,13 +84,14 @@ public class ReturnService {
             // Restore the exact quantity back into stock.
             Product product = req.getOrderItem().getProduct();
             Integer quantity = req.getOrderItem().getQuantity();
-            int newStock = (product.getStockQuantity() == null ? 0 : product.getStockQuantity()) + quantity;
+            Integer stockBefore = product.getStockQuantity();
+            int newStock = (stockBefore == null ? 0 : stockBefore) + quantity;
             product.setStockQuantity(newStock);
-            productRepository.save(product);
+            Product savedProduct = productRepository.save(product);
 
-            // Reuse the restock logic: if this product was out of stock,
-            // everyone who subscribed gets notified it's available again.
-            restockService.checkRestock(product);
+            // Same alert pipeline as every other stock change: staff, wishlist
+            // holders and restock subscribers all get told.
+            stockAlertService.onStockChanged(savedProduct, stockBefore);
         } else {
             req.setStatus(ReturnStatus.REJECTED);
         }

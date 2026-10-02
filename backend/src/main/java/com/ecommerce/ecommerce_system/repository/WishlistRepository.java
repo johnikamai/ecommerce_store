@@ -8,5 +8,7 @@ import java.util.Optional;
 public interface WishlistRepository extends JpaRepository<Wishlist, Long> {
     List<Wishlist> findByCustomerId(Long customerId);
 
+    List<Wishlist> findByProductId(Long productId);
+
     Optional<Wishlist> findByCustomerIdAndProductId(Long customerId, Long productId);
 }

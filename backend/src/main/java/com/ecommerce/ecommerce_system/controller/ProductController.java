@@ -4,7 +4,7 @@ import com.ecommerce.ecommerce_system.model.Product;
 import com.ecommerce.ecommerce_system.repository.OrderItemRepository;
 import com.ecommerce.ecommerce_system.repository.ProductRepository;
 import com.ecommerce.ecommerce_system.repository.ReviewRepository;
-import com.ecommerce.ecommerce_system.service.RestockService;
+import com.ecommerce.ecommerce_system.service.StockAlertService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +23,7 @@ public class ProductController {
     private ProductRepository productRepository;
 
     @Autowired
-    private RestockService restockService;
+    private StockAlertService stockAlertService;
 
     @Autowired
     private ReviewRepository reviewRepository;
@@ -113,15 +113,14 @@ public class ProductController {
                     existing.setStockQuantity(updated.getStockQuantity());
                     existing.setSustainabilityScore(updated.getSustainabilityScore());
                     existing.setImageUrl(updated.getImageUrl());
+                    if (updated.getReorderLevel() != null && updated.getReorderLevel() >= 0) {
+                        existing.setReorderLevel(updated.getReorderLevel());
+                    }
 
                     Product saved = productRepository.save(existing);
 
-                    // If it was out of stock before and is in stock now, notify subscribers.
-                    boolean wasOut = oldStock == null || oldStock <= 0;
-                    boolean nowIn = saved.getStockQuantity() != null && saved.getStockQuantity() > 0;
-                    if (wasOut && nowIn) {
-                        restockService.checkRestock(saved);
-                    }
+                    // React to the stock move: warn staff and customers as needed.
+                    stockAlertService.onStockChanged(saved, oldStock);
 
                     return ResponseEntity.ok(saved);
                 })

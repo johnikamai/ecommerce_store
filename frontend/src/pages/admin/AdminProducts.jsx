@@ -43,6 +43,7 @@ export default function AdminProducts() {
       category: product.category || '',
       price: product.price,
       stockQuantity: product.stockQuantity,
+      reorderLevel: product.reorderLevel ?? '',
       sustainabilityScore: product.sustainabilityScore == null ? '' : product.sustainabilityScore,
       imageUrl: product.imageUrl || '',
     } : { ...emptyForm });
@@ -62,6 +63,7 @@ export default function AdminProducts() {
         category: form.category,
         price: parseFloat(form.price),
         stockQuantity: parseInt(form.stockQuantity),
+        reorderLevel: form.reorderLevel === '' ? null : parseInt(form.reorderLevel),
         sustainabilityScore: form.sustainabilityScore === '' ? null : parseInt(form.sustainabilityScore),
         imageUrl: form.imageUrl === '' ? null : form.imageUrl,
       };
@@ -153,7 +155,7 @@ export default function AdminProducts() {
                   </td>
                   <td className="py-3 px-4 text-[var(--color-text-secondary)]">{p.category}</td>
                   <td className="py-3 px-4 text-right font-medium">₹{Number(p.price).toLocaleString('en-IN')}</td>
-                  <td className={`py-3 px-4 text-right font-medium ${p.stockQuantity <= 10 ? 'text-[var(--color-warning)]' : ''}`}>
+                  <td className={`py-3 px-4 text-right font-medium ${p.lowStock ? 'text-[var(--color-warning)]' : ''}`}>
                     {p.stockQuantity}
                   </td>
                   <td className="py-3 px-4 text-center text-xs">{p.sustainabilityScore ?? '—'}</td>
@@ -208,9 +210,10 @@ export default function AdminProducts() {
                 <option value="">Select category...</option>
                 {categories.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
               </select>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <input className={inputClass} placeholder="Price (₹) *" type="number" min="0" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
                 <input className={inputClass} placeholder="Stock *" type="number" min="0" value={form.stockQuantity} onChange={(e) => setForm({ ...form, stockQuantity: e.target.value })} required />
+                <input className={inputClass} placeholder="Alert below (default 10)" type="number" min="0" value={form.reorderLevel} onChange={(e) => setForm({ ...form, reorderLevel: e.target.value })} />
               </div>
               <input className={inputClass} placeholder="Sustainability score (0-100, optional)" type="number" min="0" max="100" value={form.sustainabilityScore} onChange={(e) => setForm({ ...form, sustainabilityScore: e.target.value })} />
               <input className={inputClass} placeholder="Image URL (optional, e.g. /images/1.jpg)" value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} />

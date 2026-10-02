@@ -16,9 +16,11 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class Product {
 
+    /** Threshold used when a product has no explicit reorder level set. */
+    public static final int DEFAULT_REORDER_LEVEL = 10;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-  
     private Long id;
 
     private String name;
@@ -30,6 +32,11 @@ public class Product {
     private BigDecimal price;
 
     private Integer stockQuantity;
+
+    // Stock level at or below which this product is flagged as low stock.
+    // Product.stockQuantity is the single source of truth for availability;
+    // this only controls *when* the warning fires.
+    private Integer reorderLevel = DEFAULT_REORDER_LEVEL;
 
     // URL of the product photo. Optional; null means "no image yet"
     // (the front end shows a styled placeholder tile instead).
@@ -53,5 +60,21 @@ public class Product {
         } else {
             return "High Impact";
         }
+    }
+
+    /** Effective reorder level, falling back to the default when unset. */
+    @Transient
+    public int getEffectiveReorderLevel() {
+        return reorderLevel == null ? DEFAULT_REORDER_LEVEL : reorderLevel;
+    }
+
+    @Transient
+    public boolean isLowStock() {
+        return stockQuantity != null && stockQuantity <= getEffectiveReorderLevel();
+    }
+
+    @Transient
+    public boolean isOutOfStock() {
+        return stockQuantity == null || stockQuantity <= 0;
     }
 }

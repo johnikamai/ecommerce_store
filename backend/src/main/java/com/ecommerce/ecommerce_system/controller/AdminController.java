@@ -26,16 +26,16 @@ public class AdminController {
     private CustomerRepository customerRepository;
 
     @Autowired
-    private InventoryRepository inventoryRepository;
+    private AddressRepository addressRepository;
+
+    @Autowired
+    private AdminAlertRepository adminAlertRepository;
 
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
+@Autowired
     private ReviewRepository reviewRepository;
-
-    @Autowired
-    private AddressRepository addressRepository;
 
     @GetMapping("/dashboard")
     public Map<String, Object> dashboard() {
@@ -46,16 +46,20 @@ public class AdminController {
                 .map(Order::getTotalAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        long lowStockCount = inventoryRepository.findAll().stream()
-                .filter(inv -> inv.isLowStock())
-                .count();
+        // Count from live product stock - Product.stockQuantity is the single
+        // source of truth for availability.
+        List<Product> allProducts = productRepository.findAll();
+        long lowStockCount = allProducts.stream().filter(Product::isLowStock).count();
+        long outOfStockCount = allProducts.stream().filter(Product::isOutOfStock).count();
 
         return Map.of(
                 "totalProducts", productRepository.count(),
                 "totalCustomers", customerRepository.count(),
                 "totalOrders", allOrders.size(),
                 "totalRevenue", totalRevenue,
-                "lowStockAlerts", lowStockCount
+                "lowStockAlerts", lowStockCount,
+                "outOfStockAlerts", outOfStockCount,
+                "unreadStockAlerts", adminAlertRepository.countUnread()
         );
     }
 

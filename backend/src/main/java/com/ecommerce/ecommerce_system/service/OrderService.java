@@ -33,6 +33,9 @@ public class OrderService {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private StockAlertService stockAlertService;
+
     @Transactional
     public Order placeOrder(OrderRequest request) {
         Customer customer = customerRepository.findById(request.getCustomerId())
@@ -70,8 +73,10 @@ public class OrderService {
             }
 
             // Deduct stock
+            Integer stockBefore = product.getStockQuantity();
             product.setStockQuantity(product.getStockQuantity() - quantity);
-            productRepository.save(product);
+            Product savedProduct = productRepository.save(product);
+            stockAlertService.onStockChanged(savedProduct, stockBefore);
 
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(order);
@@ -252,8 +257,11 @@ public class OrderService {
     private void releaseStock(Order order) {
         for (OrderItem item : order.getOrderItems()) {
             Product product = item.getProduct();
-            product.setStockQuantity((product.getStockQuantity() == null ? 0 : product.getStockQuantity()) + item.getQuantity());
-            productRepository.save(product);
+            Integer stockBefore = product.getStockQuantity();
+            product.setStockQuantity((stockBefore == null ? 0 : stockBefore) + item.getQuantity());
+            Product saved = productRepository.save(product);
+            // Returning stock can bring a sold-out product back - tell everyone.
+            stockAlertService.onStockChanged(saved, stockBefore);
         }
     }
 

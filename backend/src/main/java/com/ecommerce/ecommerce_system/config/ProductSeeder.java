@@ -64,9 +64,17 @@ public class ProductSeeder implements CommandLineRunner {
         String name = row[0];
         Product existing = productRepository.findByName(name).orElse(null);
         if (existing != null) {
-            // Backfill a missing image on products that were added by hand / earlier tests.
+            // Backfill the new columns on rows created before this release.
+            boolean dirty = false;
             if (existing.getImageUrl() == null || existing.getImageUrl().isBlank()) {
                 existing.setImageUrl(image(row[0], row[6]));
+                dirty = true;
+            }
+            if (existing.getReorderLevel() == null) {
+                existing.setReorderLevel(Product.DEFAULT_REORDER_LEVEL);
+                dirty = true;
+            }
+            if (dirty) {
                 productRepository.save(existing);
             }
             return;
@@ -77,6 +85,9 @@ public class ProductSeeder implements CommandLineRunner {
         p.setCategory(row[2]);
         p.setPrice(new BigDecimal(row[3]));
         p.setStockQuantity(Integer.parseInt(row[4]));
+        // Give each product its own reorder threshold so the low-stock and
+        // out-of-stock alerts are not all keyed to a single magic number.
+        p.setReorderLevel(Product.DEFAULT_REORDER_LEVEL);
         p.setSustainabilityScore("n".equals(row[5]) ? null : Integer.parseInt(row[5]));
         p.setImageUrl(image(row[0], row[6]));
         productRepository.save(p);
