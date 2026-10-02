@@ -12,4 +12,6 @@ public interface ReturnRequestRepository extends JpaRepository<ReturnRequest, Lo
 
     // Returns currently awaiting admin action.
     List<ReturnRequest> findByStatus(com.ecommerce.ecommerce_system.model.ReturnStatus status);
+
+    long deleteByCustomerId(Long customerId);
 }

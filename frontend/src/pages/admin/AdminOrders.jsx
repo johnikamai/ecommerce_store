@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 import axiosClient from '../../api/axiosClient';
 
 const STATUS_COLORS = {
@@ -25,36 +25,51 @@ export default function AdminOrders() {
   const [returns, setReturns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState({});
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const [busy, setBusy] = useState(null);
 
   const loadOrders = async () => {
     const res = await axiosClient.get('/orders');
-    setOrders(res.data);
+    setOrders(res.data || []);
   };
 
   const loadReturns = async () => {
     const res = await axiosClient.get('/returns');
-    setReturns(res.data);
+    setReturns(res.data || []);
   };
 
   useEffect(() => {
-    Promise.all([loadOrders(), loadReturns()]).finally(() => setLoading(false));
+    Promise.all([loadOrders(), loadReturns()])
+      .catch((err) => setError(err.response?.data || 'Failed to load orders'))
+      .finally(() => setLoading(false));
   }, []);
 
   const updateStatus = async (orderId, status) => {
+    setBusy(`${orderId}:${status}`);
+    setError('');
+    setNotice('');
     try {
       await axiosClient.put(`/orders/${orderId}/status`, { status });
-      loadOrders();
+      setNotice(`Order #${orderId} set to ${status}.`);
+      await loadOrders();
     } catch (err) {
-      alert(err.response?.data || 'Failed to update status');
+      setError(err.response?.data || 'Failed to update status');
+    } finally {
+      setBusy(null);
     }
   };
 
   const processReturn = async (id, action) => {
+    setBusy(`return:${id}`);
+    setError('');
     try {
       await axiosClient.put(`/returns/${id}/${action}`);
-      loadReturns();
+      await loadReturns();
     } catch (err) {
-      alert(err.response?.data || 'Action failed');
+      setError(err.response?.data || 'Action failed');
+    } finally {
+      setBusy(null);
     }
   };
 
@@ -63,6 +78,17 @@ export default function AdminOrders() {
   return (
     <div>
       <h2 className="font-[family-name:var(--font-heading)] text-[28px] font-bold mb-6">Orders</h2>
+
+      {error && (
+        <p className="mb-4 rounded-[var(--radius-md)] bg-[var(--color-error-bg)] text-[var(--color-error)] px-3 py-2 text-sm">
+          {error}
+        </p>
+      )}
+      {notice && (
+        <p className="mb-4 rounded-[var(--radius-md)] bg-[var(--color-success-bg)] text-[var(--color-success)] px-3 py-2 text-sm">
+          {notice}
+        </p>
+      )}
 
       <div className="flex gap-2 mb-6">
         {[['orders', `Orders (${orders.length})`], ['returns', `Returns (${returns.length})`]].map(([key, label]) => (
@@ -95,10 +121,10 @@ export default function AdminOrders() {
               </thead>
               <tbody>
                 {orders.map((o) => (
-                  <>
-                    <tr key={o.id} className="border-b border-[var(--color-border)] hover:bg-[var(--color-card-bg-tint)]">
+                  <Fragment key={o.id}>
+                    <tr className="border-b border-[var(--color-border)] hover:bg-[var(--color-card-bg-tint)]">
                       <td className="py-3 px-4 font-semibold">{o.id}</td>
-                      <td className="py-3 px-4">{o.customer.name}</td>
+                      <td className="py-3 px-4">{o.customer?.name || '—'}</td>
                       <td className="py-3 px-4 text-[var(--color-text-secondary)]">{new Date(o.orderDate).toLocaleString('en-IN')}</td>
                       <td className="py-3 px-4 text-right font-medium">
                         ₹{Number(o.totalAmount).toLocaleString('en-IN')}
@@ -114,15 +140,22 @@ export default function AdminOrders() {
                             className="text-xs font-semibold text-[var(--color-primary)] hover:underline">
                             {expanded[o.id] ? 'Hide items' : 'View items'}
                           </button>
-                          {o.status !== 'CANCELLED' && o.status !== 'DELIVERED' && (
+                          {(o.allowedNextStatuses || []).length > 0 ? (
                             <select
                               value=""
+                              disabled={busy === `${o.id}:${o.allowedNextStatuses[0]}`}
                               onChange={(e) => { if (e.target.value) updateStatus(o.id, e.target.value); }}
-                              className="rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] px-2 py-1 text-xs bg-white"
+                              className="rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] px-2 py-1 text-xs bg-white disabled:opacity-50"
                             >
                               <option value="">Set status…</option>
-                              {['PLACED', 'SHIPPED', 'DELIVERED', 'CANCELLED'].map((s) => <option key={s} value={s}>{s}</option>)}
+                              {/* Only the moves the backend will actually accept. DELIVERED
+                                  and CANCELLED orders arrive here with an empty list. */}
+                              {o.allowedNextStatuses.map((s) => (
+                                <option key={s} value={s}>{s}</option>
+                              ))}
                             </select>
+                          ) : (
+                            <span className="text-xs text-[var(--color-text-muted)]">Final</span>
                           )}
                         </div>
                       </td>
@@ -146,7 +179,7 @@ export default function AdminOrders() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 ))}
               </tbody>
             </table>
@@ -175,23 +208,23 @@ export default function AdminOrders() {
                   {returns.map((r) => (
                     <tr key={r.id} className="border-b border-[var(--color-border)] last:border-0">
                       <td className="py-3 px-4 font-semibold">{r.id}</td>
-                      <td className="py-3 px-4">{r.orderItem.product.name} × {r.orderItem.quantity}</td>
-                      <td className="py-3 px-4">{r.customer.name}</td>
+                      <td className="py-3 px-4">{r.orderItem?.product?.name || '—'} × {r.orderItem?.quantity ?? '—'}</td>
+                      <td className="py-3 px-4">{r.customer?.name || '—'}</td>
                       <td className="py-3 px-4 text-[var(--color-text-secondary)]">{r.reason || '—'}</td>
                       <td className="py-3 px-4"><Badge status={r.status} map={RETURN_COLORS} /></td>
                       <td className="py-3 px-4">
                         <div className="flex justify-end gap-1.5">
                           {r.status === 'REQUESTED' && (
                             <>
-                              <button onClick={() => processReturn(r.id, 'approve')}
-                                className="rounded-[var(--radius-md)] bg-[var(--color-success)] text-white px-3 py-1.5 text-xs font-semibold">Approve</button>
-                              <button onClick={() => processReturn(r.id, 'reject')}
-                                className="rounded-[var(--radius-md)] bg-white border-[1.5px] border-[var(--color-error)] text-[var(--color-error)] px-3 py-1.5 text-xs font-semibold">Reject</button>
+                              <button onClick={() => processReturn(r.id, 'approve')} disabled={busy === `return:${r.id}`}
+                                className="rounded-[var(--radius-md)] bg-[var(--color-success)] text-white px-3 py-1.5 text-xs font-semibold disabled:opacity-50">Approve</button>
+                              <button onClick={() => processReturn(r.id, 'reject')} disabled={busy === `return:${r.id}`}
+                                className="rounded-[var(--radius-md)] bg-white border-[1.5px] border-[var(--color-error)] text-[var(--color-error)] px-3 py-1.5 text-xs font-semibold disabled:opacity-50">Reject</button>
                             </>
                           )}
                           {r.status === 'APPROVED' && (
-                            <button onClick={() => processReturn(r.id, 'refund')}
-                              className="rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white px-3 py-1.5 text-xs font-semibold">Mark Refunded</button>
+                            <button onClick={() => processReturn(r.id, 'refund')} disabled={busy === `return:${r.id}`}
+                              className="rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white px-3 py-1.5 text-xs font-semibold disabled:opacity-50">Mark Refunded</button>
                           )}
                         </div>
                       </td>

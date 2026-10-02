@@ -15,4 +15,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     /** Per-product aggregates (productId, reviewCount, averageRating) for the storefront catalog. */
     @Query("select r.product.id as pid, count(r) as cnt, avg(r.rating) as avgRating from Review r group by r.product.id")
     List<Object[]> aggregateByProduct();
+
+    long deleteByCustomerId(Long customerId);
 }

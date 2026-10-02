@@ -11,10 +11,11 @@ function Kpi({ label, value, accent }) {
 }
 
 export default function AdminReports() {
-  const [sales, setSales] = useState([]);
+  const [sales, setSales] = useState(null);
   const [topProducts, setTopProducts] = useState([]);
   const [activity, setActivity] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     Promise.all([
@@ -24,34 +25,43 @@ export default function AdminReports() {
     ])
       .then(([s, t, a]) => {
         setSales(s.data);
-        setTopProducts(t.data);
-        setActivity(a.data);
+        setTopProducts(t.data || []);
+        setActivity(a.data || []);
+        setError('');
       })
+      .catch((err) => setError(err.response?.data || 'Failed to load reports'))
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <p className="py-12 text-center text-[var(--color-text-muted)]">Loading reports...</p>;
 
-  const salesArray = Array.isArray(sales) ? sales : (sales?.items || []);
+  if (error) {
+    return (
+      <div>
+        <h2 className="font-[family-name:var(--font-heading)] text-[28px] font-bold mb-6">Reports</h2>
+        <p className="py-12 text-center text-[var(--color-error)]">{error}</p>
+      </div>
+    );
+  }
 
-  const kpis = Array.isArray(sales)
-    ? [
-        { label: 'Total Revenue', value: `₹${salesArray.reduce((s, r) => s + Number(r.totalAmount || 0), 0).toLocaleString('en-IN')}` },
-        { label: 'Total Orders', value: salesArray.length },
-        { label: 'Avg Order Value', value: salesArray.length ? `₹${Math.round(salesArray.reduce((s, r) => s + Number(r.totalAmount || 0), 0) / salesArray.length).toLocaleString('en-IN')}` : '—' },
-      ]
-    : [
-        { label: 'Total Revenue', value: `₹${Number(sales?.totalRevenue || 0).toLocaleString('en-IN')}` },
-        { label: 'Total Orders', value: sales?.totalOrders ?? sales?.orderCount ?? '—' },
-        { label: 'Avg Order Value', value: `₹${Number(sales?.averageOrderValue || 0).toLocaleString('en-IN')}` },
-      ];
+  // /admin/reports/sales returns a summary object. Field names must match the
+  // backend exactly: totalRevenue, totalOrders, avgOrderValue (not
+  // "averageOrderValue"), pendingOrders, completedOrders, cancelledOrders.
+  const kpis = [
+    { label: 'Total Revenue', value: `₹${Number(sales?.totalRevenue || 0).toLocaleString('en-IN')}` },
+    { label: 'Total Orders', value: sales?.totalOrders ?? 0 },
+    { label: 'Avg Order Value', value: `₹${Number(sales?.avgOrderValue || 0).toLocaleString('en-IN')}` },
+    { label: 'Pending', value: sales?.pendingOrders ?? 0, accent: 'text-[var(--color-warning)]' },
+    { label: 'Completed', value: sales?.completedOrders ?? 0, accent: 'text-[var(--color-success)]' },
+    { label: 'Cancelled', value: sales?.cancelledOrders ?? 0, accent: 'text-[var(--color-error)]' },
+  ];
 
   return (
     <div>
       <h2 className="font-[family-name:var(--font-heading)] text-[28px] font-bold mb-6">Reports</h2>
 
       <h3 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-3">Sales Overview</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         {kpis.map((k) => <Kpi key={k.label} {...k} />)}
       </div>
 

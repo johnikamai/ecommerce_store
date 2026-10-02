@@ -37,6 +37,18 @@ public class AdminController {
 @Autowired
     private ReviewRepository reviewRepository;
 
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    @Autowired
+    private WishlistRepository wishlistRepository;
+
+    @Autowired
+    private RestockRequestRepository restockRequestRepository;
+
+    @Autowired
+    private ReturnRequestRepository returnRequestRepository;
+
     @GetMapping("/dashboard")
     public Map<String, Object> dashboard() {
         List<Order> allOrders = orderRepository.findAll();
@@ -104,7 +116,7 @@ public class AdminController {
             row.put("totalSpend", spend);
             result.add(row);
         }
-        result.sort(Comparator.comparing((Map<String, Object> m) -> m.get("id").toString()));
+        result.sort(Comparator.comparingLong((Map<String, Object> m) -> ((Number) m.get("id")).longValue()));
         return result;
     }
 
@@ -161,27 +173,43 @@ public class AdminController {
 
     @DeleteMapping("/users/{id}")
     @Transactional
-    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<?> deleteUser(@PathVariable Long id, Authentication auth) {
         return userRepository.findById(id)
                 .map(user -> {
                     if (user.getRole() == Role.ADMIN) {
                         return ResponseEntity.badRequest().body("Cannot delete an admin account");
                     }
-                    if (user.getCustomerId() != null) {
-                        Long customerId = user.getCustomerId();
+                    if (auth != null && auth.getName().equals(user.getUsername())) {
+                        return ResponseEntity.badRequest().body("You cannot delete your own account");
+                    }
+
+                    Long customerId = user.getCustomerId();
+                    if (customerId != null) {
+                        // Orders are a financial record - never silently discarded.
                         if (!orderRepository.findByCustomerId(customerId).isEmpty()) {
                             return ResponseEntity.badRequest()
                                     .body("Cannot delete: this customer has orders. Handle or archive them first.");
                         }
-                        boolean isReferrer = customerRepository.findAll().stream()
+                        if (customerRepository.findAll().stream()
                                 .anyMatch(c -> c.getReferredBy() != null
-                                        && customerId.equals(c.getReferredBy().getId()));
-                        if (isReferrer) {
+                                        && customerId.equals(c.getReferredBy().getId()))) {
                             return ResponseEntity.badRequest()
                                     .body("Cannot delete: this customer has referred other customers.");
                         }
+
+                        // Everything else is dependent, non-financial data that can be
+                        // dropped with the customer. Without these the non-nullable FKs
+                        // on addresses/notifications/wishlist/restock/returns/reviews
+                        // would surface as a raw constraint violation (HTTP 500).
+                        addressRepository.deleteByCustomerId(customerId);
+                        notificationRepository.deleteByCustomerId(customerId);
+                        wishlistRepository.deleteByCustomerId(customerId);
+                        restockRequestRepository.deleteByCustomerId(customerId);
+                        returnRequestRepository.deleteByCustomerId(customerId);
+                        reviewRepository.deleteByCustomerId(customerId);
                         customerRepository.deleteById(customerId);
                     }
+
                     userRepository.delete(user);
                     return ResponseEntity.noContent().build();
                 })
@@ -261,11 +289,15 @@ public class AdminController {
                     m.put("revenue", BigDecimal.ZERO);
                     return m;
                 });
-                int qty = (Integer) row.get("quantitySold") + item.getQuantity();
+                int qty = (Integer) row.get("quantitySold") + (item.getQuantity() == null ? 0 : item.getQuantity());
                 row.put("quantitySold", qty);
-                BigDecimal rev = ((BigDecimal) row.get("revenue"))
-                        .add(item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
-                row.put("revenue", rev);
+                // Prefer the stored line total so the figure matches the receipt;
+                // fall back for lines placed before lineTotal existed.
+                BigDecimal line = item.getLineTotal() != null
+                        ? item.getLineTotal()
+                        : (item.getUnitPrice() == null ? BigDecimal.ZERO
+                                : item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity() == null ? 0 : item.getQuantity())));
+                row.put("revenue", ((BigDecimal) row.get("revenue")).add(line));
             }
         }
         return agg.values().stream()

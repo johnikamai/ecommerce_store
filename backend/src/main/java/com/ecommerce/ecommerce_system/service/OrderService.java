@@ -8,9 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.EnumSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -271,20 +269,12 @@ public class OrderService {
     }
 
     /**
-     * Legal status moves. DELIVERED and CANCELLED are terminal, so an order can
-     * never be flipped back to CANCELLED twice (which would release its stock twice)
-     * nor reopened after it closed.
-     */
-    private static final Map<OrderStatus, Set<OrderStatus>> ALLOWED_TRANSITIONS = Map.of(
-            OrderStatus.PLACED, EnumSet.of(OrderStatus.SHIPPED, OrderStatus.DELIVERED, OrderStatus.CANCELLED),
-            OrderStatus.SHIPPED, EnumSet.of(OrderStatus.DELIVERED, OrderStatus.CANCELLED),
-            OrderStatus.DELIVERED, EnumSet.noneOf(OrderStatus.class),
-            OrderStatus.CANCELLED, EnumSet.noneOf(OrderStatus.class)
-    );
-
-    /**
      * Shared status transition used by both the admin console and the shipping flow.
      * Emits SHIPPING / DELIVERY notifications.
+     *
+     * The legal-move rules live on OrderStatus (DELIVERED and CANCELLED are
+     * terminal, so an order can never be flipped back to CANCELLED twice - which
+     * would release its stock twice - nor reopened after it closed).
      */
     @Transactional
     public Order updateStatus(Long orderId, OrderStatus newStatus) {
@@ -292,9 +282,10 @@ public class OrderService {
                 .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
 
         OrderStatus previous = order.getStatus();
-        if (!ALLOWED_TRANSITIONS.getOrDefault(previous, EnumSet.noneOf(OrderStatus.class)).contains(newStatus)) {
+        if (!previous.canTransitionTo(newStatus)) {
             throw new IllegalArgumentException("Cannot change order #" + orderId + " from "
-                    + previous + " to " + newStatus);
+                    + previous + " to " + newStatus
+                    + (previous.isTerminal() ? ". This order is final." : ". Allowed next: " + previous.allowedNextOrdered()));
         }
 
         order.setStatus(newStatus);

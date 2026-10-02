@@ -53,4 +53,12 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<OrderItem> orderItems = new ArrayList<>();
+
+    // The statuses this order may legally move to right now. Computed, not stored,
+    // so the admin console can offer exactly the options the backend accepts
+    // instead of listing every status and failing on the invalid ones.
+    @Transient
+    public List<String> getAllowedNextStatuses() {
+        return status == null ? List.of() : status.allowedNextOrdered().stream().map(Enum::name).toList();
+    }
 }

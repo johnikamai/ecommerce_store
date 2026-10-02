@@ -16,4 +16,6 @@ public interface RestockRequestRepository extends JpaRepository<RestockRequest, 
 
     // Prevent duplicate subscriptions: the same customer + product only once.
     boolean existsByCustomerIdAndProductId(Long customerId, Long productId);
+
+    long deleteByCustomerId(Long customerId);
 }
