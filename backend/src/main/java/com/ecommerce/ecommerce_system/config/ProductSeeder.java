@@ -9,6 +9,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Idempotent catalog seeder.
@@ -123,10 +125,16 @@ public class ProductSeeder implements CommandLineRunner {
         }
     }
 
-    /** placehold.co image: pastel category colour with a dark label. */
+    /**
+     * placehold.co tile: pastel category colour with a dark product label.
+     *
+     * The name is percent-encoded rather than just space-swapped, so characters
+     * like &amp;, / or # cannot truncate or break the query string.
+     */
     private String image(String name, String category) {
         String bg = COLORS.getOrDefault(category, "B9B9C9");
-        return "https://placehold.co/600x600/" + bg + "/2F2F46/png?text=" + name.replace(" ", "+");
+        String label = URLEncoder.encode(name, StandardCharsets.UTF_8).replace("+", "%20");
+        return "https://placehold.co/600x600/" + bg + "/2F2F46/png?text=" + label;
     }
 
     /** name, description, category, price, stock, sustainabilityScore ("n" = none), category-colour key */

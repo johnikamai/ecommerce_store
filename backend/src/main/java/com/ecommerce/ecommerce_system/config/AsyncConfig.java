@@ -24,8 +24,8 @@ public class AsyncConfig {
      * rather than queued forever, so a Brevo outage cannot exhaust memory; the
      * in-app notification is already persisted by then regardless.
      */
-    @Bean(name = "mailExecutor")
-    public Executor mailExecutor() {
+    @Bean(name = "notificationExecutor")
+    public Executor notificationExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(2);
         executor.setMaxPoolSize(6);

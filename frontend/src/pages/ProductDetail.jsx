@@ -4,6 +4,7 @@ import { ShoppingCart, Zap, Heart, Bell, ChevronRight } from 'lucide-react';
 import axiosClient from '../api/axiosClient';
 import { useCart } from '../context/CartContext';
 import ProductCard from '../components/ProductCard';
+import ProductImage from '../components/ProductImage';
 import { getCustomerId } from '../utils/customer';
 
 const AVAILABILITY = {
@@ -300,7 +301,7 @@ export default function ProductDetail() {
         {/* Gallery */}
         <div className="rounded-[var(--radius-xl)] bg-gradient-hero aspect-square flex items-center justify-center overflow-hidden">
           {product.imageUrl ? (
-            <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+            <ProductImage product={product} className="w-full h-full object-cover" />
           ) : (
             <div className="w-32 h-32 rounded-[var(--radius-xl)] bg-white shadow-[var(--shadow-md)] flex items-center justify-center font-[family-name:var(--font-heading)] font-bold text-[var(--color-primary)] text-5xl">
               {product.name.charAt(0)}
@@ -422,7 +423,7 @@ export default function ProductDetail() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="rounded-[var(--radius-xl)] bg-gradient-hero aspect-square flex items-center justify-center overflow-hidden">
               {product.imageUrl ? (
-                <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                <ProductImage product={product} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-32 h-32 rounded-[var(--radius-xl)] bg-white shadow-[var(--shadow-md)] flex items-center justify-center font-[family-name:var(--font-heading)] font-bold text-[var(--color-primary)] text-5xl">
                   {product.name.charAt(0)}

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
 import { useCart } from '../context/CartContext';
 import { getCustomerId } from '../utils/customer';
+import ProductImage from '../components/ProductImage';
 
 function WishlistPage() {
   const [items, setItems] = useState([]);
@@ -67,8 +68,8 @@ function WishlistPage() {
         {items.map((item) => (
           <div key={item.id} className="rounded-[var(--radius-lg)] bg-[var(--color-card-bg)] shadow-[var(--shadow-sm)] overflow-hidden flex flex-col">
             <div className="relative aspect-square bg-[var(--color-card-bg-tint)] flex items-center justify-center overflow-hidden">
-              {item.product.imageUrl ? (
-                <img src={item.product.imageUrl} alt={item.product.name} className="w-full h-full object-cover" />
+{item.product.imageUrl ? (
+            <ProductImage product={item.product} className="w-full h-full object-cover" />
               ) : (
                 <span className="text-4xl font-[family-name:var(--font-heading)] font-bold text-[var(--color-primary)] opacity-30">
                   {item.product.name.charAt(0)}

@@ -60,7 +60,7 @@ public class MailService {
      * failing provider must not hold up - or roll back - the business
      * operation that triggered it.
      */
-    @Async("mailExecutor")
+    @Async("notificationExecutor")
     public void sendHtmlAsync(String to, String subject, String html) {
         sendHtml(to, subject, html);
     }

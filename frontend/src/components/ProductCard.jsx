@@ -4,6 +4,7 @@ import { Heart, ShoppingCart, Bell } from 'lucide-react';
 import axiosClient from '../api/axiosClient';
 import { useCart } from '../context/CartContext';
 import { getCustomerId } from '../utils/customer';
+import ProductImage from './ProductImage';
 
 const SUSTAIN_COLORS = {
   'Eco-Friendly': 'text-[var(--color-success)]',
@@ -96,19 +97,18 @@ export default function ProductCard({ product, defaultRating, defaultReviewCount
       {/* Image */}
       <Link to={`/product/${product.id}`} className="relative aspect-square bg-[var(--color-card-bg-tint)] overflow-hidden block">
         {product.imageUrl ? (
-          <img
-            src={product.imageUrl}
-            alt={product.name}
-            loading="lazy"
+          <ProductImage
+            product={product}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[var(--transition-base)]"
-            onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
         ) : null}
-        <div className={`${product.imageUrl ? 'hidden' : ''} absolute inset-0 flex items-center justify-center`}>
+        {!product.imageUrl && (
+        <div className="absolute inset-0 flex items-center justify-center">
           <div className="w-16 h-16 rounded-[var(--radius-lg)] bg-gradient-hero flex items-center justify-center font-[family-name:var(--font-heading)] font-bold text-[var(--color-primary)] text-2xl group-hover:scale-105 transition-transform duration-[var(--transition-base)]">
             {product.name.charAt(0)}
           </div>
         </div>
+        )}
 
         {isOutOfStock && (
           <span className="absolute top-2 left-2 rounded-full bg-[var(--color-text-muted)] text-white text-xs font-semibold px-2.5 py-1">
