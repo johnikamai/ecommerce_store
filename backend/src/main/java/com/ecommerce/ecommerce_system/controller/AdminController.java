@@ -34,6 +34,9 @@ public class AdminController {
     @Autowired
     private ReviewRepository reviewRepository;
 
+    @Autowired
+    private AddressRepository addressRepository;
+
     @GetMapping("/dashboard")
     public Map<String, Object> dashboard() {
         List<Order> allOrders = orderRepository.findAll();
@@ -69,10 +72,9 @@ public class AdminController {
     public List<Map<String, Object>> users() {
         List<Map<String, Object>> result = new ArrayList<>();
         for (User u : userRepository.findAll()) {
-            String customerName = null;
+            Customer customer = null;
             if (u.getCustomerId() != null) {
-                customerName = customerRepository.findById(u.getCustomerId())
-                        .map(Customer::getName).orElse(null);
+                customer = customerRepository.findById(u.getCustomerId()).orElse(null);
             }
             List<Order> orders = u.getCustomerId() != null
                     ? orderRepository.findByCustomerId(u.getCustomerId())
@@ -81,6 +83,9 @@ public class AdminController {
                     .filter(o -> o.getStatus() != OrderStatus.CANCELLED)
                     .map(Order::getTotalAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
+            int addressCount = u.getCustomerId() != null
+                    ? addressRepository.findByCustomerId(u.getCustomerId()).size()
+                    : 0;
             Map<String, Object> row = new HashMap<>();
             row.put("id", u.getId());
             row.put("username", u.getUsername());
@@ -88,13 +93,46 @@ public class AdminController {
             row.put("role", u.getRole().name());
             row.put("enabled", u.isEnabled());
             row.put("customerId", u.getCustomerId());
-            row.put("customerName", customerName);
+            row.put("customerName", customer == null ? null : customer.getName());
+            row.put("phone", customer == null ? null : customer.getPhone());
+            row.put("addressCount", addressCount);
             row.put("orderCount", orders.size());
             row.put("totalSpend", spend);
             result.add(row);
         }
         result.sort(Comparator.comparing((Map<String, Object> m) -> m.get("id").toString()));
         return result;
+    }
+
+    // GET /api/admin/customers/{customerId}
+    // Full customer profile plus saved delivery addresses, so admins can see
+    // contact details without opening the customer's own account.
+    @GetMapping("/customers/{customerId}")
+    public ResponseEntity<?> customerDetail(@PathVariable Long customerId) {
+        return customerRepository.findById(customerId)
+                .map(customer -> {
+                    Map<String, Object> detail = new HashMap<>();
+                    detail.put("id", customer.getId());
+                    detail.put("name", customer.getName());
+                    detail.put("email", customer.getEmail());
+                    detail.put("phone", customer.getPhone());
+                    detail.put("shippingAddress", customer.getShippingAddress());
+                    detail.put("loyaltyPoints", customer.getLoyaltyPoints());
+                    detail.put("tier", customer.getTier());
+                    detail.put("referralCode", customer.getReferralCode());
+                    detail.put("referredBy", customer.getReferredBy() == null
+                            ? null : customer.getReferredBy().getName());
+                    detail.put("addresses", addressRepository.findByCustomerId(customerId));
+
+                    List<Order> orders = orderRepository.findByCustomerId(customerId);
+                    detail.put("orderCount", orders.size());
+                    detail.put("totalSpend", orders.stream()
+                            .filter(o -> o.getStatus() != OrderStatus.CANCELLED)
+                            .map(Order::getTotalAmount)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add));
+                    return ResponseEntity.ok(detail);
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
     // PUT /api/admin/users/{id}/enabled  { "enabled": true|false }
