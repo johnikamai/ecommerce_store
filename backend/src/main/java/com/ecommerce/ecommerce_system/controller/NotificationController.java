@@ -9,7 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -24,12 +28,27 @@ public class NotificationController {
     @Autowired
     private CustomerGuard customerGuard;
 
+    // GET /api/notifications/customer/{customerId}
+    // Returns the newest 50 plus an unread count, so the bell panel does not pull a
+    // customer's whole notification history on every page load.
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<?> getForCustomer(@PathVariable Long customerId, Authentication auth) {
         if (!customerGuard.canAccess(customerId, auth)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
         }
-        return ResponseEntity.ok(notificationRepository.findByCustomerIdOrderBySentAtDesc(customerId));
+        Map<String, Object> body = new HashMap<>();
+        body.put("notifications", notificationRepository.findTop50ByCustomerIdOrderBySentAtDesc(customerId));
+        body.put("unread", notificationRepository.countByCustomerIdAndIsReadFalse(customerId));
+        return ResponseEntity.ok(body);
+    }
+
+    // GET /api/notifications/customer/{customerId}/unread-count
+    @GetMapping("/customer/{customerId}/unread-count")
+    public ResponseEntity<?> unreadCount(@PathVariable Long customerId, Authentication auth) {
+        if (!customerGuard.canAccess(customerId, auth)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+        return ResponseEntity.ok(Map.of("unread", notificationRepository.countByCustomerIdAndIsReadFalse(customerId)));
     }
 
     @PostMapping
@@ -69,18 +88,14 @@ public class NotificationController {
         return ResponseEntity.ok(notificationRepository.save(notification));
     }
 
-    // Mark all of a customer's notifications as read.
+    // Mark all of a customer's notifications as read (single UPDATE).
     @PutMapping("/customer/{customerId}/read-all")
+    @Transactional
     public ResponseEntity<?> markAllAsRead(@PathVariable Long customerId, Authentication auth) {
         if (!customerGuard.canAccess(customerId, auth)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
         }
-        for (Notification n : notificationRepository.findByCustomerIdOrderBySentAtDesc(customerId)) {
-            if (!Boolean.TRUE.equals(n.getIsRead())) {
-                n.setIsRead(true);
-                notificationRepository.save(n);
-            }
-        }
-        return ResponseEntity.ok("All notifications marked as read");
+        int updated = notificationRepository.markAllRead(customerId);
+        return ResponseEntity.ok(Map.of("updated", updated, "unread", 0));
     }
 }

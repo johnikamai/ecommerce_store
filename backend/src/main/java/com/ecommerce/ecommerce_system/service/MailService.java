@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -49,6 +50,19 @@ public class MailService {
                 + "<p style='font-size:28px;font-weight:bold;letter-spacing:6px;color:#6C2BD9;'>" + otp + "</p>"
                 + "<p>It expires in 5 minutes. If you didn't request this, you can ignore this email.</p></div>";
         return sendHtml(to, "Your ShopNow verification code", html);
+    }
+
+    /**
+     * Fire-and-forget HTML email on the mail pool.
+     *
+     * Used for everything customer-facing (order, payment, shipping, restock).
+     * The caller has already persisted the in-app notification, so a slow or
+     * failing provider must not hold up - or roll back - the business
+     * operation that triggered it.
+     */
+    @Async("mailExecutor")
+    public void sendHtmlAsync(String to, String subject, String html) {
+        sendHtml(to, subject, html);
     }
 
     /**

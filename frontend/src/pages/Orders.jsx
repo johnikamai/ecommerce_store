@@ -126,7 +126,10 @@ function Orders() {
           axiosClient.get(`/notifications/customer/${customerId}`),
         ]);
         setCustomer(customerRes.data);
-        setNotifications(notifRes.data || []);
+        // The endpoint returns { notifications, unread }; fall back to a bare
+        // array so an older cached backend response still renders.
+        const payload = notifRes.data;
+        setNotifications(Array.isArray(payload) ? payload : payload?.notifications || []);
       } catch (err) {
         setCustomer(null);
         setNotifications([]);

@@ -72,7 +72,10 @@ function Account() {
     setPhone(profileRes.data.phone || '');
     setShippingAddress(profileRes.data.shippingAddress || '');
     setAddresses(addrRes.data || []);
-    setNotifications(notifRes.data || []);
+    // The endpoint returns { notifications, unread }; fall back to a bare array
+    // so an older cached backend response still renders.
+    const payload = notifRes.data;
+    setNotifications(Array.isArray(payload) ? payload : payload?.notifications || []);
   };
 
   useEffect(() => {

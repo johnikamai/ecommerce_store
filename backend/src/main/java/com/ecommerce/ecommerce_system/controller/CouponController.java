@@ -55,9 +55,10 @@ public class CouponController {
         String description = (saved.getDescription() == null || saved.getDescription().isBlank())
                 ? "Get " + saved.getDiscountValue() + (saved.getDiscountType() == com.ecommerce.ecommerce_system.model.CouponType.PERCENT ? "% off" : " off")
                 : saved.getDescription();
-        for (Customer customer : customerRepository.findAll()) {
-            notificationService.offer(customer, saved.getCode(), description);
-        }
+        // Fan-out runs in the background: with many customers this would otherwise
+        // keep the admin request open for minutes. The coupon itself is already
+        // saved, so returning now is safe.
+        notificationService.broadcastOffer(saved.getCode(), description, customerRepository.findAll());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }

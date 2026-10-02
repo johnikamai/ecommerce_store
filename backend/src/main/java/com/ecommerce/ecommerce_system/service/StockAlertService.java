@@ -103,6 +103,9 @@ public class StockAlertService {
         alert.setStockAtAlert(stock);
         alert.setReorderLevel(level);
         adminAlertRepository.save(alert);
+
+        // Also email the store's admin address, if one is configured.
+        notificationService.alertAdminLowStock(product.getName(), type, stock, level);
     }
 
     /** Wishlist holders get an early warning before a product sells out. */

@@ -3,16 +3,29 @@ package com.ecommerce.ecommerce_system.service;
 import com.ecommerce.ecommerce_system.model.Customer;
 import com.ecommerce.ecommerce_system.model.Notification;
 import com.ecommerce.ecommerce_system.repository.NotificationRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * Creates in-app notifications and, whenever Brevo is configured, also emails
  * the customer a friendly HTML summary. Types: ORDER, PAYMENT, SHIPPING,
- * DELIVERY, RESTOCK, OFFER.
+ * DELIVERY, RESTOCK, LOW_STOCK, OFFER.
+ *
+ * The in-app row is always written first and inline; the email is dispatched on
+ * the background pool so a slow provider can never delay the order, payment or
+ * return that triggered the notification.
  */
 @Service
 public class NotificationService {
+
+    private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
 
     private static final String BRAND = "ShopEase";
 
@@ -21,6 +34,13 @@ public class NotificationService {
 
     @Autowired
     private MailService mailService;
+
+    /** Where stock alerts are emailed. Optional - blank disables admin email. */
+    @Value("${admin.alert.email:}")
+    private String adminEmail;
+
+    @Value("${app.admin.orders-url:http://localhost:5173/admin/orders}")
+    private String adminOrdersUrl;
 
     /** Simple HTML shell reused by every transactional email. */
     private String shell(String heading, String body) {
@@ -33,7 +53,7 @@ public class NotificationService {
                 + "</div></div>";
     }
 
-    /** Saves an in-app notification and tries to email the customer as well. */
+    /** Saves an in-app notification and emails the customer in the background. */
     public void notify(Customer customer, String type, String message, String subject, String html) {
         if (customer == null) {
             return;
@@ -44,9 +64,12 @@ public class NotificationService {
         notification.setMessage(message);
         notificationRepository.save(notification);
 
+        // The in-app record is the source of truth and is already stored, so the
+        // email goes out on the background pool: a Brevo hiccup can no longer
+        // delay or fail the order/payment/return that triggered this.
         String email = customer.getEmail();
         if (email != null && !email.isBlank()) {
-            mailService.sendHtml(email, subject, shell(subject, html));
+            mailService.sendHtmlAsync(email, subject, shell(subject, html));
         }
     }
 
@@ -110,5 +133,44 @@ public class NotificationService {
                 "Good news! '" + productName + "' is back in stock. Get it before it sells out!",
                 "Back in stock: " + productName,
                 "<b>" + productName + "</b> is back in stock on " + BRAND + ".<br/><br/>Hurry — quantities are limited and it may sell out again.");
+    }
+
+    /**
+     * Announces a new offer to every customer off the request thread.
+     *
+     * Runs on the mail pool so creating a coupon returns immediately instead of
+     * blocking once per recipient. Each call needs its own transaction, because
+     * the caller has already committed by the time this runs.
+     */
+    @Async("mailExecutor")
+    @Transactional
+    public void broadcastOffer(String code, String description, List<Customer> customers) {
+        for (Customer customer : customers) {
+            try {
+                offer(customer, code, description);
+            } catch (Exception e) {
+                log.warn("Offer notification to customer {} failed: {}", customer.getId(), e.getMessage());
+            }
+        }
+        log.info("Offer {} announced to {} customers", code, customers.size());
+    }
+
+    /**
+     * Emails the store's admin address about a stock alert. Optional: skipped
+     * silently when no admin address is configured.
+     */
+    @Async("mailExecutor")
+    public void alertAdminLowStock(String productName, String type, int stock, int reorderLevel) {
+        String to = adminEmail;
+        if (to == null || to.isBlank()) {
+            return;
+        }
+        String heading = "Stock alert: " + productName;
+        String html = "<p style='color:#444;line-height:1.5;'>"
+                + "<b>" + productName + "</b> triggered a <b>" + type + "</b> alert.<br/><br/>"
+                + "Stock now: <b>" + stock + "</b> · reorder level: <b>" + reorderLevel + "</b><br/><br/>"
+                + "<a href='" + adminOrdersUrl + "' style='display:inline-block;background:#7C6AE8;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;'>Open admin console</a>"
+                + "</p>";
+        mailService.sendHtml(to, heading, shell(heading, html));
     }
 }
