@@ -132,9 +132,14 @@ export default function AdminOrders() {
                         <td colSpan={7} className="px-4 py-3">
                           <ul className="text-sm divide-y divide-[var(--color-border)]">
                             {o.orderItems.map((item) => (
-                              <li key={item.id} className="flex items-center justify-between py-1.5">
-                                <span>{item.product.name} × {item.quantity}</span>
-                                <span className="text-[var(--color-text-secondary)]">₹{Number(item.unitPrice).toLocaleString('en-IN')}</span>
+                              <li key={item.id} className="flex items-center justify-between py-1.5 gap-3">
+                                <span className="flex-1">{item.product.name} × {item.quantity}</span>
+                                <span className="text-[var(--color-text-secondary)] tabular-nums">
+                                  ₹{Number(item.unitPrice).toLocaleString('en-IN')}
+                                </span>
+                                <span className="font-semibold tabular-nums w-24 text-right">
+                                  ₹{Number(item.lineTotal ?? Number(item.unitPrice) * item.quantity).toLocaleString('en-IN')}
+                                </span>
                               </li>
                             ))}
                           </ul>

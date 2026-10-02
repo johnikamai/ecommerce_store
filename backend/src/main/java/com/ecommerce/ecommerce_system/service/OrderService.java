@@ -79,8 +79,11 @@ public class OrderService {
             orderItem.setQuantity(quantity);
             orderItem.setUnitPrice(product.getPrice()); // snapshot price at order time
 
+            BigDecimal lineTotal = product.getPrice().multiply(BigDecimal.valueOf(quantity));
+            orderItem.setLineTotal(lineTotal);
+
             order.getOrderItems().add(orderItem);
-            total = total.add(product.getPrice().multiply(BigDecimal.valueOf(quantity)));
+            total = total.add(lineTotal);
         }
 
         BigDecimal subtotal = total;

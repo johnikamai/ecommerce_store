@@ -414,8 +414,13 @@ function Orders() {
             <ul className="text-sm text-[var(--color-text-secondary)] space-y-2 border-t border-[var(--color-border)] pt-3">
               {order.orderItems.map((item) => (
                 <li key={item.id} className="flex items-center justify-between gap-4 flex-wrap">
-                  <span>
-                    {item.product.name} × {item.quantity} — ₹{item.unitPrice} each
+                  <span className="flex-1 min-w-[220px] flex items-baseline justify-between gap-3">
+                    <span>
+                      {item.product.name} × {item.quantity} — ₹{item.unitPrice} each
+                    </span>
+                    <span className="font-semibold text-[var(--color-text-primary)] tabular-nums">
+                      ₹{Number(item.lineTotal ?? Number(item.unitPrice) * item.quantity).toLocaleString('en-IN')}
+                    </span>
                   </span>
                   {order.status === 'DELIVERED' && role !== 'ADMIN' && (
                     <div className="flex items-center gap-2">

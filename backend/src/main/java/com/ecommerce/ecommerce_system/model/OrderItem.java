@@ -34,4 +34,8 @@ public class OrderItem {
     private Integer quantity;
 
     private BigDecimal unitPrice;
+
+    // Sub-total captured at order time (unitPrice x quantity). Stored rather than
+    // recomputed so a line's amount can never drift if the product price changes.
+    private BigDecimal lineTotal;
 }
