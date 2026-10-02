@@ -193,31 +193,32 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest req) {
+        // Accept either the username or the email as the identifier — people
+        // forget usernames but always remember the email they signed up with.
+        String identifier = req.getUsername() == null ? "" : req.getUsername().trim();
+        User user = userRepository.findByUsername(identifier)
+                .orElseGet(() -> userRepository.findByEmail(identifier).orElse(null));
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Username or email not registered — please create an account first");
+        }
+
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(req.getUsername(), req.getPassword())
+                    new UsernamePasswordAuthenticationToken(user.getUsername(), req.getPassword())
             );
         } catch (DisabledException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Account not verified yet — enter the OTP you received during registration");
         } catch (BadCredentialsException e) {
-            // Both "wrong password" and "username doesn't exist" surface as bad
-            // credentials. Tell the user which one it actually is.
-            if (userRepository.findByUsername(req.getUsername()).isEmpty()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("Username not registered — please create an account first");
-            }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Incorrect password — please try again");
         } catch (InternalAuthenticationServiceException e) {
-            if (userRepository.findByUsername(req.getUsername()).isEmpty()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("Username not registered — please create an account first");
-            }
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Something went wrong while signing in — try again");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Something went wrong while signing in — try again");
         }
 
-        User user = userRepository.findByUsername(req.getUsername()).orElseThrow();
         return ResponseEntity.ok(buildAuthResponse(user));
     }
 
@@ -236,15 +237,16 @@ public class AuthController {
                     "Password too weak — use at least 8 characters with an uppercase letter, a lowercase letter, a number and a special character");
         }
 
-        User user = userRepository.findByUsername(identifier).orElse(null);
+        User user = userRepository.findByUsername(identifier)
+                .orElseGet(() -> userRepository.findByEmail(identifier).orElse(null));
         if (user == null) {
-            return ResponseEntity.badRequest().body("No account found for that username");
+            return ResponseEntity.badRequest().body("No account found for that username or email");
         }
 
         // Confirm the current password before allowing the change.
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(identifier, current)
+                    new UsernamePasswordAuthenticationToken(user.getUsername(), current)
             );
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Current password is incorrect");

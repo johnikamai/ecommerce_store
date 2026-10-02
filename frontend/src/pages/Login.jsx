@@ -390,13 +390,13 @@ function CustomerContent() {
           )}
 
           <div>
-            <label htmlFor="cust-user" className="block text-[13px] font-semibold mb-2 text-[var(--color-text-secondary)]">Username</label>
+            <label htmlFor="cust-user" className="block text-[13px] font-semibold mb-2 text-[var(--color-text-secondary)]">Username or email</label>
             <input
               id="cust-user"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder={mode === 'login' ? 'your username' : 'e.g. rupa'}
+              placeholder={mode === 'login' ? 'your username or email' : 'e.g. rupa'}
               autoComplete="username"
               className="w-full px-4 py-3 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] bg-white focus:border-[var(--color-primary)] focus:shadow-[var(--shadow-glow-primary)] outline-none transition-shadow"
             />
