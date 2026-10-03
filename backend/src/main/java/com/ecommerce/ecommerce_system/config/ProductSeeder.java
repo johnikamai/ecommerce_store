@@ -40,22 +40,69 @@ public class ProductSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        for (String[] row : CATALOG) {
-            upsert(row);
+        try {
+            CatalogReport report = ensureCatalog();
+            System.out.println("[ProductSeeder] " + report);
+        } catch (Exception e) {
+            // A seeding problem must never stop the store from booting, otherwise
+            // the app crash-loops and there is no admin UI to fix it from.
+            System.err.println("[ProductSeeder] Catalog seeding FAILED: " + e);
+            e.printStackTrace();
         }
-        // Drop legacy third-party placeholder URLs so the storefront uses its own
-        // generated tiles. Any URL an admin typed by hand is left untouched.
-        for (Product p : productRepository.findAll()) {
-            String url = p.getImageUrl();
-            if (url != null && url.startsWith(LEGACY_PLACEHOLDER)) {
-                p.setImageUrl(null);
-                productRepository.save(p);
+    }
+
+    /**
+     * Brings the catalog up to date. Safe to call repeatedly.
+     *
+     * Also exposed over POST /api/admin/catalog/reseed so the catalog can be
+     * repaired without waiting for a restart.
+     */
+    public CatalogReport ensureCatalog() {
+        int created = 0;
+        int backfilled = 0;
+        for (String[] row : CATALOG) {
+            if (upsert(row)) {
+                created++;
+            } else {
+                backfilled++;
             }
         }
-        int generated = seedExpandedCatalog();
+        int cleared = clearLegacyPlaceholderImages();
+        int variants = seedExpandedCatalog();
         syncCategories();
-        System.out.println("[ProductSeeder] Catalog ready: " + productRepository.count()
-                + " products (" + generated + " variants generated this run).");
+        return new CatalogReport(currentProductCount(), created, backfilled, cleared, variants);
+    }
+
+    /**
+     * Drops legacy third-party placeholder URLs so the storefront uses its own
+     * generated tiles. Any URL an admin typed by hand is left untouched.
+     */
+    private int clearLegacyPlaceholderImages() {
+        List<Product> stale = productRepository.findAll().stream()
+                .filter(p -> p.getImageUrl() != null && p.getImageUrl().startsWith(LEGACY_PLACEHOLDER))
+                .toList();
+        stale.forEach(p -> p.setImageUrl(null));
+        if (!stale.isEmpty()) {
+            productRepository.saveAll(stale);
+        }
+        return stale.size();
+    }
+
+    /** Current catalog size, for the admin status endpoint. */
+    public int currentProductCount() {
+        return Math.toIntExact(productRepository.count());
+    }
+
+    /** Summary of one {@link #ensureCatalog()} pass. */
+    public record CatalogReport(int totalProducts, int baseCreated, int baseBackfilled,
+                                int legacyImagesCleared, int variantsCreated) {
+        @Override
+        public String toString() {
+            return "Catalog ready: " + totalProducts + " products (base created=" + baseCreated
+                    + ", base backfilled=" + baseBackfilled
+                    + ", legacy images cleared=" + legacyImagesCleared
+                    + ", variants created=" + variantsCreated + ").";
+        }
     }
 
     // Make sure every product category also exists in the categories table so the
@@ -75,7 +122,8 @@ public class ProductSeeder implements CommandLineRunner {
         }
     }
 
-    private void upsert(String[] row) {
+    /** @return true when a new product was inserted, false when an existing row was reused */
+    private boolean upsert(String[] row) {
         String name = row[0];
         Product existing = productRepository.findByName(name).orElse(null);
         if (existing != null) {
@@ -88,7 +136,7 @@ public class ProductSeeder implements CommandLineRunner {
             if (dirty) {
                 productRepository.save(existing);
             }
-            return;
+            return false;
         }
         Product p = new Product();
         p.setName(name);
@@ -102,6 +150,7 @@ public class ProductSeeder implements CommandLineRunner {
         p.setSustainabilityScore("n".equals(row[5]) ? null : Integer.parseInt(row[5]));
         // imageUrl stays null -> storefront draws its own tile.
         productRepository.save(p);
+        return true;
     }
 
     /**
@@ -128,6 +177,7 @@ public class ProductSeeder implements CommandLineRunner {
 
         Set<String> existingNames = productRepository.findAll().stream()
                 .map(Product::getName)
+                .filter(java.util.Objects::nonNull)
                 .collect(Collectors.toSet());
 
         List<Product> toInsert = new ArrayList<>();
@@ -149,7 +199,17 @@ public class ProductSeeder implements CommandLineRunner {
             }
         }
         if (!toInsert.isEmpty()) {
-            productRepository.saveAll(toInsert);
+            // Flush in chunks so a remote MySQL never sees one huge batch, and
+            // report progress: a long silent startup is indistinguishable from
+            // a hang when diagnosing a deploy.
+            int chunk = 100;
+            for (int i = 0; i < toInsert.size(); i += chunk) {
+                List<Product> slice = toInsert.subList(i, Math.min(i + chunk, toInsert.size()));
+                productRepository.saveAll(slice);
+                productRepository.flush();
+                System.out.println("[ProductSeeder] inserted " + Math.min(i + chunk, toInsert.size())
+                        + "/" + toInsert.size() + " variants");
+            }
         }
         return toInsert.size();
     }
