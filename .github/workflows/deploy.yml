@@ -1,7 +1,13 @@
-name: Deploy to Netlify
+name: Deploy to Netlify (manual fallback)
+
+# DISABLED on push: the Netlify site is now connected to the GitHub repo
+# directly (base directory: frontend) and builds from frontend/netlify.toml,
+# which is the supported path. This workflow's netlify-cli upload was failing
+# on every push, which silently left the live site on a stale bundle.
+#
+# Kept as a manual escape hatch: run it from the Actions tab only if the
+# Netlify-side build is misconfigured.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
