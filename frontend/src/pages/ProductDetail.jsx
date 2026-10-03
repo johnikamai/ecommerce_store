@@ -300,13 +300,7 @@ export default function ProductDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-[var(--space-9)]">
         {/* Gallery */}
         <div className="rounded-[var(--radius-xl)] bg-gradient-hero aspect-square flex items-center justify-center overflow-hidden">
-          {product.imageUrl ? (
-            <ProductImage product={product} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-32 h-32 rounded-[var(--radius-xl)] bg-white shadow-[var(--shadow-md)] flex items-center justify-center font-[family-name:var(--font-heading)] font-bold text-[var(--color-primary)] text-5xl">
-              {product.name.charAt(0)}
-            </div>
-          )}
+          <ProductImage product={product} className="w-full h-full object-cover" />
         </div>
 
         {/* Info */}
@@ -422,13 +416,7 @@ export default function ProductDetail() {
         {tab === 'showcase' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="rounded-[var(--radius-xl)] bg-gradient-hero aspect-square flex items-center justify-center overflow-hidden">
-              {product.imageUrl ? (
-                <ProductImage product={product} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-32 h-32 rounded-[var(--radius-xl)] bg-white shadow-[var(--shadow-md)] flex items-center justify-center font-[family-name:var(--font-heading)] font-bold text-[var(--color-primary)] text-5xl">
-                  {product.name.charAt(0)}
-                </div>
-              )}
+              <ProductImage product={product} className="w-full h-full object-cover" />
             </div>
             <div className="flex flex-col justify-center">
               <h4 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-2">Product showcase</h4>

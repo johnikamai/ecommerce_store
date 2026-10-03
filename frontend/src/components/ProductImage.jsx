@@ -1,38 +1,36 @@
 import { useState } from 'react';
+import { productTileDataUri } from '../utils/productImage';
 
 /**
- * Product image with a reliable fallback.
+ * Product image with a guaranteed visual.
  *
- * A broken or missing URL falls back to the brand-tinted initial tile instead of
- * the browser's broken-image glyph. The failed state is tracked in React state
- * rather than by mutating the DOM, so the fallback actually re-renders (the
- * previous inline `style.display = 'none'` left the fallback permanently hidden
- * behind its own Tailwind `hidden` class).
+ * Order of preference:
+ *   1. a real photo URL stored on the product
+ *   2. a locally-generated SVG tile (no network request, cannot break)
+ *
+ * Failure is tracked in React state rather than by mutating the DOM, so the
+ * fallback actually re-renders. The previous version set style.display='none'
+ * on the <img> while the fallback div kept its own Tailwind 'hidden' class,
+ * which revealed an empty box instead of anything.
  */
 export default function ProductImage({ product, className = '', alt }) {
   const [failed, setFailed] = useState(false);
-  const src = product?.imageUrl;
-  const showImage = Boolean(src) && !failed;
+  const photo = product?.imageUrl;
+  const tile = productTileDataUri(product);
 
-  if (showImage) {
-    return (
-      <img
-        src={src}
-        alt={alt ?? product.name}
-        loading="lazy"
-        onError={() => setFailed(true)}
-        className={className}
-      />
-    );
-  }
+  const src = photo && !failed ? photo : tile;
 
-  // Normal flow (not absolute) so this also fills the detail-page gallery,
-  // whose container is not position:relative.
   return (
-    <div className={`w-full h-full flex items-center justify-center ${className}`}>
-      <div className="w-16 h-16 rounded-[var(--radius-lg)] bg-gradient-hero flex items-center justify-center font-[family-name:var(--font-heading)] font-bold text-[var(--color-primary)] text-2xl group-hover:scale-105 transition-transform duration-[var(--transition-base)]">
-        {(product?.name || '?').charAt(0)}
-      </div>
-    </div>
+    <img
+      src={src}
+      alt={alt ?? product?.name ?? 'Product'}
+      loading="lazy"
+      onError={() => {
+        // Only meaningful for a real photo; the data URI cannot fail, but this
+        // guards against a browser that blocks data URIs entirely.
+        if (!failed) setFailed(true);
+      }}
+      className={className}
+    />
   );
 }

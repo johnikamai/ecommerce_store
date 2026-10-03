@@ -9,19 +9,30 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Idempotent catalog seeder.
  * On every start it makes sure the store is stocked:
- *  - a product with the same NAME already exists -> backfill its image if missing
+ *  - a product with the same NAME already exists -> reuse it
  *  - otherwise -> insert a brand new product
  * This keeps the seed safe to re-run and never deletes your data.
+ *
+ * Product photos are intentionally NOT set here. The storefront renders a
+ * locally-generated SVG tile per product, so the catalog never depends on an
+ * external image host (606 products = 606 third-party requests, which is what
+ * made tiles go blank). Admins can still paste a real photo URL per product,
+ * which takes precedence over the generated tile.
  */
 @Component
 @RequiredArgsConstructor
 public class ProductSeeder implements CommandLineRunner {
+
+    /** Rows seeded with a generated placeholder in an earlier release. */
+    private static final String LEGACY_PLACEHOLDER = "https://placehold.co/";
 
     private final ProductRepository productRepository;
 
@@ -32,17 +43,19 @@ public class ProductSeeder implements CommandLineRunner {
         for (String[] row : CATALOG) {
             upsert(row);
         }
-        // Backfill an image for any leftover product created by hand / earlier tests
-        // (Laptop, Idli, Biryani, ...) so the whole store looks consistent.
+        // Drop legacy third-party placeholder URLs so the storefront uses its own
+        // generated tiles. Any URL an admin typed by hand is left untouched.
         for (Product p : productRepository.findAll()) {
-            if (p.getImageUrl() == null || p.getImageUrl().isBlank()) {
-                p.setImageUrl(image(p.getName(), p.getCategory()));
+            String url = p.getImageUrl();
+            if (url != null && url.startsWith(LEGACY_PLACEHOLDER)) {
+                p.setImageUrl(null);
                 productRepository.save(p);
             }
         }
-        seedExpandedCatalog();
-        System.out.println("[ProductSeeder] Catalog ready: " + productRepository.count() + " products.");
+        int generated = seedExpandedCatalog();
         syncCategories();
+        System.out.println("[ProductSeeder] Catalog ready: " + productRepository.count()
+                + " products (" + generated + " variants generated this run).");
     }
 
     // Make sure every product category also exists in the categories table so the
@@ -68,10 +81,6 @@ public class ProductSeeder implements CommandLineRunner {
         if (existing != null) {
             // Backfill the new columns on rows created before this release.
             boolean dirty = false;
-            if (existing.getImageUrl() == null || existing.getImageUrl().isBlank()) {
-                existing.setImageUrl(image(row[0], row[6]));
-                dirty = true;
-            }
             if (existing.getReorderLevel() == null) {
                 existing.setReorderLevel(Product.DEFAULT_REORDER_LEVEL);
                 dirty = true;
@@ -91,16 +100,22 @@ public class ProductSeeder implements CommandLineRunner {
         // out-of-stock alerts are not all keyed to a single magic number.
         p.setReorderLevel(Product.DEFAULT_REORDER_LEVEL);
         p.setSustainabilityScore("n".equals(row[5]) ? null : Integer.parseInt(row[5]));
-        p.setImageUrl(image(row[0], row[6]));
+        // imageUrl stays null -> storefront draws its own tile.
         productRepository.save(p);
     }
 
     /**
      * Expands the store to 500+ products by generating 5 deterministic variants
      * (Classic / Lite / Pro / Ultra / Max) of every base catalog entry.
-     * Idempotent: the generated names are unique, so re-runs never duplicate.
+     *
+     * Idempotent: existing names are skipped via one preloaded lookup instead of
+     * a findByName query per candidate. On a remote MySQL that is the difference
+     * between ~1000 round-trips and 505 inserts, which keeps startup inside
+     * Render's health-check window.
+     *
+     * @return how many variants were newly inserted
      */
-    private void seedExpandedCatalog() {
+    private int seedExpandedCatalog() {
         String[] variants = {"Classic", "Lite", "Pro", "Ultra", "Max"};
         double[] priceFactor = {1.0, 0.85, 1.35, 1.7, 2.1};
         String[] blurb = {
@@ -110,31 +125,33 @@ public class ProductSeeder implements CommandLineRunner {
                 "Top-tier premium edition",
                 "Maxed-out flagship model"
         };
+
+        Set<String> existingNames = productRepository.findAll().stream()
+                .map(Product::getName)
+                .collect(Collectors.toSet());
+
+        List<Product> toInsert = new ArrayList<>();
         for (String[] base : CATALOG) {
             for (int v = 0; v < variants.length; v++) {
-                upsert(new String[]{
-                        base[0] + " " + variants[v],
-                        blurb[v] + " — " + base[1],
-                        base[2],
-                        String.valueOf((int) (Double.parseDouble(base[3]) * priceFactor[v])),
-                        String.valueOf(Math.abs((base[0] + variants[v]).hashCode() % 109) + 12),
-                        base[5],
-                        base[6]
-                });
+                String name = base[0] + " " + variants[v];
+                if (existingNames.contains(name)) {
+                    continue;
+                }
+                Product p = new Product();
+                p.setName(name);
+                p.setDescription(blurb[v] + " — " + base[1]);
+                p.setCategory(base[2]);
+                p.setPrice(BigDecimal.valueOf((long) (Double.parseDouble(base[3]) * priceFactor[v])));
+                p.setStockQuantity(Math.abs(name.hashCode() % 109) + 12);
+                p.setReorderLevel(Product.DEFAULT_REORDER_LEVEL);
+                p.setSustainabilityScore("n".equals(base[5]) ? null : Integer.parseInt(base[5]));
+                toInsert.add(p);
             }
         }
-    }
-
-    /**
-     * placehold.co tile: pastel category colour with a dark product label.
-     *
-     * The name is percent-encoded rather than just space-swapped, so characters
-     * like &amp;, / or # cannot truncate or break the query string.
-     */
-    private String image(String name, String category) {
-        String bg = COLORS.getOrDefault(category, "B9B9C9");
-        String label = URLEncoder.encode(name, StandardCharsets.UTF_8).replace("+", "%20");
-        return "https://placehold.co/600x600/" + bg + "/2F2F46/png?text=" + label;
+        if (!toInsert.isEmpty()) {
+            productRepository.saveAll(toInsert);
+        }
+        return toInsert.size();
     }
 
     /** name, description, category, price, stock, sustainabilityScore ("n" = none), category-colour key */
@@ -260,17 +277,4 @@ public class ProductSeeder implements CommandLineRunner {
             {"Pet Travel Carrier", "Foldable airline-approved mesh carrier.", "Pets", "1599", "18", "70", "Pets"},
             {"Cat Litter Scoop Box", "Durable scoop with a storage tray.", "Pets", "349", "55", "90", "Pets"},
     };
-
-    private static final java.util.Map<String, String> COLORS = java.util.Map.ofEntries(
-            java.util.Map.entry("Electronics", "7C6AE8"),
-            java.util.Map.entry("Fashion", "C98BB9"),
-            java.util.Map.entry("Beauty", "E8A08B"),
-            java.util.Map.entry("Home & Living", "8BB8C9"),
-            java.util.Map.entry("Sports", "8BC99B"),
-            java.util.Map.entry("Books & Stationery", "E8D48B"),
-            java.util.Map.entry("Toys & Kids", "9B8BC9"),
-            java.util.Map.entry("Groceries & Food", "E0B27E"),
-            java.util.Map.entry("Automotive", "8B9BC9"),
-            java.util.Map.entry("Pets", "A9C98B")
-    );
 }

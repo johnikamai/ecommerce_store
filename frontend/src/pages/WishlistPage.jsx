@@ -68,13 +68,7 @@ function WishlistPage() {
         {items.map((item) => (
           <div key={item.id} className="rounded-[var(--radius-lg)] bg-[var(--color-card-bg)] shadow-[var(--shadow-sm)] overflow-hidden flex flex-col">
             <div className="relative aspect-square bg-[var(--color-card-bg-tint)] flex items-center justify-center overflow-hidden">
-{item.product.imageUrl ? (
-            <ProductImage product={item.product} className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-4xl font-[family-name:var(--font-heading)] font-bold text-[var(--color-primary)] opacity-30">
-                  {item.product.name.charAt(0)}
-                </span>
-              )}
+<ProductImage product={item.product} className="w-full h-full object-cover" />
               <button
                 onClick={() => handleRemove(item.product.id)}
                 className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white shadow-[var(--shadow-sm)] flex items-center justify-center text-[var(--color-secondary)]"

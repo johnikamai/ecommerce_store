@@ -96,19 +96,10 @@ export default function ProductCard({ product, defaultRating, defaultReviewCount
     <div className="group relative flex flex-col bg-[var(--color-card-bg)] rounded-[var(--radius-lg)] shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] hover:-translate-y-1 transition-all duration-[var(--transition-base)] overflow-hidden">
       {/* Image */}
       <Link to={`/product/${product.id}`} className="relative aspect-square bg-[var(--color-card-bg-tint)] overflow-hidden block">
-        {product.imageUrl ? (
-          <ProductImage
-            product={product}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[var(--transition-base)]"
-          />
-        ) : null}
-        {!product.imageUrl && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-16 h-16 rounded-[var(--radius-lg)] bg-gradient-hero flex items-center justify-center font-[family-name:var(--font-heading)] font-bold text-[var(--color-primary)] text-2xl group-hover:scale-105 transition-transform duration-[var(--transition-base)]">
-            {product.name.charAt(0)}
-          </div>
-        </div>
-        )}
+        <ProductImage
+          product={product}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[var(--transition-base)]"
+        />
 
         {isOutOfStock && (
           <span className="absolute top-2 left-2 rounded-full bg-[var(--color-text-muted)] text-white text-xs font-semibold px-2.5 py-1">
