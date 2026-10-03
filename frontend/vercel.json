@@ -3,9 +3,6 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "engines": {
-    "node": "22.x"
-  },
   "rewrites": [
     {
       "source": "/(.*)",
