@@ -2,6 +2,15 @@ import { useState } from 'react';
 import { productTileDataUri } from '../utils/productImage';
 
 /**
+ * placehold.co URLs were assigned to the whole catalog by an earlier seeder.
+ * They are text placeholders, not product photos, so we ignore them and draw
+ * our own tile. This keeps the upgrade independent of a backend deploy: the
+ * rows still carry those URLs until the seeder cleans them, but the storefront
+ * already looks right.
+ */
+const LEGACY_PLACEHOLDER = 'https://placehold.co/';
+
+/**
  * Product image with a guaranteed visual.
  *
  * Order of preference:
@@ -15,20 +24,20 @@ import { productTileDataUri } from '../utils/productImage';
  */
 export default function ProductImage({ product, className = '', alt }) {
   const [failed, setFailed] = useState(false);
-  const photo = product?.imageUrl;
+  const stored = product?.imageUrl;
+  const photo =
+    stored && !stored.startsWith(LEGACY_PLACEHOLDER) && !failed ? stored : null;
   const tile = productTileDataUri(product);
-
-  const src = photo && !failed ? photo : tile;
 
   return (
     <img
-      src={src}
+      src={photo || tile}
       alt={alt ?? product?.name ?? 'Product'}
       loading="lazy"
       onError={() => {
-        // Only meaningful for a real photo; the data URI cannot fail, but this
+        // Only reachable for a real photo; the data URI cannot fail, but this
         // guards against a browser that blocks data URIs entirely.
-        if (!failed) setFailed(true);
+        if (photo && !failed) setFailed(true);
       }}
       className={className}
     />
