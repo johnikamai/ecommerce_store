@@ -389,6 +389,19 @@ function Orders() {
               </div>
               <div className="text-right">
                 <p className="font-[family-name:var(--font-heading)] text-xl font-bold">{formatCurrency(order.totalAmount)}</p>
+                {/* Itemise the charges that make up the grand total. Without these
+                    lines the total simply reads higher than the basket the customer
+                    agreed to, with nothing on screen to account for the gap. */}
+                {(Number(order.shippingAmount) > 0 || Number(order.taxAmount) > 0) && (
+                  <div className="mt-1 space-y-0.5 text-xs text-[var(--color-text-muted)]">
+                    {Number(order.shippingAmount) > 0 && (
+                      <p>{t('orders.shipping', { amount: formatNumber(order.shippingAmount) })}</p>
+                    )}
+                    {Number(order.taxAmount) > 0 && (
+                      <p>{t('orders.tax', { amount: formatNumber(order.taxAmount) })}</p>
+                    )}
+                  </div>
+                )}
                 {order.discountAmount > 0 && (
                   <p className="text-xs text-[var(--color-success)]">{t('orders.couponSaved', { amount: formatNumber(order.discountAmount) })}</p>
                 )}

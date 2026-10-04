@@ -81,6 +81,25 @@ export function CartProvider({ children }) {
   const bundleDiscount = Math.round(totalPrice * bundlePercent * 100) / 100;
   const nextBundleAt = nextBundleTier(distinctProductCount);
 
+  // Delivery and tax, mirroring OrderService so the cart quotes the same figure
+  // the server will charge. The server remains authoritative - these exist so a
+  // customer is not surprised by a total that appears between checkout and the
+  // confirmation.
+  //
+  // Shipping is measured against the pre-discount subtotal for the same reason it
+  // is on the server: a coupon must not be able to tip a basket over the free
+  // delivery threshold. Tax is charged on the discounted goods only, never on the
+  // delivery charge.
+  const FLAT_SHIPPING = 49;
+  const FREE_SHIPPING_THRESHOLD = 999;
+  const TAX_RATE = 0.18;
+
+  const shipping = totalPrice <= 0 || totalPrice >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING;
+  const goodsAfterDiscount = Math.max(totalPrice - bundleDiscount, 0);
+  const taxAmount = Math.round(goodsAfterDiscount * TAX_RATE * 100) / 100;
+  const grandTotal = Math.round((goodsAfterDiscount + shipping + taxAmount) * 100) / 100;
+  const freeShippingRemaining = Math.round(Math.max(FREE_SHIPPING_THRESHOLD - totalPrice, 0) * 100) / 100;
+
   return (
     <CartContext.Provider
       value={{
@@ -95,6 +114,10 @@ export function CartProvider({ children }) {
         bundlePercent,
         bundleDiscount,
         nextBundleAt,
+        shipping,
+        taxAmount,
+        grandTotal,
+        freeShippingRemaining,
       }}
     >
       {children}
