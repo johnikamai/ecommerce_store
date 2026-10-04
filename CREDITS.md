@@ -616,3 +616,62 @@ commercially.
 | `usb-c-charger-65w-4.webp` | USB-C Charger 65W Pro | power charger | by 2.0 | Triple-green | [link](https://www.flickr.com/photos/66451944@N03/52940029049) |
 | `usb-c-charger-65w-5.webp` | USB-C Charger 65W Ultra | power charger | by 2.0 | Triple-green | [link](https://www.flickr.com/photos/66451944@N03/53093148570) |
 | `usb-c-charger-65w-6.webp` | USB-C Charger 65W Max | power charger | by 2.0 | Triple-green | [link](https://www.flickr.com/photos/66451944@N03/53108565861) |
+
+## Unconfirmed sources - review before commercial use
+
+The 46 rows below are referenced by `frontend/src/utils/productPhotos.json`
+but are **not** part of the Openverse set above. They are either legacy seed files
+under `public/images/` or files added under `public/product-photos/` whose
+origin was never recorded. They are listed so that no image on the storefront is
+completely untraceable.
+
+For each one: confirm the licence and creator and fill them in, or drop the entry
+from `productPhotos.json` to fall back to the placeholder.
+
+| File | Product | Origin | Licence | Creator |
+| --- | --- | --- | --- | --- || `images/12.jpg` | Wireless Mouse | legacy seed | unknown | unconfirmed |
+| `images/16.jpg` | Action Cam Mount Kit | legacy seed | unknown | unconfirmed |
+| `product-photos/cotton-t-shirt.jpg` | Cotton T-Shirt | added with the ZIP | unknown | unconfirmed |
+| `images/42.jpg` | Himalayan Salt Lamp | legacy seed | unknown | unconfirmed |
+| `images/46.jpg` | Cotton Area Rug | legacy seed | unknown | unconfirmed |
+| `images/50.jpg` | Aroma Diffuser | legacy seed | unknown | unconfirmed |
+| `images/57.jpg` | Cricket Bat | legacy seed | unknown | unconfirmed |
+| `images/61.jpg` | Cycling Helmet | legacy seed | unknown | unconfirmed |
+| `images/63.jpg` | Adjustable Ankle Weights | legacy seed | unknown | unconfirmed |
+| `images/71.jpg` | Laptop Backpack | legacy seed | unknown | unconfirmed |
+| `images/69.jpg` | Linen Hardcover Journal | legacy seed | unknown | unconfirmed |
+| `images/77.jpg` | English Grammar Book | legacy seed | unknown | unconfirmed |
+| `images/79.jpg` | Plush Teddy Bear | legacy seed | unknown | unconfirmed |
+| `images/81.jpg` | Off-Road RC Car | legacy seed | unknown | unconfirmed |
+| `images/96.jpg` | Tyre Inflator | legacy seed | unknown | unconfirmed |
+| `images/102.jpg` | Cat Tower Scratcher | legacy seed | unknown | unconfirmed |
+| `images/28.jpg` | Formal Shirt | legacy seed | unknown | unconfirmed |
+| `product-photos/cat-litter-scoop-box.webp` | Cat Litter Scoop Box | added with the ZIP | unknown | unconfirmed |
+| `product-photos/hdmi-cable-2m.webp` | HDMI Cable 2m | added with the ZIP | unknown | unconfirmed |
+| `product-photos/zip-pencil-case.webp` | Zip Pencil Case | added with the ZIP | unknown | unconfirmed |
+| `product-photos/smartphone-stand.webp` | Smartphone Stand | added with the ZIP | unknown | unconfirmed |
+| `product-photos/watercolor-paint-set.webp` | Watercolor Paint Set | added with the ZIP | unknown | unconfirmed |
+| `product-photos/roll-on-perfume.webp` | Roll-On Perfume | added with the ZIP | unknown | unconfirmed |
+| `product-photos/speed-jump-rope.webp` | Speed Jump Rope | added with the ZIP | unknown | unconfirmed |
+| `product-photos/matte-lipstick.webp` | Matte Lipstick | added with the ZIP | unknown | unconfirmed |
+| `product-photos/kids-science-kit.webp` | Kids Science Kit | added with the ZIP | unknown | unconfirmed |
+| `product-photos/classic-ballerina-flats.webp` | Classic Ballerina Flats | added with the ZIP | unknown | unconfirmed |
+| `product-photos/power-bank-20000mah.webp` | Power Bank 20000mAh | added with the ZIP | unknown | unconfirmed |
+| `product-photos/pet-grooming-brush.webp` | Pet Grooming Brush | added with the ZIP | unknown | unconfirmed |
+| `product-photos/skincare-gift-kit.webp` | Skincare Gift Kit | added with the ZIP | unknown | unconfirmed |
+| `product-photos/usb-c-charger-65w.webp` | USB-C Charger 65W | added with the ZIP | unknown | unconfirmed |
+| `product-photos/led-headlight-bulbs.webp` | LED Headlight Bulbs | added with the ZIP | unknown | unconfirmed |
+| `product-photos/car-air-freshener.webp` | Car Air Freshener | added with the ZIP | unknown | unconfirmed |
+| `product-photos/aloe-face-wash.webp` | Aloe Face Wash | added with the ZIP | unknown | unconfirmed |
+| `product-photos/anti-dandruff-shampoo.webp` | Anti-Dandruff Shampoo | added with the ZIP | unknown | unconfirmed |
+| `product-photos/car-cleaning-kit.webp` | Car Cleaning Kit | added with the ZIP | unknown | unconfirmed |
+| `product-photos/pet-travel-carrier.webp` | Pet Travel Carrier | added with the ZIP | unknown | unconfirmed |
+| `product-photos/green-tea-bags.webp` | Green Tea Bags | added with the ZIP | unknown | unconfirmed |
+| `product-photos/phone-mount-holder.webp` | Phone Mount Holder | added with the ZIP | unknown | unconfirmed |
+| `product-photos/3d-wooden-puzzle.webp` | 3D Wooden Puzzle | added with the ZIP | unknown | unconfirmed |
+| `product-photos/aquarium-starter-kit.webp` | Aquarium Starter Kit | added with the ZIP | unknown | unconfirmed |
+| `product-photos/sunscreen-spf-50.webp` | Sunscreen SPF 50 | added with the ZIP | unknown | unconfirmed |
+| `product-photos/gel-pen-set.webp` | Gel Pen Set | added with the ZIP | unknown | unconfirmed |
+| `product-photos/foldable-squat-rack.webp` | Foldable Squat Rack | added with the ZIP | unknown | unconfirmed |
+| `product-photos/steering-wheel-cover.webp` | Steering Wheel Cover | added with the ZIP | unknown | unconfirmed |
+| `product-photos/4k-action-camera.webp` | 4K Action Camera | added with the ZIP | unknown | unconfirmed |
