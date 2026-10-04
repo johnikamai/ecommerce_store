@@ -32,7 +32,7 @@ export default function Header() {
   const navLinks = (
     <>
       <Link to="/products" className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors">Shop</Link>
-      {role === 'ADMIN' && (
+      {(role === 'ADMIN' || role === 'STAFF') && (
         <Link to="/admin" className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors">Dashboard</Link>
       )}
       <Link to="/account" className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors">My Account</Link>

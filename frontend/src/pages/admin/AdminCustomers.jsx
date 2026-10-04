@@ -15,6 +15,10 @@ export default function AdminCustomers() {
   const [history, setHistory] = useState(null); // { user, orders }
   const [detail, setDetail] = useState(null); // customer profile + addresses
   const [detailError, setDetailError] = useState('');
+  // Read from localStorage rather than trusting a prop: only an admin may promote
+  // anyone, and staff must never see the control even if the API would allow it.
+  const myRole = localStorage.getItem('role');
+  const adminCount = users.filter((u) => u.role === 'ADMIN').length;
 
   const load = async () => {
     setLoading(true);
@@ -60,6 +64,25 @@ export default function AdminCustomers() {
       load();
     } catch (err) {
       alert(err.response?.data || 'Delete failed — user may be an admin or has orders.');
+    }
+  };
+
+  /**
+   * Promotes a customer to staff, or sends them back to being a customer.
+   * Staff can work the catalog and read orders but cannot touch payments,
+   * refunds or discounts, so this is deliberately a smaller step than admin.
+   */
+  const changeRole = async (user, role) => {
+    if (!window.confirm(
+      role === 'STAFF'
+        ? `Make "${user.username}" staff?\n\nThey will be able to add and edit products and view orders. They will NOT be able to handle payments, refunds or coupons.`
+        : `Remove staff access from "${user.username}"?`
+    )) return;
+    try {
+      await axiosClient.put(`/admin/users/${user.id}/role`, { role });
+      load();
+    } catch (err) {
+      alert(err.response?.data || 'Could not change role');
     }
   };
 
@@ -132,7 +155,7 @@ export default function AdminCustomers() {
                     </div>
                   </td>
                   <td className="py-3 px-4">
-                    <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${u.role === 'ADMIN' ? 'bg-[var(--color-error-bg)] text-[var(--color-error)]' : 'bg-[var(--color-info-bg)] text-[var(--color-info)]'}`}>
+                    <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${u.role === 'ADMIN' ? 'bg-[var(--color-error-bg)] text-[var(--color-error)]' : u.role === 'STAFF' ? 'bg-[var(--color-warning-bg)] text-[var(--color-warning)]' : 'bg-[var(--color-info-bg)] text-[var(--color-info)]'}`}>
                       {u.role}
                     </span>
                   </td>
@@ -145,6 +168,23 @@ export default function AdminCustomers() {
                   </td>
                   <td className="py-3 px-4">
                     <div className="flex justify-end gap-1.5">
+                      {/* Promote/demote. Never offered on the row of the only
+                          admin - the server refuses that too, but a button that
+                          always fails is worse than no button. */}
+                      {myRole === 'ADMIN' && !(u.role === 'ADMIN' && adminCount <= 1) && (
+                        <button
+                          onClick={() => changeRole(u, u.role === 'STAFF' ? 'CUSTOMER' : 'STAFF')}
+                          aria-label={u.role === 'STAFF' ? 'Remove staff access' : 'Make staff'}
+                          title={u.role === 'STAFF'
+                            ? 'Remove staff access'
+                            : 'Make staff — can add products and view orders, cannot handle money'}
+                          className={`px-2 h-8 rounded-[var(--radius-md)] text-[11px] font-semibold transition-colors ${u.role === 'STAFF'
+                            ? 'bg-[var(--color-warning-bg)] text-[var(--color-warning)] hover:opacity-80'
+                            : 'bg-[var(--color-info-bg)] text-[var(--color-info)] hover:opacity-80'}`}
+                        >
+                          {u.role === 'STAFF' ? 'Unstaff' : 'Make staff'}
+                        </button>
+                      )}
                       {u.role !== 'ADMIN' && u.customerId && (
                         <>
                           <button onClick={() => viewDetail(u)} aria-label="Customer details"

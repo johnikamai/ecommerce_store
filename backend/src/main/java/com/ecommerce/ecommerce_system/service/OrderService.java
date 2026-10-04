@@ -97,6 +97,13 @@ public class OrderService {
         if (request.getCouponCode() != null && !request.getCouponCode().isBlank()) {
             Coupon coupon = couponRepository.findByCodeIgnoreCase(request.getCouponCode().trim())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid coupon code: " + request.getCouponCode().trim()));
+            // Re-read under a write lock. The limit is checked and then spent, and
+            // without the lock two shoppers redeeming the final use at the same
+            // moment would both pass the check and the coupon would be honoured
+            // twice while recording one use. Locking serialises them so the second
+            // customer sees the exhausted limit instead.
+            coupon = couponRepository.findByCodeIgnoreCaseForUpdate(request.getCouponCode().trim())
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid coupon code: " + request.getCouponCode().trim()));
             if (!coupon.isRedeemable()) {
                 throw new IllegalArgumentException("Coupon is no longer valid: " + coupon.getCode());
             }

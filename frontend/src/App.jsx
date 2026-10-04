@@ -28,7 +28,7 @@ function AdminRoute({ children }) {
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('role');
   if (!token) return <Navigate to="/" />;
-  if (role !== 'ADMIN') return <Navigate to="/products" />;
+  if (role !== 'ADMIN' && role !== 'STAFF') return <Navigate to="/products" />;
   return children;
 }
 

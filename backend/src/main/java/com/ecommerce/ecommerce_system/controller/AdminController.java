@@ -151,6 +151,51 @@ public class AdminController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * PUT /api/admin/users/{id}/role  { "role": "ADMIN" | "STAFF" | "CUSTOMER" }
+     *
+     * This is how extra staff get access. Registering normally always creates a
+     * customer, so promotion has to be deliberate and admin-only.
+     */
+    @PutMapping("/users/{id}/role")
+    public ResponseEntity<?> setUserRole(@PathVariable Long id,
+                                         @RequestBody Map<String, String> body,
+                                         Authentication auth) {
+        String requested = body.get("role");
+        if (requested == null || requested.isBlank()) {
+            return ResponseEntity.badRequest().body("role is required");
+        }
+        Role role;
+        try {
+            role = Role.valueOf(requested.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Unknown role: " + requested);
+        }
+
+        return userRepository.findById(id)
+                .map(user -> {
+                    // Removing your own admin rights is how an admin locks
+                    // themselves - and possibly everyone - out of the shop.
+                    if (user.getRole() == Role.ADMIN && role != Role.ADMIN
+                            && auth != null && auth.getName().equals(user.getUsername())) {
+                        return ResponseEntity.badRequest()
+                                .body("You cannot remove your own admin access");
+                    }
+                    // Never allow the last admin to be demoted, which would leave
+                    // the store with nobody able to manage staff or refunds.
+                    if (user.getRole() == Role.ADMIN && role != Role.ADMIN
+                            && userRepository.countByRole(Role.ADMIN) <= 1) {
+                        return ResponseEntity.badRequest()
+                                .body("This is the only admin account - promote someone else first");
+                    }
+                    user.setRole(role);
+                    // A demoted admin may still hold a live token, so invalidate by
+                    // disabling nothing here; the role is re-read per request.
+                    return ResponseEntity.ok(userRepository.save(user));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     // PUT /api/admin/users/{id}/enabled  { "enabled": true|false }
     @PutMapping("/users/{id}/enabled")
     public ResponseEntity<?> setUserEnabled(@PathVariable Long id,

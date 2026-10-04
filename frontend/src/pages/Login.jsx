@@ -140,8 +140,8 @@ function AdminContent() {
     setBusy(true);
     try {
       const res = await axiosClient.post('/auth/login', { username, password });
-      if (res.data.role !== 'ADMIN') {
-        setError('Not an admin account — switch to Customer below.');
+      if (res.data.role !== 'ADMIN' && res.data.role !== 'STAFF') {
+        setError('Not a staff account — switch to Customer below.');
         return;
       }
       persist(res.data);
@@ -261,8 +261,8 @@ function CustomerContent() {
     try {
       if (mode === 'login') {
         const res = await axiosClient.post('/auth/login', { username, password });
-        if (res.data.role === 'ADMIN') {
-          setError('That is an admin account — switch to Admin above.');
+        if (res.data.role === 'ADMIN' || res.data.role === 'STAFF') {
+          setError('That is a staff account — switch to Admin above.');
           return;
         }
         persist(res.data);

@@ -43,6 +43,19 @@ public class Coupon {
     // Null = unlimited uses.
     private Integer maxUses;
 
+    /**
+     * Incremented once per redemption. The version makes that increment safe.
+     *
+     * Without it, two shoppers redeeming the last remaining use at the same moment
+     * both read timesUsed, both pass the limit check, both write the same value,
+     * and the coupon is spent twice while only one use is recorded. JPA then fails
+     * the second commit instead, so the customer sees an error rather than the
+     * store quietly losing a discount it had promised.
+     */
+    @Version
+    @Column(nullable = false)
+    private long version;
+
     private int timesUsed = 0;
 
     public boolean isExpired() {
