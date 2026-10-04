@@ -44,7 +44,7 @@ function BundleProgress() {
     return (
       <div className="p-4 rounded-[var(--radius-lg)] bg-[var(--color-card-bg)] border-[1.5px] border-[var(--color-primary)] shadow-[var(--shadow-sm)]">
         <p className="text-sm font-semibold text-[var(--color-primary)]">
-          {t('cart.bundle.unlocked', { percent: Math.round(bundlePercent * 100), amount: formatCurrency(bundleDiscount) })}
+          {t('cart.bundle.unlocked', { percent: Math.round(bundlePercent * 100), amount: formatCurrency(currentQuote?.bundleDiscount ?? bundleDiscount) })}
         </p>
         <p className="text-xs text-[var(--color-text-muted)] mt-1">
           {nextBundleAt > 0
@@ -160,7 +160,32 @@ function Cart() {
     ? manualAddress
     : formatAddress(addresses.find((a) => a.id === selectedAddressId));
 
+  const [quote, setQuote] = useState(null);
+  const [quoteError, setQuoteError] = useState('');
+  const [quoteRevision, setQuoteRevision] = useState(0);
+  const quoteInput = JSON.stringify({ customerId,
+    items: items.map(i => ({ productId: i.product.id, quantity: i.quantity })),
+    couponCode: couponCode.trim().toUpperCase() || null,
+    shippingAddress: resolvedAddress?.trim() || null, paymentMethod });
+  useEffect(() => {
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      const input = JSON.parse(quoteInput);
+      if (!input.items.length || !input.shippingAddress) return;
+      setQuoteError('');
+      try {
+        const response = await axiosClient.post('/orders/quote', JSON.parse(quoteInput), { signal: controller.signal });
+        if (!controller.signal.aborted) setQuote({ input: quoteInput, ...response.data });
+      } catch (err) {
+        if (!controller.signal.aborted) setQuoteError(err.response?.data || t('fix.quoteFailed'));
+      }
+    }, 250);
+    return () => { clearTimeout(timer); controller.abort(); };
+  }, [quoteInput, quoteRevision, t]);
+  const currentQuote = quote?.input === quoteInput && !quoteError ? quote : null;
+
   const handleCheckout = async () => {
+    if (!currentQuote || placing) return;
     const shippingAddress = resolvedAddress?.trim() || null;
     if (!shippingAddress && addresses.length === 0 && !manualAddress.trim()) {
       setError('cart.addressRequired');
@@ -179,10 +204,12 @@ function Cart() {
         couponCode: couponCode.trim().toUpperCase() || null,
         shippingAddress,
         paymentMethod,
+        expectedTotal: currentQuote.total,
       });
       clearCart();
       navigate('/orders');
     } catch (err) {
+      setQuote(null); setQuoteRevision(v => v + 1);
       setError(err.response?.data || 'cart.checkoutFailed');
     } finally {
       setPlacing(false);
@@ -338,7 +365,7 @@ function Cart() {
       <div className="mb-4 p-6 rounded-[var(--radius-xl)] bg-[var(--color-card-bg)] shadow-[var(--shadow-sm)]">
         <h3 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-3">{t('cart.paymentMethod')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {PAYMENT_METHODS.map((m) => {
+          {PAYMENT_METHODS.filter(m => m.key === 'CASH' || quote?.demoPaymentsEnabled).map((m) => {
             const Icon = m.icon;
             return (
               <label
@@ -368,39 +395,43 @@ function Cart() {
         </div>
       </div>
 
+      {quote?.demoPaymentsEnabled && <p className="text-sm mb-4">{t('fix.demoPayments')}</p>}
+      {!quote?.demoPaymentsEnabled && <p className="text-sm mb-4">{t('fix.cashOnly')}</p>}
       <BundleProgress />
 
       <div className="flex items-center justify-between gap-6 flex-wrap p-6 rounded-[var(--radius-xl)] bg-[var(--color-card-bg-tint)]">
         <div className="space-y-1.5">
           <div className="flex items-center justify-between gap-8 text-sm text-[var(--color-text-muted)]">
             <span>{t('cart.subtotal')}</span>
-            <span>{formatCurrency(totalPrice)}</span>
+            <span>{formatCurrency(currentQuote?.subtotal ?? totalPrice)}</span>
           </div>
-          {bundleDiscount > 0 && (
+          {(currentQuote?.bundleDiscount ?? bundleDiscount) > 0 && (
             <div className="flex items-center justify-between gap-8 text-sm text-[var(--color-success)]">
               <span>{t('cart.discount')}</span>
-              <span>{t('cart.bundleDiscount', { amount: formatCurrency(bundleDiscount) })}</span>
+              <span>{t('cart.bundleDiscount', { amount: formatCurrency(currentQuote?.bundleDiscount ?? bundleDiscount) })}</span>
             </div>
           )}
           <div className="flex items-center justify-between gap-8 text-sm text-[var(--color-text-muted)]">
             <span>{t('cart.shipping')}</span>
-            <span>{shipping > 0 ? formatCurrency(shipping) : t('cart.freeShipping')}</span>
+            <span>{(currentQuote?.shipping ?? shipping) > 0 ? formatCurrency(currentQuote?.shipping ?? shipping) : t('cart.freeShipping')}</span>
           </div>
           <div className="flex items-center justify-between gap-8 text-sm text-[var(--color-text-muted)]">
             <span>{t('cart.tax')}</span>
-            <span>{formatCurrency(taxAmount)}</span>
+            <span>{formatCurrency(currentQuote?.tax ?? taxAmount)}</span>
           </div>
+          {currentQuote?.couponDiscount > 0 && <p className="text-sm">{t('fix.couponDiscount')}: −{formatCurrency(currentQuote.couponDiscount)}</p>}
+          {currentQuote?.tierDiscount > 0 && <p className="text-sm">{t('fix.loyaltyDiscount')}: −{formatCurrency(currentQuote.tierDiscount)}</p>}
           <div className="flex items-center justify-between gap-8 pt-2 mt-1 border-t border-[var(--color-border)]">
             <p className="text-sm text-[var(--color-text-muted)]">{t('cart.total')}</p>
             <p className="font-[family-name:var(--font-heading)] text-2xl font-bold">
-              {formatCurrency(grandTotal)}
+              {formatCurrency(currentQuote?.total ?? grandTotal)}
             </p>
           </div>
           <p className="text-xs text-[var(--color-text-muted)] max-w-xs">{t('cart.taxNote')}</p>
         </div>
         <button
           onClick={handleCheckout}
-          disabled={placing}
+          disabled={placing || !currentQuote}
           className="rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white px-8 py-3 text-sm font-semibold hover:bg-[var(--color-primary-hover)] transition-colors disabled:opacity-50"
         >
           {placing
@@ -421,6 +452,8 @@ function Cart() {
         <p className="text-xs text-[var(--color-text-muted)]">{t('cart.couponNote')}</p>
       </div>
 
+      {!currentQuote && !quoteError && <p className="text-sm mt-3">{t('fix.addressQuote')}</p>}
+      {quoteError && <p className="text-[var(--color-error)] text-sm mt-3">{quoteError}</p>}
       {error && <p className="text-[var(--color-error)] text-sm mt-3">{t(error)}</p>}
     </div>
   );

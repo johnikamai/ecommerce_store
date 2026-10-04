@@ -40,8 +40,7 @@ public class MailService {
 
     /**
      * Emails the OTP via the Brevo API. Returns true when Brevo accepted the
-     * message. Falls back to the on-screen demo code when no API key is set or
-     * when Brevo rejects the request (logged below).
+     * message. Returns false when delivery is unavailable; authentication endpoints fail closed.
      */
     public boolean sendOtp(String to, String otp) {
         String html = "<div style='font-family:Arial,sans-serif;max-width:480px;margin:auto;'>"

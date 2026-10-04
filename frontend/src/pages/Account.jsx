@@ -52,6 +52,11 @@ function Account() {
   // Profile form
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [emailCode, setEmailCode] = useState('');
+  const [emailPassword, setEmailPassword] = useState('');
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailBusy, setEmailBusy] = useState(false);
+  const [emailMessage, setEmailMessage] = useState('');
   const [phone, setPhone] = useState('');
   const [shippingAddress, setShippingAddress] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
@@ -95,7 +100,7 @@ function Account() {
     setSavingProfile(true);
     setProfileMsg(null);
     try {
-      const res = await axiosClient.put(`/customers/${customerId}`, { name, email, phone, shippingAddress });
+      const res = await axiosClient.put(`/customers/${customerId}`, { name, phone, shippingAddress });
       setProfile(res.data);
       localStorage.setItem('customerName', res.data.name || '');
       setProfileMsg({ ok: true, value: 'account.profile.saved' });
@@ -108,6 +113,18 @@ function Account() {
     } finally {
       setSavingProfile(false);
     }
+  };
+
+  const changeEmail = async (confirm) => {
+    setEmailBusy(true); setEmailMessage('');
+    try {
+      const response = await axiosClient.post(confirm ? '/auth/email/confirm' : '/auth/email/request',
+        confirm ? { email, otp: emailCode } : { email, currentPassword: emailPassword });
+      setEmailMessage(response.data.message);
+      if (confirm) { setEmailSent(false); setEmailCode(''); setEmailPassword(''); await loadAll(); }
+      else setEmailSent(true);
+    } catch (err) { setEmailMessage(err.response?.data || t('fix.emailFailed')); }
+    finally { setEmailBusy(false); }
   };
 
   const resetAddrForm = () => {
@@ -213,7 +230,12 @@ function Account() {
             </div>
             <div>
               <label className="text-xs font-medium text-[var(--color-text-muted)] mb-1 block">{t('auth.email')}</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-3 py-2.5 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] outline-none focus:border-[var(--color-primary)] text-sm" />
+              <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setEmailSent(false); }} className="w-full px-3 py-2.5 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] outline-none focus:border-[var(--color-primary)] text-sm" />
+              <p className="text-xs mt-2">{t('fix.emailVerification')}</p>
+              <input type="password" aria-label={t('fix.emailPassword')} placeholder={t('fix.emailPassword')} value={emailPassword} onChange={e => setEmailPassword(e.target.value)} className="border rounded p-2 mt-2 w-full" />
+              <button type="button" disabled={emailBusy || email === profile?.email} onClick={() => changeEmail(false)} className="border rounded p-2 mt-2">{t('fix.sendEmailCode')}</button>
+              {emailSent && <><input aria-label={t('fix.emailCode')} placeholder={t('fix.sixDigitCode')} value={emailCode} onChange={e => setEmailCode(e.target.value.replace(/\D/g, '').slice(0,6))} className="border rounded p-2 mt-2" /><button type="button" disabled={emailBusy || emailCode.length !== 6} onClick={() => changeEmail(true)} className="border rounded p-2">{t('fix.verifyEmail')}</button></>}
+              {emailMessage && <p role="status" className="text-sm mt-2">{emailMessage}</p>}
             </div>
             <div>
               <label className="text-xs font-medium text-[var(--color-text-muted)] mb-1 block">{t('account.profile.phone')}</label>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ProductImage from '../../components/ProductImage';
 import { Plus, Search, Pencil, Trash2, X } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
 import { useLanguage } from '../../context/LanguageContext';
@@ -155,11 +156,8 @@ export default function AdminProducts() {
               {pageItems.map((p) => (
                 <tr key={p.id} className="border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-card-bg-tint)]">
                   <td className="py-3 px-4">
-                    {p.imageUrl ? (
-                      <img src={p.imageUrl} alt={p.name} loading="lazy"
-                        className="w-12 h-12 rounded-[var(--radius-md)] object-cover border border-[var(--color-border)]"
-                        onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                    ) : null}
+                    <ProductImage product={p}
+                      className="w-12 h-12 rounded-[var(--radius-md)] object-contain bg-white border border-[var(--color-border)]" />
                   </td>
                   <td className="py-3 px-4">
                     <div className="font-semibold text-[var(--color-text-primary)]">{p.name}</div>

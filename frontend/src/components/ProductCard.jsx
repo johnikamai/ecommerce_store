@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Heart, ShoppingCart, Bell, Scale } from 'lucide-react';
 import axiosClient from '../api/axiosClient';
 import { useCart } from '../context/CartContext';
@@ -48,6 +48,7 @@ function Stars({ rating }) {
 }
 
 export default function ProductCard({ product, defaultRating, defaultReviewCount }) {
+  const navigate = useNavigate();
   const { addToCart } = useCart();
   const { t, formatCurrency } = useLanguage();
   const { toggle: toggleCompare, isSelected: isComparing } = useCompare();
@@ -74,12 +75,13 @@ export default function ProductCard({ product, defaultRating, defaultReviewCount
         .then((res) => setSummary(res.data))
         .catch(() => {});
     }
-    axiosClient.get(`/wishlist/customer/${customerId}`)
+    if (getCustomerId()) axiosClient.get(`/wishlist/customer/${customerId}`)
       .then((res) => setIsWishlisted(res.data.some((i) => i.product.id === product.id)))
       .catch(() => {});
   }, [product.id]);
 
   const toggleWishlist = async () => {
+    if (!getCustomerId()) { navigate('/login'); return; }
     const customerId = getCustomerId();
     try {
       if (isWishlisted) {
@@ -95,12 +97,14 @@ export default function ProductCard({ product, defaultRating, defaultReviewCount
   };
 
   const handleAddToCart = () => {
+    if (!getCustomerId()) { navigate('/login'); return; }
     addToCart(product, parseInt(quantity) || 1);
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1200);
   };
 
   const handleNotify = async () => {
+    if (!getCustomerId()) { navigate('/login'); return; }
     try {
       await axiosClient.post('/restock-requests', { customer: { id: getCustomerId() }, product: { id: product.id } });
       setNotifyStatus('subscribed');

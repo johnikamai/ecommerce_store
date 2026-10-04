@@ -91,16 +91,18 @@ public class NotificationService {
         // email goes out on the background pool: a Brevo hiccup can no longer
         // delay or fail the order/payment/return that triggered this.
         String email = customer.getEmail();
-        if (email != null && !email.isBlank()) {
-            mailService.sendHtmlAsync(email, subject, shell(subject, html));
-        }
-
-        if (SMS_TYPES.contains(type)) {
-            String phone = customer.getPhone();
-            if (phone != null && !phone.isBlank()) {
-                smsService.sendSmsAsync(phone, trimSms(smsText));
-            }
-        }
+        String phone = customer.getPhone();
+        String emailHtml = shell(subject, html);
+        Runnable deliver = () -> {
+            if (email != null && !email.isBlank()) mailService.sendHtmlAsync(email, subject, emailHtml);
+            if (SMS_TYPES.contains(type) && phone != null && !phone.isBlank()) smsService.sendSmsAsync(phone, trimSms(smsText));
+        };
+        if (org.springframework.transaction.support.TransactionSynchronizationManager.isSynchronizationActive()) {
+            org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                new org.springframework.transaction.support.TransactionSynchronization() {
+                    @Override public void afterCommit() { deliver.run(); }
+                });
+        } else deliver.run();
     }
 
     /** Twilio caps a single message at 1600 characters; keep well under it. */

@@ -1,8 +1,8 @@
 // Returns the id of the currently signed-in customer (stored on login/register).
-// Falls back to customer 1 (the original demo account) if not signed in yet.
+// Anonymous visitors have no customer profile.
 export function getCustomerId() {
   const id = Number(localStorage.getItem('customerId'));
-  return Number.isFinite(id) && id > 0 ? id : 1;
+  return Number.isFinite(id) && id > 0 ? id : null;
 }
 
 export function getCustomerName() {

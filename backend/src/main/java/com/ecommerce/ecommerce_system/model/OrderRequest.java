@@ -4,6 +4,9 @@ import java.util.List;
 
 public class OrderRequest {
 
+    private java.math.BigDecimal expectedTotal;
+    public java.math.BigDecimal getExpectedTotal() { return expectedTotal; }
+    public void setExpectedTotal(java.math.BigDecimal expectedTotal) { this.expectedTotal = expectedTotal; }
     private Long customerId;
     private String couponCode;
     private String shippingAddress;

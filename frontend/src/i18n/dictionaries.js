@@ -720,7 +720,6 @@ const en = {
   'auth.referralNote': 'Got a code from a friend? They earn 500 points when your first order ships.',
   'auth.noAccountBefore': 'No account yet? Switch to',
   'auth.noAccountAfter': '— it takes 20 seconds.',
-  'auth.buildNote': 'build v4 — still frozen? hard refresh Ctrl+Shift+R',
   'auth.brand.line1': 'One store.',
   'auth.brand.line2': 'Everything you',
   'auth.brand.line3': 'love.',
@@ -1461,7 +1460,6 @@ const hi = {
   'auth.referralNote': 'किसी दोस्त से कोड मिला? आपके पहले ऑर्डर के भेजे जाते ही उन्हें 500 अंक मिलेंगे।',
   'auth.noAccountBefore': 'अभी खाता नहीं है? स्विच करें',
   'auth.noAccountAfter': '— इसमें बस 20 सेकंड लगते हैं।',
-  'auth.buildNote': 'बिल्ड v4 — अभी भी पुराना दिख रहा है? Ctrl+Shift+R से हार्ड रिफ्रेश करें',
   'auth.brand.line1': 'एक स्टोर।',
   'auth.brand.line2': 'वह सब कुछ',
   'auth.brand.line3': 'जो आपको पसंद है।',
@@ -2203,7 +2201,6 @@ const es = {
   'auth.referralNote': '¿Tienes un código de un amigo? Gana 500 puntos cuando se envíe tu primer pedido.',
   'auth.noAccountBefore': '¿Aún no tienes cuenta? Cambia a',
   'auth.noAccountAfter': '— solo tarda 20 segundos.',
-  'auth.buildNote': 'build v4 — ¿sigue obsoleto? recarga con Ctrl+Shift+R',
   'auth.brand.line1': 'Una tienda.',
   'auth.brand.line2': 'Todo lo que',
   'auth.brand.line3': 'te encanta.',
@@ -2261,5 +2258,51 @@ const es = {
   'auth.error.verifyFailed': 'La verificación falló',
   'auth.error.resendFailed': 'No se pudo reenviar el OTP',
 };
+
+Object.assign(en, {
+  "fix.demoPayments": "Demo payments only: UPI/card do not transfer money.",
+  "fix.cashOnly": "Online payments are unavailable. Cash on delivery is supported.",
+  "fix.addressQuote": "Enter your delivery address to calculate the final total.",
+  "fix.couponDiscount": "Coupon discount",
+  "fix.loyaltyDiscount": "Loyalty discount",
+  "fix.emailVerification": "Email changes require verification and update your login email too.",
+  "fix.emailPassword": "Current password for email change",
+  "fix.sendEmailCode": "Send verification code",
+  "fix.emailCode": "Email verification code",
+  "fix.sixDigitCode": "6-digit code",
+  "fix.verifyEmail": "Verify email",
+  "fix.quoteFailed": "Unable to calculate checkout total",
+  "fix.emailFailed": "Unable to update email"
+});
+Object.assign(hi, {
+  "fix.demoPayments": "केवल डेमो भुगतान: UPI/कार्ड से पैसे नहीं भेजे जाते।",
+  "fix.cashOnly": "ऑनलाइन भुगतान उपलब्ध नहीं है। कैश ऑन डिलीवरी उपलब्ध है।",
+  "fix.addressQuote": "अंतिम कुल राशि के लिए अपना पूरा डिलीवरी पता दर्ज करें।",
+  "fix.couponDiscount": "कूपन छूट",
+  "fix.loyaltyDiscount": "लॉयल्टी छूट",
+  "fix.emailVerification": "ईमेल बदलने के लिए सत्यापन आवश्यक है। लॉगिन ईमेल भी अपडेट होगा।",
+  "fix.emailPassword": "ईमेल बदलने के लिए वर्तमान पासवर्ड",
+  "fix.sendEmailCode": "सत्यापन कोड भेजें",
+  "fix.emailCode": "ईमेल सत्यापन कोड",
+  "fix.sixDigitCode": "6 अंकों का कोड",
+  "fix.verifyEmail": "ईमेल सत्यापित करें",
+  "fix.quoteFailed": "कुल राशि की गणना नहीं हो सकी",
+  "fix.emailFailed": "ईमेल अपडेट नहीं हो सका"
+});
+Object.assign(es, {
+  "fix.demoPayments": "Pagos de demostración: UPI/tarjeta no transfieren dinero.",
+  "fix.cashOnly": "Los pagos en línea no están disponibles. Se admite pago contra entrega.",
+  "fix.addressQuote": "Introduce tu dirección de entrega para calcular el total final.",
+  "fix.couponDiscount": "Descuento del cupón",
+  "fix.loyaltyDiscount": "Descuento de fidelidad",
+  "fix.emailVerification": "Los cambios de correo requieren verificación y actualizan también el correo de acceso.",
+  "fix.emailPassword": "Contraseña actual para cambiar el correo",
+  "fix.sendEmailCode": "Enviar código de verificación",
+  "fix.emailCode": "Código de verificación del correo",
+  "fix.sixDigitCode": "Código de 6 dígitos",
+  "fix.verifyEmail": "Verificar correo",
+  "fix.quoteFailed": "No se pudo calcular el total",
+  "fix.emailFailed": "No se pudo actualizar el correo"
+});
 
 export const DICTIONARIES = { en, hi, es };

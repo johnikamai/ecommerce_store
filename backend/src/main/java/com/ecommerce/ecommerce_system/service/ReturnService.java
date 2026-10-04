@@ -18,6 +18,8 @@ import java.time.LocalDateTime;
 @Service
 public class ReturnService {
 
+    @Autowired private OrderService orderService;
+
     @Autowired
     private ReturnRequestRepository returnRequestRepository;
 
@@ -54,6 +56,7 @@ public class ReturnService {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found: " + customerId));
 
+        if (!orderItem.getOrder().getCustomer().getId().equals(customerId)) throw new IllegalArgumentException("This item does not belong to the customer");
         // Business rule: you can only return something that has been delivered.
         Order order = orderItem.getOrder();
         if (order.getStatus() != OrderStatus.DELIVERED) {
@@ -132,6 +135,7 @@ public class ReturnService {
         PaymentStatus previous = order.getPaymentStatus();
         order.setPaymentStatus(PaymentStatus.REFUNDED);
         orderRepository.save(order);
+        orderService.reverseRewards(order);
 
         if (previous == PaymentStatus.PAID) {
             paymentRepository.findByOrderId(order.getId()).ifPresent(payment -> {

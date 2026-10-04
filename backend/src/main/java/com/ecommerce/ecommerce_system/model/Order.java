@@ -24,6 +24,10 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    @Column(nullable = false, columnDefinition = "bigint default 0")
+    private long version;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
@@ -32,6 +36,10 @@ public class Order {
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status = OrderStatus.PLACED;
+
+    // Legacy rows earned rewards at checkout. New orders earn them on delivery.
+    @Column(columnDefinition = "boolean default true")
+    private Boolean rewardsAwarded = false;
 
     private BigDecimal totalAmount = BigDecimal.ZERO;
 

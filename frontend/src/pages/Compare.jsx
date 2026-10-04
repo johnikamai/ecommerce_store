@@ -141,7 +141,7 @@ export default function Compare() {
                           <X className="w-3.5 h-3.5" />
                         </button>
                         <Link to={`/product/${p.id}`} className="block w-24 mb-2">
-                          <ProductImage src={p.imageUrl} alt={p.name} className="w-24 h-24 object-cover rounded-[var(--radius-md)]" />
+                          <ProductImage product={p} alt={p.name} className="w-24 h-24 object-cover rounded-[var(--radius-md)]" />
                         </Link>
                         <Link to={`/product/${p.id}`} className="font-semibold hover:text-[var(--color-primary)] leading-snug">
                           {p.name}

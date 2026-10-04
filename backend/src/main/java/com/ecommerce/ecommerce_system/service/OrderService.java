@@ -45,8 +45,8 @@ public class OrderService {
     @Autowired
     private StockAlertService stockAlertService;
 
-    @Transactional
-    public Order placeOrder(OrderRequest request) {
+    private Order prepareOrder(OrderRequest request, boolean redeem) {
+        validateRequest(request);
         Customer customer = customerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found: " + request.getCustomerId()));
 
@@ -77,15 +77,9 @@ public class OrderService {
                 throw new IllegalArgumentException("Invalid quantity for product: " + product.getName());
             }
 
-            if (product.getStockQuantity() < quantity) {
+            if (product.getStockQuantity() == null || product.getStockQuantity() < quantity) {
                 throw new IllegalStateException("Insufficient stock for product: " + product.getName());
             }
-
-            // Deduct stock
-            Integer stockBefore = product.getStockQuantity();
-            product.setStockQuantity(product.getStockQuantity() - quantity);
-            Product savedProduct = productRepository.save(product);
-            stockAlertService.onStockChanged(savedProduct, stockBefore);
 
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(order);
@@ -112,7 +106,7 @@ public class OrderService {
             // moment would both pass the check and the coupon would be honoured
             // twice while recording one use. Locking serialises them so the second
             // customer sees the exhausted limit instead.
-            coupon = couponRepository.findByCodeIgnoreCaseForUpdate(request.getCouponCode().trim())
+            if (redeem) coupon = couponRepository.findByCodeIgnoreCaseForUpdate(request.getCouponCode().trim())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid coupon code: " + request.getCouponCode().trim()));
             if (!coupon.isRedeemable()) {
                 throw new IllegalArgumentException("Coupon is no longer valid: " + coupon.getCode());
@@ -131,8 +125,10 @@ public class OrderService {
             if (couponDiscount.compareTo(subtotal) > 0) {
                 couponDiscount = subtotal;
             }
-            coupon.setTimesUsed(coupon.getTimesUsed() + 1);
-            couponRepository.save(coupon);
+            if (redeem) {
+                coupon.setTimesUsed(coupon.getTimesUsed() + 1);
+                couponRepository.save(coupon);
+            }
 
             order.setCouponCode(coupon.getCode());
             order.setDiscountAmount(couponDiscount);
@@ -164,7 +160,7 @@ public class OrderService {
             case "SILVER" -> java.math.BigDecimal.valueOf(0.02);
             default -> java.math.BigDecimal.ZERO;
         };
-java.math.BigDecimal discount = total.multiply(discountPercent);
+java.math.BigDecimal discount = total.multiply(discountPercent).setScale(2, java.math.RoundingMode.HALF_UP);
         total = total.subtract(discount);
 
         // Everything above is a discount on the goods. Freeze that figure here,
@@ -184,45 +180,27 @@ java.math.BigDecimal discount = total.multiply(discountPercent);
         order.setTaxAmount(tax);
         order.setTotalAmount(total);
 
-        // Award loyalty points: 1 point per 100 spent.
-        // Measured against the goods value only - points are a reward for buying
-        // merchandise, so counting the tax and delivery the customer paid in would
-        // inflate every balance and hand out tiers that were never earned.
-        int pointsEarned = merchandiseTotal.divide(java.math.BigDecimal.valueOf(100), 0, java.math.RoundingMode.DOWN).intValue();
-        int currentPoints = customer.getLoyaltyPoints() != null ? customer.getLoyaltyPoints() : 0;
-        customer.setLoyaltyPoints(currentPoints + pointsEarned);
+        return order;
+    }
 
-        // Recalculate tier based on lifetime spend across all orders
-        java.math.BigDecimal lifetimeSpend = orderRepository.findByCustomerId(customer.getId()).stream()
-                .map(Order::getMerchandiseTotalForScoring)
-                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add)
-                .add(merchandiseTotal); // include this order too, since it isn't saved yet
+    @org.springframework.beans.factory.annotation.Value("${app.payments.demo-enabled:false}")
+    private boolean demoPaymentsEnabled;
 
-        if (lifetimeSpend.compareTo(java.math.BigDecimal.valueOf(150000)) >= 0) {
-            customer.setTier("GOLD");
-        } else if (lifetimeSpend.compareTo(java.math.BigDecimal.valueOf(50000)) >= 0) {
-            customer.setTier("SILVER");
+    @Transactional
+    public Order placeOrder(OrderRequest request) {
+        Order order = prepareOrder(request, true);
+        Customer customer = order.getCustomer();
+        BigDecimal total = order.getTotalAmount();
+        if (request.getExpectedTotal() == null || total.compareTo(request.getExpectedTotal()) != 0) {
+            throw new IllegalArgumentException("Checkout total changed. Review the updated quote and try again.");
         }
-
-        // REFERRAL BONUS:
-        // When a referred customer places their FIRST order, reward the referrer
-        // with bonus loyalty points (exactly once per referred friend).
-        int referralBonus = 500;
-        boolean isFirstOrder = orderRepository.findByCustomerId(customer.getId()).isEmpty();
-        if (isFirstOrder
-                && customer.getReferredBy() != null
-                && !Boolean.TRUE.equals(customer.getReferralRewarded())) {
-            Customer referrer = customer.getReferredBy();
-            int referrerPoints = referrer.getLoyaltyPoints() != null ? referrer.getLoyaltyPoints() : 0;
-            referrer.setLoyaltyPoints(referrerPoints + referralBonus);
-            customerRepository.save(referrer);
-
-            // Mark this referral as rewarded so it never fires again.
-            customer.setReferralRewarded(true);
+        for (OrderItem item : order.getOrderItems()) {
+            Product product = item.getProduct();
+            Integer stockBefore = product.getStockQuantity();
+            product.setStockQuantity(stockBefore - item.getQuantity());
+            productRepository.saveAndFlush(product); // version check before sending stock notifications
+            stockAlertService.onStockChanged(product, stockBefore);
         }
-
-        customerRepository.save(customer);
-
         Order saved = orderRepository.save(order);
 
         // Record payment: CASH (COD) stays PENDING until collected; UPI/CARD simulate an
@@ -266,6 +244,74 @@ java.math.BigDecimal discount = total.multiply(discountPercent);
         return saved;
     }
 
+    @Transactional(readOnly = true)
+    public Map<String,Object> quote(OrderRequest request) {
+        Order order = prepareOrder(request, false);
+        BigDecimal subtotal = order.getOrderItems().stream().map(OrderItem::getLineTotal).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal tierDiscount = subtotal.subtract(order.getDiscountAmount()).subtract(order.getBundleDiscountAmount()).subtract(order.getMerchandiseTotal());
+        Map<String,Object> quote = new LinkedHashMap<>();
+        quote.put("subtotal", subtotal); quote.put("couponDiscount", order.getDiscountAmount());
+        quote.put("bundleDiscount", order.getBundleDiscountAmount()); quote.put("tierDiscount", tierDiscount);
+        quote.put("shipping", order.getShippingAmount()); quote.put("tax", order.getTaxAmount());
+        quote.put("total", order.getTotalAmount()); quote.put("demoPaymentsEnabled", demoPaymentsEnabled);
+        return quote;
+    }
+
+    private void validateRequest(OrderRequest request) {
+        if (request == null || request.getCustomerId() == null) throw new IllegalArgumentException("Customer is required");
+        if (request.getItems() == null || request.getItems().isEmpty() || request.getItems().size() > 100) throw new IllegalArgumentException("Order must contain 1–100 products");
+        java.util.Set<Long> ids = new java.util.HashSet<>();
+        for (OrderRequest.Item item : request.getItems()) {
+            if (item == null || item.getProductId() == null || item.getQuantity() == null || item.getQuantity() < 1 || item.getQuantity() > 10000) throw new IllegalArgumentException("Invalid product or quantity");
+            if (!ids.add(item.getProductId())) throw new IllegalArgumentException("Combine duplicate product lines");
+        }
+        if (request.getShippingAddress() == null || request.getShippingAddress().trim().length() < 10 || request.getShippingAddress().length() > 1000) throw new IllegalArgumentException("Enter a complete delivery address (10–1000 characters)");
+        String method = request.getPaymentMethod();
+        if (method == null || !java.util.Set.of("CASH", "UPI", "CARD").contains(method)) throw new IllegalArgumentException("Choose CASH, UPI or CARD");
+        if (!demoPaymentsEnabled && !method.equals("CASH")) throw new IllegalArgumentException("Online payments are unavailable. Choose cash on delivery.");
+    }
+
+    private void awardRewards(Order order) {
+        Customer customer = order.getCustomer();
+        if (Boolean.TRUE.equals(order.getRewardsAwarded())) return;
+        int earned = order.getMerchandiseTotalForScoring().divide(BigDecimal.valueOf(100), 0, java.math.RoundingMode.DOWN).intValue();
+        customer.setLoyaltyPoints((customer.getLoyaltyPoints() == null ? 0 : customer.getLoyaltyPoints()) + earned);
+        order.setRewardsAwarded(true);
+        if (customer.getReferredBy() != null && !Boolean.TRUE.equals(customer.getReferralRewarded())) {
+            Customer referrer = customer.getReferredBy();
+            referrer.setLoyaltyPoints((referrer.getLoyaltyPoints() == null ? 0 : referrer.getLoyaltyPoints()) + 500);
+            customerRepository.save(referrer); customer.setReferralRewarded(true);
+        }
+        recomputeTier(customer);
+        customerRepository.save(customer);
+    }
+
+    private void recomputeTier(Customer customer) {
+        BigDecimal spent = orderRepository.findByCustomerId(customer.getId()).stream()
+                .filter(o -> o.getStatus() == OrderStatus.DELIVERED && o.getPaymentStatus() != PaymentStatus.REFUNDED)
+                .map(Order::getMerchandiseTotalForScoring).reduce(BigDecimal.ZERO, BigDecimal::add);
+        customer.setTier(spent.compareTo(BigDecimal.valueOf(150000)) >= 0 ? "GOLD" : spent.compareTo(BigDecimal.valueOf(50000)) >= 0 ? "SILVER" : "BRONZE");
+    }
+
+    /** Reverse previously awarded rewards, including legacy orders awarded at checkout. */
+    @Transactional
+    public void reverseRewards(Order order) {
+        Customer customer = order.getCustomer();
+        if (Boolean.TRUE.equals(order.getRewardsAwarded())) {
+            int earned = order.getMerchandiseTotalForScoring().divide(BigDecimal.valueOf(100), 0, java.math.RoundingMode.DOWN).intValue();
+            customer.setLoyaltyPoints(Math.max(0, (customer.getLoyaltyPoints() == null ? 0 : customer.getLoyaltyPoints()) - earned));
+            order.setRewardsAwarded(false);
+        }
+        boolean otherCompleted = orderRepository.findByCustomerId(customer.getId()).stream()
+                .anyMatch(o -> !o.getId().equals(order.getId()) && o.getStatus() == OrderStatus.DELIVERED && o.getPaymentStatus() != PaymentStatus.REFUNDED);
+        if (!otherCompleted && Boolean.TRUE.equals(customer.getReferralRewarded()) && customer.getReferredBy() != null) {
+            Customer referrer = customer.getReferredBy();
+            referrer.setLoyaltyPoints(Math.max(0, (referrer.getLoyaltyPoints() == null ? 0 : referrer.getLoyaltyPoints()) - 500));
+            customerRepository.save(referrer); customer.setReferralRewarded(false);
+        }
+        recomputeTier(customer); customerRepository.save(customer); orderRepository.save(order);
+    }
+
     /**
      * Customer cancels their own PLACED order. Releases the reserved stock and
      * notifies the customer.
@@ -288,6 +334,8 @@ java.math.BigDecimal discount = total.multiply(discountPercent);
 
         // If the customer had paid online, issue the refund right away.
         boolean refunded = refundIfPaid(order);
+
+        reverseRewards(order);
 
         // Release the reserved stock back.
         releaseStock(order);
@@ -357,13 +405,15 @@ java.math.BigDecimal discount = total.multiply(discountPercent);
         if (newStatus == OrderStatus.SHIPPED) {
             notificationService.shipped(customer, saved.getId());
         } else if (newStatus == OrderStatus.DELIVERED) {
+            awardRewards(order);
             notificationService.delivered(customer, saved.getId());
         } else if (newStatus == OrderStatus.CANCELLED) {
             boolean refunded = refundIfPaid(order);
+            reverseRewards(order);
             // Stock is only reserved while the order is still PLACED. Once it has
             // shipped the units have left the warehouse, so cancelling must not
             // put them back on the shelf.
-            if (previous == OrderStatus.PLACED) {
+            if (previous == OrderStatus.PLACED || previous == OrderStatus.PACKED) {
                 releaseStock(order);
             }
             notificationService.orderCancelled(customer, saved.getId());

@@ -150,7 +150,7 @@ export default function ProductDetail() {
     axiosClient.get(`/reviews/product/${id}`)
       .then((res) => { if (active) setReviews(res.data); })
       .catch(() => {});
-    axiosClient.get(`/wishlist/customer/${getCustomerId()}`)
+    if (getCustomerId()) axiosClient.get(`/wishlist/customer/${getCustomerId()}`)
       .then((res) => { if (active) setIsWishlisted(res.data.some((i) => i.product.id === Number(id))); })
       .catch(() => {});
     return () => { active = false; };
@@ -214,6 +214,7 @@ export default function ProductDetail() {
   ]);
 
   const toggleWishlist = async () => {
+    if (!getCustomerId()) { navigate('/login'); return; }
     try {
       if (isWishlisted) {
         await axiosClient.delete(`/wishlist/customer/${getCustomerId()}/product/${product.id}`);
@@ -228,17 +229,20 @@ export default function ProductDetail() {
   };
 
   const handleAddToCart = () => {
+    if (!getCustomerId()) { navigate('/login'); return; }
     addToCart(product, parseInt(quantity) || 1);
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1200);
   };
 
   const handleBuyNow = () => {
+    if (!getCustomerId()) { navigate('/login'); return; }
     addToCart(product, parseInt(quantity) || 1);
     navigate('/cart');
   };
 
   const handleNotify = async () => {
+    if (!getCustomerId()) { navigate('/login'); return; }
     try {
       await axiosClient.post('/restock-requests', { customer: { id: getCustomerId() }, product: { id: product.id } });
       setNotifyStatus('subscribed');
@@ -258,6 +262,7 @@ export default function ProductDetail() {
 
   const handleSubmitReview = async (e) => {
     e.preventDefault();
+    if (!getCustomerId()) { navigate('/login'); return; }
     try {
       await axiosClient.post('/reviews', { product: { id: product.id }, customer: { id: getCustomerId() }, rating, comment });
       setComment('');

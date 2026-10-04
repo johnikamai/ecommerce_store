@@ -1,3 +1,5 @@
+> Updated behavior and deployment requirements: see [FIXES_AND_DEPLOYMENT.md](FIXES_AND_DEPLOYMENT.md). The changes in that document supersede earlier demo behavior described below.
+
 # Shopease — Project Documentation
 
 A full-stack ecommerce storefront built with Spring Boot 3 and React 18. The

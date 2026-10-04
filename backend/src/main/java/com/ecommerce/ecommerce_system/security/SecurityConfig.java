@@ -50,6 +50,7 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/health", "/api/health").permitAll()
+                        .requestMatchers("/api/auth/change-password", "/api/auth/email/**").authenticated()
                         .requestMatchers("/api/auth/**").permitAll()
                         // Error dispatch must not 403 to anonymous users
                         .requestMatchers("/error").permitAll()
@@ -117,6 +118,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/payments").hasRole("ADMIN")
                         .requestMatchers("/api/payments/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
+                .exceptionHandling(e -> e.authenticationEntryPoint((request, response, ex) -> response.sendError(401, "Sign in required")))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

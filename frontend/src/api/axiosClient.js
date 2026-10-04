@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { clearSession, tokenIsCurrent } from '../utils/session';
 
 // The deployed API. Also hardcoded in netlify/functions/keepalive.mjs and the
 // GitHub Actions deploy, so this is not a new dependency on one host.
@@ -24,10 +25,21 @@ const axiosClient = axios.create({
 // Automatically attach the JWT token to every request, if we have one
 axiosClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
-  if (token) {
+  if (token && tokenIsCurrent(token)) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
+axiosClient.interceptors.response.use(response => response, error => {
+  if (error.response?.data && typeof error.response.data === 'object') {
+    error.response.data = error.response.data.message || error.response.data.error || 'Request failed';
+  }
+  const url = error.config?.url || '';
+  if (error.response?.status === 401 && localStorage.getItem('token') && !['/auth/login', '/auth/register', '/auth/reset-password'].includes(url)) {
+    clearSession();
+    if (!['/', '/login'].includes(window.location.pathname)) window.location.assign('/login');
+  }
+  return Promise.reject(error);
+});
 export default axiosClient;

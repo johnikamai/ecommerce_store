@@ -42,6 +42,12 @@ public class OrderController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PostMapping("/quote")
+    public ResponseEntity<?> quote(@RequestBody OrderRequest request, Authentication auth) {
+        if (!customerGuard.canAccess(request.getCustomerId(), auth)) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        return ResponseEntity.ok(orderService.quote(request));
+    }
+
     @PostMapping
     public ResponseEntity<?> placeOrder(@RequestBody OrderRequest request, Authentication auth) {
         if (!customerGuard.canAccess(request.getCustomerId(), auth)) {

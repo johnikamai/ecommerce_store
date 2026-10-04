@@ -63,7 +63,8 @@ public class CustomerController {
 
     // Build a unique referral code, e.g. "RAVI-A1B2C3".
     private String generateReferralCode(String name) {
-        String base = (name == null || name.isBlank()) ? "USER" : name.trim().toUpperCase().replaceAll("[^A-Z0-9]", "").substring(0, Math.min(4, name.trim().length()));
+        String cleaned = name == null ? "" : name.trim().toUpperCase(java.util.Locale.ROOT).replaceAll("[^A-Z0-9]", "");
+        String base = cleaned.substring(0, Math.min(4, cleaned.length()));
         if (base.isEmpty()) {
             base = "USER";
         }
@@ -87,13 +88,8 @@ public class CustomerController {
                     if (updated.getName() != null) {
                         existing.setName(updated.getName());
                     }
-                    if (updated.getEmail() != null) {
-                        // Uniqueness check before assigning a new email.
-                        Customer other = customerRepository.findByEmail(updated.getEmail()).orElse(null);
-                        if (other != null && !other.getId().equals(id)) {
-                            return ResponseEntity.badRequest().body("Email already in use: " + updated.getEmail());
-                        }
-                        existing.setEmail(updated.getEmail());
+                    if (updated.getEmail() != null && !updated.getEmail().equals(existing.getEmail())) {
+                        return ResponseEntity.badRequest().body("Use the verified email change flow");
                     }
                     if (updated.getPhone() != null) {
                         existing.setPhone(updated.getPhone());

@@ -20,6 +20,10 @@ public class ReturnRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    @Column(nullable = false, columnDefinition = "bigint default 0")
+    private long version;
+
     // Which line item (product + quantity) is being returned.
     // Linking to OrderItem (not just Order) means we know exactly what
     // to restore to stock and how much to refund.

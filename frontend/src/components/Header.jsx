@@ -1,3 +1,4 @@
+import { clearSession } from '../utils/session';
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Search, Heart, ShoppingCart, LogOut, Menu, X, Scale, ChevronDown } from 'lucide-react';
@@ -35,11 +36,7 @@ export default function Header() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    localStorage.removeItem('username');
-    localStorage.removeItem('customerId');
-    localStorage.removeItem('customerName');
+    clearSession();
     navigate('/');
   };
 

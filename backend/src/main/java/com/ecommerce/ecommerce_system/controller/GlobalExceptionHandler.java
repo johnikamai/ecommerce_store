@@ -52,10 +52,21 @@ public class GlobalExceptionHandler {
         return error(e.getStatusCode(), "Request failed", e.getReason());
     }
 
+    @ExceptionHandler({org.springframework.dao.OptimisticLockingFailureException.class, jakarta.persistence.OptimisticLockException.class,
+            org.springframework.dao.DataIntegrityViolationException.class})
+    public ResponseEntity<Map<String,Object>> handleConflict(Exception e) {
+        return error(HttpStatus.CONFLICT, "Conflict", "The record changed or already exists. Refresh and try again.");
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String,Object>> handleInvalid(IllegalArgumentException e) {
+        return error(HttpStatus.BAD_REQUEST, "Invalid request", e.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception e) {
         log.error("Unhandled exception", e);
-        return error(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", e.getMessage());
+        return error(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", "Please try again later");
     }
 
     private ResponseEntity<Map<String, Object>> error(HttpStatusCode status, String error, String message) {

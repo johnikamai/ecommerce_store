@@ -1,3 +1,4 @@
+import { clearSession } from '../utils/session';
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -27,6 +28,7 @@ const persist = (data) => {
   localStorage.setItem('username', data.username);
   if (data.customerId) localStorage.setItem('customerId', String(data.customerId));
   if (data.customerName) localStorage.setItem('customerName', data.customerName);
+  window.dispatchEvent(new Event('session-change'));
 };
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -167,6 +169,7 @@ function AdminContent() {
       persist(res.data);
       navigate('/admin');
     } catch (err) {
+      if (mode === 'register' && err.response?.status === 503) setStep('otp');
       setError(authError(err));
     } finally {
       setBusy(false);
@@ -300,6 +303,7 @@ function CustomerContent() {
         setStep('otp');
       }
     } catch (err) {
+      if (mode === 'register' && err.response?.status === 503) setStep('otp');
       setError(authError(err));
     } finally {
       setBusy(false);
@@ -346,6 +350,7 @@ function CustomerContent() {
   const handleResend = async () => {
     try {
       const res = await axiosClient.post('/auth/resend-otp', { username });
+      setEmailDelivered(!!res.data.emailDelivered);
       setDevOtp(res.data.devOtp || '');
       setOtp(['', '', '', '', '', '']);
       setOtpError('');
@@ -609,6 +614,7 @@ function ForgotPasswordForm({ onBack }) {
       setEmailDelivered(!!res.data.emailDelivered);
       setStep('reset');
     } catch (err) {
+      if (mode === 'register' && err.response?.status === 503) setStep('otp');
       setError(authError(err));
     } finally {
       setBusy(false);
@@ -627,6 +633,7 @@ function ForgotPasswordForm({ onBack }) {
       await axiosClient.post('/auth/reset-password', { username: identifier, otp, newPassword });
       setStep('done');
     } catch (err) {
+      if (mode === 'register' && err.response?.status === 503) setStep('otp');
       setError(authError(err));
     } finally {
       setBusy(false);
@@ -739,11 +746,7 @@ function Login() {
   // token/identity from earlier sessions so it can't be sent with the login
   // request and break it (a stale token 403s auth endpoints).
   useEffect(() => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    localStorage.removeItem('username');
-    localStorage.removeItem('customerId');
-    localStorage.removeItem('customerName');
+    clearSession();
   }, []);
 
   return (
@@ -776,9 +779,7 @@ function Login() {
 
           {view === 'admin' ? <AdminContent /> : <CustomerContent />}
 
-          <p className="mt-4 text-center text-[10px] tracking-widest uppercase text-[var(--color-text-muted)]">
-            {t('auth.buildNote')}
-          </p>
+
         </div>
       </div>
     </div>

@@ -31,6 +31,8 @@ import java.util.*;
 @RequestMapping("/api/payments")
 public class PaymentController {
 
+    @Autowired private com.ecommerce.ecommerce_system.service.OrderService orderService;
+
     @Autowired
     private PaymentRepository paymentRepository;
 
@@ -100,9 +102,8 @@ public class PaymentController {
         payment.setOrder(order);
 
         // The amount is always the order's own total - never a client-supplied figure.
-        if (payment.getAmount() == null) {
-            payment.setAmount(order.getTotalAmount());
-        }
+        payment.setId(null);
+        payment.setAmount(order.getTotalAmount());
 
         if (payment.getPaymentStatus() == null) {
             payment.setPaymentStatus(PaymentStatus.PENDING);
@@ -173,6 +174,7 @@ public class PaymentController {
         if (order != null) {
             order.setPaymentStatus(newStatus);
             orderRepository.save(order);
+            if (newStatus == PaymentStatus.REFUNDED) orderService.reverseRewards(order);
             if (order.getCustomer() != null) {
                 String mode = payment.getPaymentMode() != null ? payment.getPaymentMode().name() : "UNKNOWN";
                 notificationService.paymentMade(order.getCustomer(), order.getId(), mode, newStatus.name());

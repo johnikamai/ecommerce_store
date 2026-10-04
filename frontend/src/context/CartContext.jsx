@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 
 const CartContext = createContext();
 
-const STORAGE_KEY = 'shopnow_cart';
+const storageKey = () => `shopease_cart_${localStorage.getItem('customerId') || 'guest'}`;
 
 /**
  * Bundle tiers, mirroring OrderService.bundleDiscountPercent on the server.
@@ -25,27 +25,41 @@ export function nextBundleTier(distinctProducts) {
   return 0;
 }
 
-function loadCart() {
+function loadCart(key = storageKey()) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const raw = localStorage.getItem(key);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter(i => i?.product?.id && Number.isInteger(i.quantity) && i.quantity > 0) : [];
   } catch {
     return [];
   }
 }
 
 export function CartProvider({ children }) {
-  const [items, setItems] = useState(loadCart);
+  const [cart, setCart] = useState(() => ({ key: storageKey(), items: loadCart() }));
+  const { key, items } = cart;
+  const setItems = update => setCart(previous => {
+    const activeKey = storageKey();
+    const previousItems = previous.key === activeKey ? previous.items : loadCart(activeKey);
+    return { key: activeKey, items: typeof update === 'function' ? update(previousItems) : update };
+  });
+  useEffect(() => {
+    const sync = () => setCart({ key: storageKey(), items: loadCart() });
+    window.addEventListener('session-change', sync);
+    window.addEventListener('storage', sync);
+    return () => { window.removeEventListener('session-change', sync); window.removeEventListener('storage', sync); };
+  }, []);
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+      if (key === storageKey()) localStorage.setItem(key, JSON.stringify(items));
     } catch {
       // storage unavailable (private mode) — ignore
     }
-  }, [items]);
+  }, [key, items]);
 
   const addToCart = (product, quantity) => {
+    if (!product?.id || !Number.isInteger(quantity) || quantity < 1) return;
     setItems((prev) => {
       const existing = prev.find((i) => i.product.id === product.id);
       if (existing) {
@@ -64,6 +78,7 @@ export function CartProvider({ children }) {
   };
 
   const updateQuantity = (productId, quantity) => {
+    if (!Number.isInteger(quantity) || quantity < 1) return;
     setItems((prev) =>
       prev.map((i) => (i.product.id === productId ? { ...i, quantity } : i))
     );
