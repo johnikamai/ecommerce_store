@@ -116,10 +116,22 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Allowed browser origins.
+     *
+     * The deployed storefront is a separate origin from the API, so the browser
+     * sends a preflight before every JSON request. If this origin is missing the
+     * preflight is rejected and the browser reports a generic network error, which
+     * looks like "the backend is down" even though it is answering fine - the
+     * deployed frontend defaults to the same host as the API fallback below.
+     */
+    private static final String DEFAULT_ORIGINS =
+            "https://ecommerce-store-shopease.vercel.app,http://localhost:5173";
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        String origins = System.getenv().getOrDefault("CORS_ALLOWED_ORIGINS", "http://localhost:5173");
+        String origins = System.getenv().getOrDefault("CORS_ALLOWED_ORIGINS", DEFAULT_ORIGINS);
         cfg.setAllowedOrigins(Arrays.asList(origins.split(",")));
         cfg.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         cfg.setAllowedHeaders(List.of("*"));
