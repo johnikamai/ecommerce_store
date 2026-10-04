@@ -15,7 +15,8 @@
 // The script is restartable: files that already exist are reused, so an
 // interrupted run continues instead of starting over.
 
-import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync, renameSync, unlinkSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
@@ -40,6 +41,17 @@ const LICENSES = 'cc0,pdm,by,by-sa';
 
 const REBUILD_CREDITS = process.argv.includes('--rebuild-credits');
 
+// Re-download a family even though its files are already on disk. Used to redo a
+// family whose photos were rejected without deleting anything first, so a failed
+// fetch cannot leave a product with no image at all.
+const FORCE = process.argv.includes('--force');
+
+// Restrict the run to a single base family, e.g. --family=cotton-t-shirt. The
+// remaining families are neither searched nor rewritten, which keeps a fix to one
+// family from spending the whole 200/day budget or disturbing the rest.
+const familyArg = process.argv.find((a) => a.startsWith('--family='));
+const ONLY_FAMILY = familyArg ? familyArg.slice('--family='.length).trim().toLowerCase() : null;
+
 // Persisted alongside credits so a rerun can tell which photos are already in
 // use. Two problems this solves:
 //   - a query returning fewer usable hits than a family has products used to
@@ -58,6 +70,34 @@ const usedUrls = new Set();
 
 const slugify = (s) =>
   s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+/**
+ * Reads attribution back out of CREDITS.md so the tracked file is the source of
+ * truth for a rerun. The table row is:
+ *
+ *   | `file.webp` | Product | query | licence | Creator | [link](page) |
+ */
+function readCreditsFromMarkdown(file) {
+  const out = new Map();
+  if (!existsSync(file)) return out;
+  for (const line of readFileSync(file, 'utf8').split('\n')) {
+    if (!line.startsWith('| `')) continue;
+    const cells = line.split('|').slice(1, -1).map((c) => c.trim());
+    if (cells.length < 6) continue;
+    const name = cells[0].replace(/^`|`$/g, '');
+    if (!name.endsWith('.webp')) continue;
+    const link = /\[link\]\((.+)\)/.exec(cells[5]);
+    out.set(name, {
+      file: name,
+      product: cells[1],
+      query: cells[2],
+      license: cells[3],
+      creator: cells[4],
+      page: link ? link[1] : cells[5],
+    });
+  }
+  return out;
+}
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -79,7 +119,7 @@ async function throttle(res) {
   burstLowAt = Date.now();
 }
 
-async function search(query, page = 1) {
+async function search(query, page = 1, ignoreUsed = false) {
   const url =
     'https://api.openverse.org/v1/images/?' +
     `q=${encodeURIComponent(query)}&page_size=20&page=${page}` +
@@ -97,7 +137,8 @@ async function search(query, page = 1) {
   const seen = new Set();
   return body.results
     .filter((r) => (r.width ?? 0) >= 480 && (r.height ?? 0) >= 420)
-    .filter((r) => !usedUrls.has(r.url) && !seen.has(r.url) && seen.add(r.url));
+    .filter((r) => !seen.has(r.url) && seen.add(r.url))
+    .filter((r) => ignoreUsed || !usedUrls.has(r.url));
 }
 
 /**
@@ -105,26 +146,42 @@ async function search(query, page = 1) {
  * pages are pulled only when needed, since each one costs a request from the
  * 200/day anonymous budget.
  */
-async function harvest(query, needed) {
-  const hits = await search(query, 1);
+async function harvest(query, needed, ignoreUsed = false) {
+  const hits = await search(query, 1, ignoreUsed);
   for (let page = 2; hits.length < needed && page <= 4; page++) {
-    const more = await search(query, page);
+    const more = await search(query, page, ignoreUsed);
     if (more.length === 0) break;
     hits.push(...more);
   }
   return hits;
 }
 
-async function download(hit, destFile) {
-  if (existsSync(destFile)) return;
+async function download(hit, destFile, guard) {
+  const existed = existsSync(destFile);
+  if (existed && !FORCE) return false;
   const res = await fetch(hit.url);
   if (!res.ok) throw new Error(`image HTTP ${res.status}`);
   const buf = Buffer.from(await res.arrayBuffer());
+  // Written to a sibling temp file and renamed into place, so an interrupted or
+  // malformed conversion can never leave a half-written image where a product
+  // expects a real photo. Renaming also means the previous photo stays in place
+  // until its replacement is complete.
+  const tmp = `${destFile}.tmp`;
   await sharp(buf)
     .resize(SIZE, SIZE, { fit: 'cover', position: 'centre' })
     .webp({ quality: QUALITY })
-    .toFile(destFile);
+    .toFile(tmp);
+  // The guard sees the finished file before it is published and returns false to
+  // reject the candidate, which is how a duplicate is caught: see takenHashes.
+  if (guard && !guard(tmp)) {
+    unlinkSync(tmp);
+    return null;
+  }
+  renameSync(tmp, destFile);
+  return true;
 }
+
+const hashOf = (file) => createHash('md5').update(readFileSync(file)).digest('hex');
 
 async function main() {
   mkdirSync(OUT_DIR, { recursive: true });
@@ -143,16 +200,36 @@ async function main() {
   }
   console.log(`  ${families.size} base families\n`);
 
-  const mapping = {};
-  // Attribution is loaded from disk rather than rebuilt each run: a re-run skips
-  // families whose photos already exist, so without persisting credits here the
-  // second run would overwrite CREDITS.md with only the handful of new images.
+  // Both of these are seeded from what is already committed, never from scratch.
+  //
+  // The map used to start empty, so any family whose search failed silently lost
+  // its entries and its products fell back to a generated SVG. The credits used
+  // to come only from state.json, which is gitignored, and were then written over
+  // CREDITS.md wholesale - so a stale or partially restored state deleted
+  // attribution rows for images that were still on disk and still in use.
+  // CREDITS.md is the tracked record, so it is the base and state.json only fills
+  // gaps; existing map entries are kept and overwritten only by a fresh fetch.
+  const mapFile = join(HERE, 'product-images.json');
+  const creditsFile = join(REPO, 'CREDITS.md');
+
+  let mapping = {};
+  if (existsSync(mapFile)) {
+    try {
+      mapping = JSON.parse(readFileSync(mapFile, 'utf8'));
+    } catch {
+      console.log('  existing map unreadable, starting from empty');
+    }
+  }
+
   const state = existsSync(STATE_FILE)
     ? JSON.parse(readFileSync(STATE_FILE, 'utf8'))
     : { credits: [], usedUrls: [] };
-  const credits = new Map(state.credits.map((c) => [c.file, c]));
+  const credits = readCreditsFromMarkdown(creditsFile);
+  for (const c of state.credits || []) {
+    if (!credits.has(c.file)) credits.set(c.file, c);
+  }
   usedUrls.clear();
-  state.usedUrls.forEach((u) => usedUrls.add(u));
+  (state.usedUrls || []).forEach((u) => usedUrls.add(u));
 
   // Reconcile state with what is actually on disk. audit.mjs --delete removes
   // unusable photos, and if their URLs stayed marked as claimed here they could
@@ -161,19 +238,28 @@ async function main() {
   let pruned = 0;
   for (const [file, credit] of [...credits]) {
     if (!onDisk.has(file)) {
-      usedUrls.delete(credit.page);
+      // Unclaim by the image URL, which is what usedUrls actually stores. It used
+      // to unclaim by the landing page, which never matched, so a deleted photo
+      // stayed marked as used forever and its family could never be refetched.
+      usedUrls.delete(credit.sourceUrl || credit.page);
       credits.delete(file);
       pruned++;
     }
   }
   const missing = [];
   let downloaded = 0;
+  let replaced = 0;
   let reused = 0;
-let skipped = 0;
+  let skipped = 0;
   let n = 0;
 
   for (const [base, items] of families) {
     n++;
+    // --family= restricts the run; the other families keep their committed map
+    // entries and credit rows untouched.
+    if (ONLY_FAMILY && base.toLowerCase() !== ONLY_FAMILY && slugify(base) !== ONLY_FAMILY) {
+      continue;
+    }
     const query = QUERIES[base];
 
     // Skip the search entirely when this family's photos already landed. A
@@ -182,9 +268,11 @@ let skipped = 0;
     //
     // --rebuild-credits defeats the skip: attribution for by/by-sa images is a
     // licence requirement, so it can only be recovered by asking Openverse again.
-    // download() no-ops when the file exists, so this costs requests, not bandwidth.
+    // --force defeats it too, since its whole purpose is to redo photos that are
+    // already on disk. download() no-ops when the file exists, so this costs
+    // requests, not bandwidth.
     const files = items.map((_, i) => `${slugify(base)}-${i + 1}.webp`);
-    if (!REBUILD_CREDITS && files.every((f) => existsSync(join(OUT_DIR, f)))) {
+    if (!REBUILD_CREDITS && !FORCE && files.every((f) => existsSync(join(OUT_DIR, f)))) {
       skipped++;
       items.forEach((p, i) => {
         mapping[p.id] = `/products/${files[i]}`;
@@ -200,7 +288,7 @@ let skipped = 0;
 
     let hits = [];
     try {
-      hits = await harvest(query, items.length);
+      hits = await harvest(query, items.length, FORCE);
     } catch (err) {
       missing.push(`${base} (${err.message})`);
       continue;
@@ -215,28 +303,74 @@ let skipped = 0;
       continue;
     }
 
+    // --force replaces the photos a family already has, which means its own
+    // current images are the candidates most likely to come back. usedUrls is
+    // ignored for the search so a family can be redone, so the guard below is what
+    // actually prevents a duplicate: every photo that will still be on disk after
+    // this run is hashed up front, and a candidate whose converted bytes match one
+    // of them is thrown away in favour of the next one.
+    const replacing = new Set(files);
+    const takenHashes = new Set();
+    if (FORCE) {
+      for (const f of readdirSync(OUT_DIR)) {
+        if (!f.endsWith('.webp') || replacing.has(f)) continue;
+        takenHashes.add(hashOf(join(OUT_DIR, f)));
+      }
+    }
+
     // Claim only unused candidates, in order, and stop when they run out rather
     // than wrapping around onto a photo this family (or another) already has.
     let cursor = 0;
     for (const product of items) {
-      if (cursor >= hits.length) {
-        missing.push(`${product.name} (no unique photo left for "${query}")`);
-        continue;
-      }
-      const hit = hits[cursor++];
-      usedUrls.add(hit.url);
       const file = `${slugify(base)}-${items.indexOf(product) + 1}.webp`;
       const dest = join(OUT_DIR, file);
       const existed = existsSync(dest);
-      try {
-        await download(hit, dest);
-      } catch (err) {
-        missing.push(`${product.name} (image ${err.message})`);
+
+      let wrote = null;
+      let hit = null;
+      let duplicate = false;
+      // Under --force a candidate can be rejected for duplicating a photo that is
+      // staying, so keep offering candidates until one is accepted.
+      while (cursor < hits.length) {
+        const candidate = hits[cursor++];
+        try {
+          const guard = FORCE ? (tmp) => !takenHashes.has(hashOf(tmp)) : undefined;
+          const result = await download(candidate, dest, guard);
+          if (result === null) {
+            duplicate = true;
+            continue;
+          }
+          wrote = result;
+          hit = candidate;
+          break;
+        } catch (err) {
+          missing.push(`${product.name} (image ${err.message})`);
+          break;
+        }
+      }
+
+      if (!hit) {
+        if (duplicate) {
+          missing.push(`${product.name} (every remaining candidate duplicated an existing photo)`);
+        } else if (cursor >= hits.length) {
+          missing.push(`${product.name} (no unique photo left for "${query}")`);
+        }
         continue;
       }
-      existed ? reused++ : downloaded++;
+
+      usedUrls.add(hit.url);
+      if (wrote) {
+        existed ? replaced++ : downloaded++;
+        takenHashes.add(hashOf(dest));
+      } else {
+        reused++;
+      }
       mapping[product.id] = `/products/${file}`;
-      if (!credits.has(file)) {
+      // Attribution is keyed to the bytes on disk. When the photo is replaced the
+      // row has to be replaced too: keeping the old row would credit the new
+      // creator's picture to the previous photographer, which is both wrong and a
+      // licence breach for the by/by-sa images.
+      if (wrote || !credits.has(file)) {
         credits.set(file, {
           file,
           product: product.name,
@@ -245,6 +379,8 @@ let skipped = 0;
           license: `${hit.license} ${hit.license_version || ''}`.trim(),
           provider: hit.provider || '',
           page: hit.foreign_landing_url || hit.url,
+          // Kept so a later run can release this exact photo from usedUrls.
+          sourceUrl: hit.url,
         });
       }
     }
@@ -255,8 +391,18 @@ let skipped = 0;
 
   process.stdout.write('\n\n');
 
-  const mapFile = join(HERE, 'product-images.json');
-  writeFileSync(mapFile, JSON.stringify(mapping, null, 2));
+  // Integrity gate. The map is what the storefront and the bulk apply call read, so
+// it must not reference a photo that is not on disk. Anything left dangling by a
+// failed download is dropped here and reported rather than being written out.
+const dangling = [];
+for (const [id, url] of Object.entries(mapping)) {
+  if (!existsSync(join(OUT_DIR, url.replace(/^\/products\//, '')))) {
+    delete mapping[id];
+    dangling.push(`${id} -> ${url}`);
+  }
+}
+
+writeFileSync(mapFile, JSON.stringify(mapping, null, 2));
 
   const creditLines = [
     '# Product photo credits',
@@ -284,12 +430,19 @@ let skipped = 0;
   writeFileSync(join(REPO, 'CREDITS.md'), creditLines.join('\n'));
 
   console.log(`images downloaded  : ${downloaded}`);
+  console.log(`images replaced    : ${replaced} (--force over existing)`);
   console.log(`images reused       : ${reused}`);
   console.log(`families skipped    : ${skipped} (already downloaded)`);
   console.log(`stale credits pruned: ${pruned}`);
+  console.log(`map entries dropped : ${dangling.length} (target file missing)`);
   console.log(`products mapped     : ${Object.keys(mapping).length}/${products.length}`);
   console.log(`credits written     : ${credits.size} -> CREDITS.md`);
   console.log(`map written         : ${mapFile}`);
+
+  if (dangling.length) {
+    console.log(`\nmap entries dropped, ${dangling.length}:`);
+    dangling.forEach((d) => console.log(`  - ${d}`));
+  }
 
   if (missing.length) {
     console.log(`\nunmapped (keep generated SVG), ${missing.length}:`);

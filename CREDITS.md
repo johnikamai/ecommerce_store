@@ -1,4 +1,4 @@
-﻿# Product photo credits
+# Product photo credits
 
 Product photos come from [Openverse](https://openverse.org), which aggregates
 Flickr, Wikimedia Commons and other sources under Creative Commons licences.
@@ -84,10 +84,10 @@ commercially.
 | `vitamin-c-serum-6.webp` | Vitamin C Serum Max | skincare serum | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/11515788/bottles-beard-oil-blank-label) |
 | `hair-repair-oil-1.webp` | Hair Repair Oil | hair oil | by 2.0 | Relax Photos | [link](https://www.flickr.com/photos/194961536@N05/52303062503) |
 | `hair-repair-oil-2.webp` | Hair Repair Oil Classic | hair oil | pdm 1.0 | creativeminds12 | [link](https://www.flickr.com/photos/195407295@N03/52697349091) |
-| `hair-repair-oil-3.webp` | Hair Repair Oil Lite | hair oil | pdm 1.0 | creativeminds12 | [link](https://www.flickr.com/photos/195407295@N03/52728157673) |
-| `hair-repair-oil-4.webp` | Hair Repair Oil Pro | hair oil | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/10141349/photo-image-trees-art-design) |
-| `hair-repair-oil-5.webp` | Hair Repair Oil Ultra | hair oil | by 2.0 | . Ray in Manila | [link](https://www.flickr.com/photos/21186555@N07/52412733328) |
-| `hair-repair-oil-6.webp` | Hair Repair Oil Max | hair oil | by 2.0 | A.Davey | [link](https://www.flickr.com/photos/40595948@N00/493083864) |
+| `hair-repair-oil-3.webp` | Hair Repair Oil Lite | hair oil | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/10141349/photo-image-trees-art-design) |
+| `hair-repair-oil-4.webp` | Hair Repair Oil Pro | hair oil | by 2.0 | . Ray in Manila | [link](https://www.flickr.com/photos/21186555@N07/52412733328) |
+| `hair-repair-oil-5.webp` | Hair Repair Oil Ultra | hair oil | by 2.0 | A.Davey | [link](https://www.flickr.com/photos/40595948@N00/493083864) |
+| `hair-repair-oil-6.webp` | Hair Repair Oil Max | hair oil | by 2.0 | dubna30 | [link](https://www.flickr.com/photos/156165200@N02/51558143953) |
 | `aloe-face-wash-1.webp` | Aloe Face Wash | face wash | pdm 1.0 | theleoone00 | [link](https://www.flickr.com/photos/199532672@N05/53412179131) |
 | `aloe-face-wash-2.webp` | Aloe Face Wash Classic | face wash | pdm 1.0 | theleoone00 | [link](https://www.flickr.com/photos/199532672@N05/53412622310) |
 | `aloe-face-wash-3.webp` | Aloe Face Wash Lite | face wash | pdm 1.0 | theleoone00 | [link](https://www.flickr.com/photos/199532672@N05/53411260737) |
@@ -508,12 +508,12 @@ commercially.
 | `a-line-dress-4.webp` | A-Line Dress Pro | summer dress | cc0 1.0 | â‚¡Ò‘Ç˜È™Ï¯Î³ ÆŠá¶ â±©á¶…á¹â±³Õ¤ | [link](https://www.flickr.com/photos/148598741@N02/50064750963) |
 | `a-line-dress-5.webp` | A-Line Dress Ultra | summer dress | by-sa 2.0 | Kissra Lynnkay | [link](https://www.flickr.com/photos/80301692@N06/51993537474) |
 | `a-line-dress-6.webp` | A-Line Dress Max | summer dress | by-sa 2.0 | Kissra Lynnkay | [link](https://www.flickr.com/photos/80301692@N06/51993537624) |
-| `denim-jacket-1.webp` | Denim Jacket | denim jacket | cc0 1.0 | Lucas Sankey | [link](https://stocksnap.io/photo/guy-man-32ZVN7GBO4) |
-| `denim-jacket-2.webp` | Denim Jacket Classic | denim jacket | by-sa 2.0 | Debarshi Ray | [link](https://www.flickr.com/photos/39423133@N04/53139845523) |
-| `denim-jacket-3.webp` | Denim Jacket Lite | denim jacket | cc0 1.0 | Caleb George | [link](https://stocksnap.io/photo/young-woman-4AA84B1A5E) |
-| `denim-jacket-4.webp` | Denim Jacket Pro | denim jacket | cc0 1.0 | Lucas Sankey | [link](https://stocksnap.io/photo/guy-man-ZD0H1JN5LR) |
-| `denim-jacket-5.webp` | Denim Jacket Ultra | denim jacket | by-sa 2.0 | 90sfashionworld | [link](https://www.flickr.com/photos/193701061@N06/51842242356) |
-| `denim-jacket-6.webp` | Denim Jacket Max | denim jacket | cc0 1.0 | Benjamin Voros | [link](https://stocksnap.io/photo/blue-denim-UMLWILXWPK) |
+| `denim-jacket-1.webp` | Denim Jacket | denim jacket | by 2.0 | JeepersMedia | [link](https://www.flickr.com/photos/39160147@N03/51552175474) |
+| `denim-jacket-2.webp` | Denim Jacket Classic | denim jacket | cc0 1.0 | ancientwma | [link](https://www.flickr.com/photos/193327022@N08/51971258364) |
+| `denim-jacket-3.webp` | Denim Jacket Lite | denim jacket | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/8849885/denim-jacket-designed-arthur-mcgee) |
+| `denim-jacket-4.webp` | Denim Jacket Pro | denim jacket | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/3283472/free-photo-image-guitar-musician-rock-festival) |
+| `denim-jacket-5.webp` | Denim Jacket Ultra | denim jacket | cc0 1.0 | Leeroy | [link](https://stocksnap.io/photo/boy-child-R0C7A5M4WB) |
+| `denim-jacket-6.webp` | Denim Jacket Max | denim jacket | by-sa 2.0 | Debarshi Ray | [link](https://www.flickr.com/photos/39423133@N04/51323106455) |
 | `formal-shirt-1.webp` | Formal Shirt | dress shirt | by 2.0 | Mysteria Bloodbane-Ragnarok | [link](https://www.flickr.com/photos/149747287@N08/51406927679) |
 | `formal-shirt-2.webp` | Formal Shirt Classic | dress shirt | by-sa 2.0 | Debarshi Ray | [link](https://www.flickr.com/photos/39423133@N04/52432505658) |
 | `formal-shirt-3.webp` | Formal Shirt Lite | dress shirt | by 2.0 | Mysteria Bloodbane-Ragnarok | [link](https://www.flickr.com/photos/149747287@N08/51406442463) |
@@ -550,12 +550,12 @@ commercially.
 | `dark-chocolate-box-4.webp` | Dark Chocolate Box Pro | chocolate box | by-sa 2.0 | wbaiv | [link](https://www.flickr.com/photos/9998127@N06/51673927926) |
 | `dark-chocolate-box-5.webp` | Dark Chocolate Box Ultra | chocolate box | by-sa 2.0 | wbaiv | [link](https://www.flickr.com/photos/9998127@N06/51674800105) |
 | `dark-chocolate-box-6.webp` | Dark Chocolate Box Max | chocolate box | by-sa 2.0 | wbaiv | [link](https://www.flickr.com/photos/9998127@N06/51673124347) |
-| `hdmi-cable-2m-1.webp` | HDMI Cable 2m | hdmi cable | pdm 1.0 | videek | [link](https://www.flickr.com/photos/193845755@N03/52197392808) |
-| `hdmi-cable-2m-2.webp` | HDMI Cable 2m Classic | hdmi cable | pdm 1.0 | videek | [link](https://www.flickr.com/photos/193845755@N03/52196369262) |
-| `hdmi-cable-2m-3.webp` | HDMI Cable 2m Lite | hdmi cable | by 2.0 | blakespot | [link](https://www.flickr.com/photos/35448539@N00/53545905079) |
-| `hdmi-cable-2m-4.webp` | HDMI Cable 2m Pro | hdmi cable | cc0 1.0 | Roy Tanck | [link](https://wordpress.org/photos/photo/818636f6c9/) |
-| `hdmi-cable-2m-5.webp` | HDMI Cable 2m Ultra | hdmi cable | pdm 1.0 | videek | [link](https://www.flickr.com/photos/193845755@N03/52197392808) |
-| `hdmi-cable-2m-6.webp` | HDMI Cable 2m Max | hdmi cable | pdm 1.0 | videek | [link](https://www.flickr.com/photos/193845755@N03/52196369262) |
+| `hdmi-cable-2m-1.webp` | HDMI Cable 2m | hdmi cable | pdm 1.0 | videek | [link](https://www.flickr.com/photos/193845755@N03/52197392818) |
+| `hdmi-cable-2m-2.webp` | HDMI Cable 2m Classic | hdmi cable | pdm 1.0 | videek | [link](https://www.flickr.com/photos/193845755@N03/52197870705) |
+| `hdmi-cable-2m-3.webp` | HDMI Cable 2m Lite | hdmi cable | pdm 1.0 | videek | [link](https://www.flickr.com/photos/193845755@N03/52197870750) |
+| `hdmi-cable-2m-4.webp` | HDMI Cable 2m Pro | hdmi cable | pdm 1.0 | videek | [link](https://www.flickr.com/photos/193845755@N03/52197870775) |
+| `hdmi-cable-2m-5.webp` | HDMI Cable 2m Ultra | hdmi cable | pdm 1.0 | videek | [link](https://www.flickr.com/photos/193845755@N03/52197392713) |
+| `hdmi-cable-2m-6.webp` | HDMI Cable 2m Max | hdmi cable | pdm 1.0 | videek | [link](https://www.flickr.com/photos/193845755@N03/52197378631) |
 | `leather-wallet-1.webp` | Leather Wallet | leather wallet | cc0 1.0 | Clem Onojeghuo | [link](https://stocksnap.io/photo/camera-lens-4M94QILSNA) |
 | `leather-wallet-2.webp` | Leather Wallet Classic | leather wallet | cc0 1.0 | John Debrey | [link](https://stocksnap.io/photo/bicycle-tire-RA81ACVY2Z) |
 | `leather-wallet-3.webp` | Leather Wallet Lite | leather wallet | cc0 1.0 | museado | [link](https://www.flickr.com/photos/200781279@N05/53903767244) |
