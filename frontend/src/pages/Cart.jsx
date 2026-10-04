@@ -67,7 +67,17 @@ function BundleProgress() {
 }
 
 function Cart() {
-  const { items, removeFromCart, updateQuantity, clearCart, totalPrice, bundleDiscount } = useCart();
+  const {
+    items,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    totalPrice,
+    bundleDiscount,
+    shipping,
+    taxAmount,
+    grandTotal,
+  } = useCart();
   const { t, formatCurrency } = useLanguage();
   const [error, setError] = useState('');
   const [placing, setPlacing] = useState(false);
@@ -360,19 +370,33 @@ function Cart() {
 
       <BundleProgress />
 
-      <div className="flex items-center justify-between p-6 rounded-[var(--radius-xl)] bg-[var(--color-card-bg-tint)]">
-        <div>
-          <p className="text-sm text-[var(--color-text-muted)]">
-            {t('cart.total')}
-            {bundleDiscount > 0 && (
-              <span className="ml-2 text-xs text-[var(--color-success)]">
-                {t('cart.bundleDiscount', { amount: formatCurrency(bundleDiscount) })}
-              </span>
-            )}
-          </p>
-          <p className="font-[family-name:var(--font-heading)] text-2xl font-bold">
-            {formatCurrency(totalPrice)}
-          </p>
+      <div className="flex items-center justify-between gap-6 flex-wrap p-6 rounded-[var(--radius-xl)] bg-[var(--color-card-bg-tint)]">
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between gap-8 text-sm text-[var(--color-text-muted)]">
+            <span>{t('cart.subtotal')}</span>
+            <span>{formatCurrency(totalPrice)}</span>
+          </div>
+          {bundleDiscount > 0 && (
+            <div className="flex items-center justify-between gap-8 text-sm text-[var(--color-success)]">
+              <span>{t('cart.discount')}</span>
+              <span>{t('cart.bundleDiscount', { amount: formatCurrency(bundleDiscount) })}</span>
+            </div>
+          )}
+          <div className="flex items-center justify-between gap-8 text-sm text-[var(--color-text-muted)]">
+            <span>{t('cart.shipping')}</span>
+            <span>{shipping > 0 ? formatCurrency(shipping) : t('cart.freeShipping')}</span>
+          </div>
+          <div className="flex items-center justify-between gap-8 text-sm text-[var(--color-text-muted)]">
+            <span>{t('cart.tax')}</span>
+            <span>{formatCurrency(taxAmount)}</span>
+          </div>
+          <div className="flex items-center justify-between gap-8 pt-2 mt-1 border-t border-[var(--color-border)]">
+            <p className="text-sm text-[var(--color-text-muted)]">{t('cart.total')}</p>
+            <p className="font-[family-name:var(--font-heading)] text-2xl font-bold">
+              {formatCurrency(grandTotal)}
+            </p>
+          </div>
+          <p className="text-xs text-[var(--color-text-muted)] max-w-xs">{t('cart.taxNote')}</p>
         </div>
         <button
           onClick={handleCheckout}
