@@ -22,24 +22,6 @@ commercially.
 | `bluetooth-speaker-4.webp` | Bluetooth Speaker Pro | bluetooth speaker | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/11524258/back-view-black-bluetooth-speaker) |
 | `bluetooth-speaker-5.webp` | Bluetooth Speaker Ultra | bluetooth speaker | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/5915300/image-background-public-domain-technology) |
 | `bluetooth-speaker-6.webp` | Bluetooth Speaker Max | bluetooth speaker | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/11524244/mini-black-bluetooth-speaker) |
-| `smartwatch-1.webp` | Smartwatch | smartwatch | by-sa 2.0 | netzkobold | [link](https://www.flickr.com/photos/59308757@N00/15391279986) |
-| `smartwatch-2.webp` | Smartwatch Classic | smartwatch | cc0 1.0 | 50Fish | [link](https://stocksnap.io/photo/smartwatch-gps-XW2IM1GSYM) |
-| `smartwatch-3.webp` | Smartwatch Lite | smartwatch | by-sa 2.0 | ivva | [link](https://www.flickr.com/photos/92842970@N00/51725871074) |
-| `smartwatch-4.webp` | Smartwatch Pro | smartwatch | by 2.0 | Pouazity | [link](https://www.flickr.com/photos/192017723@N07/52617265938) |
-| `smartwatch-5.webp` | Smartwatch Ultra | smartwatch | by 2.0 | ccnull.de Bilddatenbank | [link](https://www.flickr.com/photos/115225894@N07/54343718561) |
-| `smartwatch-6.webp` | Smartwatch Max | smartwatch | by 2.0 | ccnull.de Bilddatenbank | [link](https://www.flickr.com/photos/115225894@N07/54333458796) |
-| `4k-action-camera-1.webp` | 4K Action Camera | action camera | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/3303210/free-photo-image-video-camera-macbook-gopro) |
-| `4k-action-camera-2.webp` | 4K Action Camera Classic | action camera | by 2.0 | Janitors | [link](https://www.flickr.com/photos/65265630@N03/14560003521) |
-| `4k-action-camera-3.webp` | 4K Action Camera Lite | action camera | cc0 1.0 | â‚¡Ò‘Ç˜È™Ï¯Î³ ÆŠá¶ â±©á¶…á¹â±³Õ¤ | [link](https://www.flickr.com/photos/148598741@N02/51733627413) |
-| `4k-action-camera-4.webp` | 4K Action Camera Pro | action camera | by 2.0 | Janitors | [link](https://www.flickr.com/photos/65265630@N03/14562558322) |
-| `4k-action-camera-5.webp` | 4K Action Camera Ultra | action camera | by 2.0 | europeanspaceagency | [link](https://www.flickr.com/photos/37472264@N04/51420246002) |
-| `4k-action-camera-6.webp` | 4K Action Camera Max | action camera | by 2.0 | Janitors | [link](https://www.flickr.com/photos/65265630@N03/14562550562) |
-| `usb-c-charger-65w-1.webp` | USB-C Charger 65W | power charger | by-sa 2.0 | cole8888 | [link](https://www.flickr.com/photos/187597251@N05/51405299348) |
-| `usb-c-charger-65w-2.webp` | USB-C Charger 65W Classic | power charger | by 2.0 | Welcome to Switzerland backstage! | [link](https://www.flickr.com/photos/70981241@N00/51397854701) |
-| `usb-c-charger-65w-3.webp` | USB-C Charger 65W Lite | power charger | by 2.0 | Loco Steve | [link](https://www.flickr.com/photos/36989019@N08/5406372380) |
-| `usb-c-charger-65w-4.webp` | USB-C Charger 65W Pro | power charger | cc0 1.0 | JFGryphon | [link](https://www.flickr.com/photos/30484128@N03/52559193391) |
-| `usb-c-charger-65w-5.webp` | USB-C Charger 65W Ultra | power charger | by-sa 2.0 | Chris Hunkeler | [link](https://www.flickr.com/photos/14913305@N00/52741901300) |
-| `usb-c-charger-65w-6.webp` | USB-C Charger 65W Max | power charger | by 2.0 | Triple-green | [link](https://www.flickr.com/photos/66451944@N03/53136190664) |
 | `mechanical-keyboard-1.webp` | Mechanical Keyboard | mechanical keyboard | by 2.0 | phithanhviet | [link](https://www.flickr.com/photos/99146016@N07/52309916271) |
 | `mechanical-keyboard-2.webp` | Mechanical Keyboard Classic | mechanical keyboard | by 2.0 | phithanhviet | [link](https://www.flickr.com/photos/99146016@N07/52310089100) |
 | `mechanical-keyboard-3.webp` | Mechanical Keyboard Lite | mechanical keyboard | by 2.0 | Triple-green | [link](https://www.flickr.com/photos/66451944@N03/52794758104) |
@@ -58,12 +40,6 @@ commercially.
 | `led-desk-lamp-4.webp` | LED Desk Lamp Pro | desk lamp | cc0 1.0 | Radek Grzybowski | [link](https://stocksnap.io/photo/macbook-laptop-VXFA58HGJ1) |
 | `led-desk-lamp-5.webp` | LED Desk Lamp Ultra | desk lamp | by-sa 2.0 | Elicio Ember | [link](https://www.flickr.com/photos/24773920@N06/52118398028) |
 | `led-desk-lamp-6.webp` | LED Desk Lamp Max | desk lamp | cc0 1.0 | Lee Campbell | [link](https://stocksnap.io/photo/office-work-N0ZRKV9CI6) |
-| `power-bank-20000mah-1.webp` | Power Bank 20000mAh | power bank | by 2.0 | funnypolynomial | [link](https://www.flickr.com/photos/69784270@N00/52248202736) |
-| `power-bank-20000mah-2.webp` | Power Bank 20000mAh Classic | power bank | by 2.0 | funnypolynomial | [link](https://www.flickr.com/photos/69784270@N00/52247231662) |
-| `power-bank-20000mah-3.webp` | Power Bank 20000mAh Lite | power bank | by-sa 2.0 | philip.mallis | [link](https://www.flickr.com/photos/122687277@N03/53381368909) |
-| `power-bank-20000mah-4.webp` | Power Bank 20000mAh Pro | power bank | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/5910321/image-background-phone-public-domain) |
-| `power-bank-20000mah-5.webp` | Power Bank 20000mAh Ultra | power bank | by-sa 2.0 | pom'. | [link](https://www.flickr.com/photos/146832554@N06/52100928356) |
-| `power-bank-20000mah-6.webp` | Power Bank 20000mAh Max | power bank | by 2.0 | Rutger van der Maar | [link](https://www.flickr.com/photos/83468718@N06/52581675493) |
 | `smartphone-stand-1.webp` | Smartphone Stand | phone holder | cc0 1.0 | automaxfx | [link](https://www.flickr.com/photos/197103350@N07/52590371705) |
 | `smartphone-stand-2.webp` | Smartphone Stand Classic | phone holder | by 2.0 | mogollon_1 | [link](https://www.flickr.com/photos/15708120@N00/52570634869) |
 | `smartphone-stand-3.webp` | Smartphone Stand Lite | phone holder | by 2.0 | Bernt SÃ¸nvisen | [link](https://www.flickr.com/photos/38144390@N04/52172656768) |
@@ -76,12 +52,6 @@ commercially.
 | `action-cam-mount-kit-4.webp` | Action Cam Mount Kit Pro | camera accessory mount | by 2.0 | Bernt SÃ¸nvisen | [link](https://www.flickr.com/photos/38144390@N04/51806623317) |
 | `action-cam-mount-kit-5.webp` | Action Cam Mount Kit Ultra | camera accessory mount | by-sa 2.0 | unlambda | [link](https://www.flickr.com/photos/193039610@N06/51338064360) |
 | `action-cam-mount-kit-6.webp` | Action Cam Mount Kit Max | camera accessory mount | by-sa 2.0 | Eric A Smith | [link](https://www.flickr.com/photos/187633554@N06/54444923150) |
-| `hdmi-cable-2m-1.webp` | HDMI Cable 2m | hdmi cable | pdm 1.0 | videek | [link](https://www.flickr.com/photos/193845755@N03/52197392818) |
-| `hdmi-cable-2m-2.webp` | HDMI Cable 2m Classic | hdmi cable | pdm 1.0 | videek | [link](https://www.flickr.com/photos/193845755@N03/52197870705) |
-| `hdmi-cable-2m-3.webp` | HDMI Cable 2m Lite | hdmi cable | pdm 1.0 | videek | [link](https://www.flickr.com/photos/193845755@N03/52197870750) |
-| `hdmi-cable-2m-4.webp` | HDMI Cable 2m Pro | hdmi cable | pdm 1.0 | videek | [link](https://www.flickr.com/photos/193845755@N03/52197870775) |
-| `hdmi-cable-2m-5.webp` | HDMI Cable 2m Ultra | hdmi cable | pdm 1.0 | videek | [link](https://www.flickr.com/photos/193845755@N03/52197392713) |
-| `hdmi-cable-2m-6.webp` | HDMI Cable 2m Max | hdmi cable | pdm 1.0 | videek | [link](https://www.flickr.com/photos/193845755@N03/52197378631) |
 | `cotton-t-shirt-1.webp` | Cotton T-Shirt | plain t-shirt | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/11524217/stack-folded-plain-t-shirts-table) |
 | `cotton-t-shirt-2.webp` | Cotton T-Shirt Classic | plain t-shirt | by 2.0 | The Urban Botanist Images | [link](https://www.flickr.com/photos/193653073@N07/51443214370) |
 | `cotton-t-shirt-3.webp` | Cotton T-Shirt Lite | plain t-shirt | by 2.0 | The Urban Botanist Images | [link](https://www.flickr.com/photos/193653073@N07/51442992924) |
@@ -100,54 +70,18 @@ commercially.
 | `running-sneakers-4.webp` | Running Sneakers Pro | running sneakers | cc0 1.0 | Burst | [link](https://stocksnap.io/photo/sneakers-lights-T2K6CXYMQ4) |
 | `running-sneakers-5.webp` | Running Sneakers Ultra | running sneakers | by-sa 2.0 | PattayaPatrol | [link](https://www.flickr.com/photos/194424926@N05/54372988859) |
 | `running-sneakers-6.webp` | Running Sneakers Max | running sneakers | cc0 1.0 | Studio 7042 | [link](https://stocksnap.io/photo/woman-sneakers-G7BDK1ZE43) |
-| `oversized-hoodie-1.webp` | Oversized Hoodie | hoodie sweatshirt | by-sa 2.0 | PattayaPatrol | [link](https://www.flickr.com/photos/194424926@N05/54263400803) |
-| `oversized-hoodie-2.webp` | Oversized Hoodie Classic | hoodie sweatshirt | cc0 1.0 | unknown | [link](https://stocksnap.io/photo/man-casual-UU0ROKGJW2) |
-| `oversized-hoodie-3.webp` | Oversized Hoodie Lite | hoodie sweatshirt | by-sa 2.0 | PattayaPatrol | [link](https://www.flickr.com/photos/194424926@N05/54593400774) |
-| `oversized-hoodie-4.webp` | Oversized Hoodie Pro | hoodie sweatshirt | by-sa 2.0 | PattayaPatrol | [link](https://www.flickr.com/photos/194424926@N05/54263403173) |
-| `oversized-hoodie-5.webp` | Oversized Hoodie Ultra | hoodie sweatshirt | cc0 1.0 | unknown | [link](https://stocksnap.io/photo/man-casual-XYQ5LBSIPZ) |
-| `oversized-hoodie-6.webp` | Oversized Hoodie Max | hoodie sweatshirt | by 2.0 | The Marmot | [link](https://www.flickr.com/photos/38142119@N00/52757843012) |
-| `leather-wallet-1.webp` | Leather Wallet | leather wallet | pdm 1.0 | Cook-Folger Family Archive | [link](https://www.flickr.com/photos/202231239@N08/54291787753) |
-| `leather-wallet-2.webp` | Leather Wallet Classic | leather wallet | cc0 1.0 | Angelina Litvin | [link](https://stocksnap.io/photo/fashion-clothes-FUCDX0FBLZ) |
-| `leather-wallet-3.webp` | Leather Wallet Lite | leather wallet | by 2.0 | CryptoWallet.com Images | [link](https://www.flickr.com/photos/193596759@N07/51351973011) |
-| `leather-wallet-4.webp` | Leather Wallet Pro | leather wallet | cc0 1.0 | Snufkin | [link](https://stocksnap.io/photo/leather-purse-Y4IBN1USSQ) |
-| `leather-wallet-5.webp` | Leather Wallet Ultra | leather wallet | cc0 1.0 | Snufkin | [link](https://stocksnap.io/photo/leather-bag-4JYA4A4D64) |
-| `leather-wallet-6.webp` | Leather Wallet Max | leather wallet | by 2.0 | media.digest | [link](https://www.flickr.com/photos/21712103@N06/18606130414) |
-| `silk-scarf-1.webp` | Silk Scarf | silk scarf | pdm 1.0 | SilkScarf_Lover | [link](https://www.flickr.com/photos/190092733@N06/53408955427) |
-| `silk-scarf-2.webp` | Silk Scarf Classic | silk scarf | pdm 1.0 | SilkScarf_Lover | [link](https://www.flickr.com/photos/190092733@N06/53409119007) |
-| `silk-scarf-3.webp` | Silk Scarf Lite | silk scarf | pdm 1.0 | SilkScarf_Lover | [link](https://www.flickr.com/photos/190092733@N06/53410371284) |
-| `silk-scarf-4.webp` | Silk Scarf Pro | silk scarf | pdm 1.0 | SilkScarf_Lover | [link](https://www.flickr.com/photos/190092733@N06/53410051458) |
-| `silk-scarf-5.webp` | Silk Scarf Ultra | silk scarf | pdm 1.0 | SilkScarf_Lover | [link](https://www.flickr.com/photos/190092733@N06/53410371364) |
-| `silk-scarf-6.webp` | Silk Scarf Max | silk scarf | pdm 1.0 | SilkScarf_Lover | [link](https://www.flickr.com/photos/190092733@N06/53410317460) |
 | `canvas-tote-bag-1.webp` | Canvas Tote Bag | tote bag | by 2.0 | MIKI Yoshihito. (#mikiyoshihito) | [link](https://www.flickr.com/photos/7940758@N07/29775127366) |
 | `canvas-tote-bag-2.webp` | Canvas Tote Bag Classic | tote bag | by-sa 2.0 | ACRM-Rehabilitation | [link](https://www.flickr.com/photos/92423552@N07/52147668468) |
 | `canvas-tote-bag-3.webp` | Canvas Tote Bag Lite | tote bag | by 2.0 | amayzun | [link](https://www.flickr.com/photos/66587650@N00/295067994) |
 | `canvas-tote-bag-4.webp` | Canvas Tote Bag Pro | tote bag | by 2.0 | Joe Crawford (artlung) | [link](https://www.flickr.com/photos/37996599088@N01/52208129471) |
 | `canvas-tote-bag-5.webp` | Canvas Tote Bag Ultra | tote bag | by 2.0 | Socialist Appeal | [link](https://www.flickr.com/photos/135433887@N02/52179181446) |
 | `canvas-tote-bag-6.webp` | Canvas Tote Bag Max | tote bag | by 2.0 | City Foodsters | [link](https://www.flickr.com/photos/89060048@N03/52751320106) |
-| `classic-ballerina-flats-1.webp` | Classic Ballerina Flats | ballet shoes | by-sa 2.0 | brooklyn-color | [link](https://www.flickr.com/photos/191084759@N08/51646592035) |
-| `classic-ballerina-flats-2.webp` | Classic Ballerina Flats Classic | ballet shoes | by 2.0 | quinet | [link](https://www.flickr.com/photos/91994044@N00/52163789275) |
-| `classic-ballerina-flats-3.webp` | Classic Ballerina Flats Lite | ballet shoes | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/5925125/photo-image-public-domain-fashion-free) |
-| `classic-ballerina-flats-4.webp` | Classic Ballerina Flats Pro | ballet shoes | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/3286172/free-photo-image-ballet-shoes-dance) |
-| `classic-ballerina-flats-5.webp` | Classic Ballerina Flats Ultra | ballet shoes | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/5916816/free-ballet-shoes-public-domain-cc0-image) |
-| `classic-ballerina-flats-6.webp` | Classic Ballerina Flats Max | ballet shoes | by 2.0 | juhansonin | [link](https://www.flickr.com/photos/38869431@N00/13628564554) |
 | `vitamin-c-serum-1.webp` | Vitamin C Serum | skincare serum | cc0 1.0 | Authentic Stock | [link](https://stocksnap.io/photo/beauty-skincare-0Q23V7QFR8) |
 | `vitamin-c-serum-2.webp` | Vitamin C Serum Classic | skincare serum | cc0 1.0 | Authentic Stock | [link](https://stocksnap.io/photo/beauty-skincare-BSXHIPGGHI) |
 | `vitamin-c-serum-3.webp` | Vitamin C Serum Lite | skincare serum | by 2.0 | ccnull.de Bilddatenbank | [link](https://www.flickr.com/photos/115225894@N07/54445812270) |
 | `vitamin-c-serum-4.webp` | Vitamin C Serum Pro | skincare serum | pdm 1.0 | user1.codaz | [link](https://www.flickr.com/photos/204481844@N06/55204754459) |
 | `vitamin-c-serum-5.webp` | Vitamin C Serum Ultra | skincare serum | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/11515770/dropper-bottle-blank-retro-label) |
 | `vitamin-c-serum-6.webp` | Vitamin C Serum Max | skincare serum | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/11515788/bottles-beard-oil-blank-label) |
-| `sunscreen-spf-50-1.webp` | Sunscreen SPF 50 | sunscreen | by 2.0 | GEMS by Cherri | [link](https://www.flickr.com/photos/189846186@N04/51320744161) |
-| `sunscreen-spf-50-2.webp` | Sunscreen SPF 50 Classic | sunscreen | by 2.0 | Vibeakimbo | [link](https://www.flickr.com/photos/14304343@N06/53554589737) |
-| `sunscreen-spf-50-3.webp` | Sunscreen SPF 50 Lite | sunscreen | by 2.0 | Nesster | [link](https://www.flickr.com/photos/80682954@N00/53633395954) |
-| `sunscreen-spf-50-4.webp` | Sunscreen SPF 50 Pro | sunscreen | pdm 1.0 | Alan Kyker | [link](https://www.flickr.com/photos/188479097@N07/52440012672) |
-| `sunscreen-spf-50-5.webp` | Sunscreen SPF 50 Ultra | sunscreen | by 2.0 | Liloo F. | [link](https://www.flickr.com/photos/189994155@N04/53138666558) |
-| `sunscreen-spf-50-6.webp` | Sunscreen SPF 50 Max | sunscreen | by 2.0 | theslowlane | [link](https://www.flickr.com/photos/90536753@N00/52191472601) |
-| `matte-lipstick-1.webp` | Matte Lipstick | lipstick | by-sa 2.0 | kellyhogaboom | [link](https://www.flickr.com/photos/11597293@N00/8076046177) |
-| `matte-lipstick-2.webp` | Matte Lipstick Classic | lipstick | by 2.0 | Free Public Domain Illustrations by rawpixel | [link](https://www.flickr.com/photos/153584064@N07/42032574264) |
-| `matte-lipstick-3.webp` | Matte Lipstick Lite | lipstick | by 2.0 | YJ Jeon | [link](https://www.flickr.com/photos/66106610@N07/8076415932) |
-| `matte-lipstick-4.webp` | Matte Lipstick Pro | lipstick | by 2.0 | YJ Jeon | [link](https://www.flickr.com/photos/66106610@N07/8076417030) |
-| `matte-lipstick-5.webp` | Matte Lipstick Ultra | lipstick | by 2.0 | YJ Jeon | [link](https://www.flickr.com/photos/66106610@N07/8076415232) |
-| `matte-lipstick-6.webp` | Matte Lipstick Max | lipstick | by 2.0 | Howard J Duncan | [link](https://www.flickr.com/photos/28045633@N00/52645569971) |
 | `hair-repair-oil-1.webp` | Hair Repair Oil | hair oil | by 2.0 | Relax Photos | [link](https://www.flickr.com/photos/194961536@N05/52303062503) |
 | `hair-repair-oil-2.webp` | Hair Repair Oil Classic | hair oil | pdm 1.0 | creativeminds12 | [link](https://www.flickr.com/photos/195407295@N03/52697349091) |
 | `hair-repair-oil-3.webp` | Hair Repair Oil Lite | hair oil | pdm 1.0 | creativeminds12 | [link](https://www.flickr.com/photos/195407295@N03/52728157673) |
@@ -160,24 +94,6 @@ commercially.
 | `aloe-face-wash-4.webp` | Aloe Face Wash Pro | face wash | pdm 1.0 | theleoone00 | [link](https://www.flickr.com/photos/199532672@N05/53412509604) |
 | `aloe-face-wash-5.webp` | Aloe Face Wash Ultra | face wash | pdm 1.0 | theleoone00 | [link](https://www.flickr.com/photos/199532672@N05/53412350868) |
 | `aloe-face-wash-6.webp` | Aloe Face Wash Max | face wash | pdm 1.0 | theleoone00 | [link](https://www.flickr.com/photos/199532672@N05/53412622640) |
-| `skincare-gift-kit-1.webp` | Skincare Gift Kit | cosmetics set | by 2.0 | Violetta Raine | [link](https://www.flickr.com/photos/152387690@N07/52655893756) |
-| `skincare-gift-kit-2.webp` | Skincare Gift Kit Classic | cosmetics set | by 2.0 | Violetta Raine | [link](https://www.flickr.com/photos/152387690@N07/52469590634) |
-| `skincare-gift-kit-3.webp` | Skincare Gift Kit Lite | cosmetics set | by 2.0 | ...Amame hasta con los dientes.... | [link](https://www.flickr.com/photos/38959360@N07/53965924203) |
-| `skincare-gift-kit-4.webp` | Skincare Gift Kit Pro | cosmetics set | by 2.0 | ...Amame hasta con los dientes.... | [link](https://www.flickr.com/photos/38959360@N07/53918817583) |
-| `skincare-gift-kit-5.webp` | Skincare Gift Kit Ultra | cosmetics set | by 2.0 | ...Amame hasta con los dientes.... | [link](https://www.flickr.com/photos/38959360@N07/54189936992) |
-| `skincare-gift-kit-6.webp` | Skincare Gift Kit Max | cosmetics set | by 2.0 | dalecruse | [link](https://www.flickr.com/photos/91873384@N04/54187218004) |
-| `roll-on-perfume-1.webp` | Roll-On Perfume | perfume bottle | by-sa 2.0 | judy dean | [link](https://www.flickr.com/photos/12070225@N03/52575885613) |
-| `roll-on-perfume-2.webp` | Roll-On Perfume Classic | perfume bottle | by-sa 2.0 | judy dean | [link](https://www.flickr.com/photos/12070225@N03/51827390947) |
-| `roll-on-perfume-3.webp` | Roll-On Perfume Lite | perfume bottle | by-sa 2.0 | judy dean | [link](https://www.flickr.com/photos/12070225@N03/52530502009) |
-| `roll-on-perfume-4.webp` | Roll-On Perfume Pro | perfume bottle | by-sa 2.0 | judy dean | [link](https://www.flickr.com/photos/12070225@N03/52937014750) |
-| `roll-on-perfume-5.webp` | Roll-On Perfume Ultra | perfume bottle | cc0 1.0 | Jessica Weiller | [link](https://stocksnap.io/photo/perfume-bottle-0BZ1W3NNQK) |
-| `roll-on-perfume-6.webp` | Roll-On Perfume Max | perfume bottle | by-sa 2.0 | judy dean | [link](https://www.flickr.com/photos/12070225@N03/53469577014) |
-| `clay-face-mask-1.webp` | Clay Face Mask | facial skincare | cc0 1.0 | Authentic Stock | [link](https://stocksnap.io/photo/woman-skin-JF6DZWDDO3) |
-| `clay-face-mask-2.webp` | Clay Face Mask Classic | facial skincare | cc0 1.0 | Authentic Stock | [link](https://stocksnap.io/photo/beauty-skincare-LRSAT4NCLS) |
-| `clay-face-mask-3.webp` | Clay Face Mask Lite | facial skincare | cc0 1.0 | Authentic Stock | [link](https://stocksnap.io/photo/beauty-skincare-CC9TYE8VJY) |
-| `clay-face-mask-4.webp` | Clay Face Mask Pro | facial skincare | cc0 1.0 | Authentic Stock | [link](https://stocksnap.io/photo/woman-skin-HIZNJOUVSY) |
-| `clay-face-mask-5.webp` | Clay Face Mask Ultra | facial skincare | cc0 1.0 | Authentic Stock | [link](https://stocksnap.io/photo/beauty-skincare-U5MEPX1OVV) |
-| `clay-face-mask-6.webp` | Clay Face Mask Max | facial skincare | cc0 1.0 | Authentic Stock | [link](https://stocksnap.io/photo/woman-skin-HT0IEUFSBY) |
 | `lip-balm-trio-1.webp` | Lip Balm Trio | lip balm | pdm 1.0 | a_space_time_odyssey/ | [link](https://www.flickr.com/photos/186862236@N04/49611011323) |
 | `lip-balm-trio-2.webp` | Lip Balm Trio Classic | lip balm | by-sa 2.0 | Joe K Gage | [link](https://www.flickr.com/photos/181920661@N03/51672710459) |
 | `lip-balm-trio-3.webp` | Lip Balm Trio Lite | lip balm | pdm 1.0 | Young Living Hong Kong | [link](https://www.flickr.com/photos/160237672@N05/51298796020) |
@@ -478,12 +394,6 @@ commercially.
 | `green-tea-bags-4.webp` | Green Tea Bags Pro | green tea | by 2.0 | Thank You (23 Millions+) views | [link](https://www.flickr.com/photos/34128007@N04/51432776095) |
 | `green-tea-bags-5.webp` | Green Tea Bags Ultra | green tea | by-sa 2.0 | Haydn Blackey | [link](https://www.flickr.com/photos/54549113@N00/52373227141) |
 | `green-tea-bags-6.webp` | Green Tea Bags Max | green tea | by 2.0 | chooyutshing | [link](https://www.flickr.com/photos/25802865@N08/52355323902) |
-| `dark-chocolate-box-1.webp` | Dark Chocolate Box | chocolate box | by 2.0 | Violetta Raine | [link](https://www.flickr.com/photos/152387690@N07/53563221664) |
-| `dark-chocolate-box-2.webp` | Dark Chocolate Box Classic | chocolate box | by-sa 2.0 | Joe Mabel | [link](https://www.flickr.com/photos/7943225@N02/54165071701) |
-| `dark-chocolate-box-3.webp` | Dark Chocolate Box Lite | chocolate box | by-sa 2.0 | Heather Smithers | [link](https://www.flickr.com/photos/36107339@N03/52516494286) |
-| `dark-chocolate-box-4.webp` | Dark Chocolate Box Pro | chocolate box | by-sa 2.0 | Heather Smithers | [link](https://www.flickr.com/photos/36107339@N03/52516020012) |
-| `dark-chocolate-box-5.webp` | Dark Chocolate Box Ultra | chocolate box | by-sa 2.0 | wbaiv | [link](https://www.flickr.com/photos/9998127@N06/51674164708) |
-| `dark-chocolate-box-6.webp` | Dark Chocolate Box Max | chocolate box | by-sa 2.0 | Elvert Barnes | [link](https://www.flickr.com/photos/95413346@N00/51521595293) |
 | `cold-pressed-olive-oil-1.webp` | Cold-Pressed Olive Oil | olive oil bottle | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/6037430/photo-image-public-domain-free-olive) |
 | `cold-pressed-olive-oil-2.webp` | Cold-Pressed Olive Oil Classic | olive oil bottle | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/5927777/photo-image-background-public-domain-black) |
 | `cold-pressed-olive-oil-3.webp` | Cold-Pressed Olive Oil Lite | olive oil bottle | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/6112104/photo-image-public-domain-free) |
@@ -616,3 +526,93 @@ commercially.
 | `polarized-sunglasses-4.webp` | Polarized Sunglasses Pro | sunglasses | cc0 1.0 | Jakub Rostkowski | [link](https://stocksnap.io/photo/sunglasses-summer-EVAARS1W4M) |
 | `polarized-sunglasses-5.webp` | Polarized Sunglasses Ultra | sunglasses | by-sa 2.0 | Czar Hey | [link](https://www.flickr.com/photos/161174688@N08/51519721976) |
 | `polarized-sunglasses-6.webp` | Polarized Sunglasses Max | sunglasses | by 2.0 | Glory Cycles | [link](https://www.flickr.com/photos/29558127@N06/51856986142) |
+| `4k-action-camera-1.webp` | 4K Action Camera | action camera | by 2.0 | jurvetson | [link](https://www.flickr.com/photos/44124348109@N01/52051319660) |
+| `4k-action-camera-2.webp` | 4K Action Camera Classic | action camera | by 2.0 | JiBs. | [link](https://www.flickr.com/photos/10584612@N06/51758436339) |
+| `4k-action-camera-3.webp` | 4K Action Camera Lite | action camera | by 2.0 | Hari K Patibanda | [link](https://www.flickr.com/photos/34176693@N06/51612530387) |
+| `4k-action-camera-4.webp` | 4K Action Camera Pro | action camera | by 2.0 | Cityswift - Ireland | [link](https://www.flickr.com/photos/48770310@N05/52150218665) |
+| `4k-action-camera-5.webp` | 4K Action Camera Ultra | action camera | by-sa 2.0 | Czar Hey | [link](https://www.flickr.com/photos/161174688@N08/51729565320) |
+| `4k-action-camera-6.webp` | 4K Action Camera Max | action camera | by 2.0 | pockethifi | [link](https://www.flickr.com/photos/31667440@N04/52422615205) |
+| `classic-ballerina-flats-1.webp` | Classic Ballerina Flats | ballet shoes | by-sa 2.0 | deldevries | [link](https://www.flickr.com/photos/53136684@N00/31713129516) |
+| `classic-ballerina-flats-2.webp` | Classic Ballerina Flats Classic | ballet shoes | by 2.0 | Rmonty119 | [link](https://www.flickr.com/photos/54327644@N04/53548950428) |
+| `classic-ballerina-flats-3.webp` | Classic Ballerina Flats Lite | ballet shoes | cc0 1.0 | Sarah Cervantes | [link](https://stocksnap.io/photo/bricks-ballet-ASJXV7ALQ5) |
+| `classic-ballerina-flats-4.webp` | Classic Ballerina Flats Pro | ballet shoes | by-sa 2.0 | Debarshi Ray | [link](https://www.flickr.com/photos/39423133@N04/54058078117) |
+| `classic-ballerina-flats-5.webp` | Classic Ballerina Flats Ultra | ballet shoes | by-sa 2.0 | amandabhslater | [link](https://www.flickr.com/photos/15181848@N02/54261811818) |
+| `classic-ballerina-flats-6.webp` | Classic Ballerina Flats Max | ballet shoes | by-sa 2.0 | Debarshi Ray | [link](https://www.flickr.com/photos/39423133@N04/54055279714) |
+| `clay-face-mask-1.webp` | Clay Face Mask | facial skincare | cc0 1.0 | Authentic Stock | [link](https://stocksnap.io/photo/woman-skin-3AECYIAEDE) |
+| `clay-face-mask-2.webp` | Clay Face Mask Classic | facial skincare | cc0 1.0 | Authentic Stock | [link](https://stocksnap.io/photo/woman-skin-ETWN6UD9US) |
+| `clay-face-mask-3.webp` | Clay Face Mask Lite | facial skincare | cc0 1.0 | Authentic Stock | [link](https://stocksnap.io/photo/woman-skin-VEP8AYJMNI) |
+| `clay-face-mask-4.webp` | Clay Face Mask Pro | facial skincare | cc0 1.0 | Authentic Stock | [link](https://stocksnap.io/photo/woman-skin-0CAUJR8SRJ) |
+| `clay-face-mask-5.webp` | Clay Face Mask Ultra | facial skincare | cc0 1.0 | Authentic Stock | [link](https://stocksnap.io/photo/woman-skin-X9BSFHEWPL) |
+| `clay-face-mask-6.webp` | Clay Face Mask Max | facial skincare | cc0 1.0 | Authentic Stock | [link](https://stocksnap.io/photo/woman-skin-G4O6VGZING) |
+| `dark-chocolate-box-1.webp` | Dark Chocolate Box | chocolate box | by-sa 2.0 | wbaiv | [link](https://www.flickr.com/photos/9998127@N06/51674597589) |
+| `dark-chocolate-box-2.webp` | Dark Chocolate Box Classic | chocolate box | by-sa 2.0 | wbaiv | [link](https://www.flickr.com/photos/9998127@N06/51673929501) |
+| `dark-chocolate-box-3.webp` | Dark Chocolate Box Lite | chocolate box | by 2.0 | Welcome to Switzerland backstage! | [link](https://www.flickr.com/photos/70981241@N00/52584884847) |
+| `dark-chocolate-box-4.webp` | Dark Chocolate Box Pro | chocolate box | by-sa 2.0 | wbaiv | [link](https://www.flickr.com/photos/9998127@N06/51673927926) |
+| `dark-chocolate-box-5.webp` | Dark Chocolate Box Ultra | chocolate box | by-sa 2.0 | wbaiv | [link](https://www.flickr.com/photos/9998127@N06/51674800105) |
+| `dark-chocolate-box-6.webp` | Dark Chocolate Box Max | chocolate box | by-sa 2.0 | wbaiv | [link](https://www.flickr.com/photos/9998127@N06/51673124347) |
+| `hdmi-cable-2m-1.webp` | HDMI Cable 2m | hdmi cable | pdm 1.0 | videek | [link](https://www.flickr.com/photos/193845755@N03/52197392808) |
+| `hdmi-cable-2m-2.webp` | HDMI Cable 2m Classic | hdmi cable | pdm 1.0 | videek | [link](https://www.flickr.com/photos/193845755@N03/52196369262) |
+| `hdmi-cable-2m-3.webp` | HDMI Cable 2m Lite | hdmi cable | by 2.0 | blakespot | [link](https://www.flickr.com/photos/35448539@N00/53545905079) |
+| `hdmi-cable-2m-4.webp` | HDMI Cable 2m Pro | hdmi cable | cc0 1.0 | Roy Tanck | [link](https://wordpress.org/photos/photo/818636f6c9/) |
+| `hdmi-cable-2m-5.webp` | HDMI Cable 2m Ultra | hdmi cable | pdm 1.0 | videek | [link](https://www.flickr.com/photos/193845755@N03/52197392808) |
+| `hdmi-cable-2m-6.webp` | HDMI Cable 2m Max | hdmi cable | pdm 1.0 | videek | [link](https://www.flickr.com/photos/193845755@N03/52196369262) |
+| `leather-wallet-1.webp` | Leather Wallet | leather wallet | cc0 1.0 | Clem Onojeghuo | [link](https://stocksnap.io/photo/camera-lens-4M94QILSNA) |
+| `leather-wallet-2.webp` | Leather Wallet Classic | leather wallet | cc0 1.0 | John Debrey | [link](https://stocksnap.io/photo/bicycle-tire-RA81ACVY2Z) |
+| `leather-wallet-3.webp` | Leather Wallet Lite | leather wallet | cc0 1.0 | museado | [link](https://www.flickr.com/photos/200781279@N05/53903767244) |
+| `leather-wallet-4.webp` | Leather Wallet Pro | leather wallet | cc0 1.0 | museado | [link](https://www.flickr.com/photos/200781279@N05/53909520577) |
+| `leather-wallet-5.webp` | Leather Wallet Ultra | leather wallet | cc0 1.0 | museado | [link](https://www.flickr.com/photos/200781279@N05/53902189429) |
+| `leather-wallet-6.webp` | Leather Wallet Max | leather wallet | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/5916922/photo-image-public-domain-free-leather) |
+| `matte-lipstick-1.webp` | Matte Lipstick | lipstick | by 2.0 | dalecruse | [link](https://www.flickr.com/photos/91873384@N04/54564505245) |
+| `matte-lipstick-2.webp` | Matte Lipstick Classic | lipstick | by 2.0 | John Loo | [link](https://www.flickr.com/photos/8510225@N07/51837132898) |
+| `matte-lipstick-3.webp` | Matte Lipstick Lite | lipstick | by 2.0 | Brendan J. | [link](https://www.flickr.com/photos/32303563@N00/52079182208) |
+| `matte-lipstick-4.webp` | Matte Lipstick Pro | lipstick | by 2.0 | krossbow | [link](https://www.flickr.com/photos/13194817@N00/52058907622) |
+| `matte-lipstick-5.webp` | Matte Lipstick Ultra | lipstick | by 2.0 | nathaxsavage | [link](https://www.flickr.com/photos/192454555@N03/52881066295) |
+| `matte-lipstick-6.webp` | Matte Lipstick Max | lipstick | cc0 1.0 | Burst | [link](https://stocksnap.io/photo/woman-lipstick-UUW7JAWUU1) |
+| `oversized-hoodie-1.webp` | Oversized Hoodie | hoodie sweatshirt | by 2.0 | The Marmot | [link](https://www.flickr.com/photos/38142119@N00/52758869113) |
+| `oversized-hoodie-2.webp` | Oversized Hoodie Classic | hoodie sweatshirt | by 2.0 | The Marmot | [link](https://www.flickr.com/photos/38142119@N00/52757842917) |
+| `oversized-hoodie-3.webp` | Oversized Hoodie Lite | hoodie sweatshirt | by 2.0 | The Marmot | [link](https://www.flickr.com/photos/38142119@N00/53978606044) |
+| `oversized-hoodie-4.webp` | Oversized Hoodie Pro | hoodie sweatshirt | by-sa 2.0 | Hoodype | [link](https://www.flickr.com/photos/197989256@N06/52787454984) |
+| `oversized-hoodie-5.webp` | Oversized Hoodie Ultra | hoodie sweatshirt | by 2.0 | The Marmot | [link](https://www.flickr.com/photos/38142119@N00/52758632894) |
+| `oversized-hoodie-6.webp` | Oversized Hoodie Max | hoodie sweatshirt | by-sa 2.0 | Hoodype | [link](https://www.flickr.com/photos/197989256@N06/52787224146) |
+| `power-bank-20000mah-1.webp` | Power Bank 20000mAh | power bank | cc0 1.0 | Don Komarechka | [link](https://www.flickr.com/photos/35693660@N03/52064189158) |
+| `power-bank-20000mah-2.webp` | Power Bank 20000mAh Classic | power bank | by-sa 2.0 | pom'. | [link](https://www.flickr.com/photos/146832554@N06/51904222334) |
+| `power-bank-20000mah-3.webp` | Power Bank 20000mAh Lite | power bank | by-sa 2.0 | europeanspaceagency | [link](https://www.flickr.com/photos/37472264@N04/51687716877) |
+| `power-bank-20000mah-4.webp` | Power Bank 20000mAh Pro | power bank | by-sa 2.0 | europeanspaceagency | [link](https://www.flickr.com/photos/37472264@N04/51689400680) |
+| `power-bank-20000mah-5.webp` | Power Bank 20000mAh Ultra | power bank | by-sa 2.0 | pom'. | [link](https://www.flickr.com/photos/146832554@N06/52165476250) |
+| `power-bank-20000mah-6.webp` | Power Bank 20000mAh Max | power bank | by-sa 2.0 | pom'. | [link](https://www.flickr.com/photos/146832554@N06/51905790764) |
+| `roll-on-perfume-1.webp` | Roll-On Perfume | perfume bottle | by-sa 2.0 | judy dean | [link](https://www.flickr.com/photos/12070225@N03/52936025052) |
+| `roll-on-perfume-2.webp` | Roll-On Perfume Classic | perfume bottle | by 2.0 | D-Stanley | [link](https://www.flickr.com/photos/79721788@N00/53806939179) |
+| `roll-on-perfume-3.webp` | Roll-On Perfume Lite | perfume bottle | by-sa 2.0 | japanseaglass | [link](https://www.flickr.com/photos/197286461@N05/52598201856) |
+| `roll-on-perfume-4.webp` | Roll-On Perfume Pro | perfume bottle | cc0 1.0 | museado | [link](https://www.flickr.com/photos/200781279@N05/53902921661) |
+| `roll-on-perfume-5.webp` | Roll-On Perfume Ultra | perfume bottle | cc0 1.0 | museado | [link](https://www.flickr.com/photos/200781279@N05/53903359860) |
+| `roll-on-perfume-6.webp` | Roll-On Perfume Max | perfume bottle | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/6027555/perfume-bottles-free-public-domain-cc0-photo) |
+| `silk-scarf-1.webp` | Silk Scarf | silk scarf | pdm 1.0 | SilkScarf_Lover | [link](https://www.flickr.com/photos/190092733@N06/53408955337) |
+| `silk-scarf-2.webp` | Silk Scarf Classic | silk scarf | pdm 1.0 | SilkScarf_Lover | [link](https://www.flickr.com/photos/190092733@N06/53410317305) |
+| `silk-scarf-3.webp` | Silk Scarf Lite | silk scarf | pdm 1.0 | SilkScarf_Lover | [link](https://www.flickr.com/photos/190092733@N06/53410051243) |
+| `silk-scarf-4.webp` | Silk Scarf Pro | silk scarf | pdm 1.0 | SilkScarf_Lover | [link](https://www.flickr.com/photos/190092733@N06/53410039106) |
+| `silk-scarf-5.webp` | Silk Scarf Ultra | silk scarf | pdm 1.0 | SilkScarf_Lover | [link](https://www.flickr.com/photos/190092733@N06/53410214078) |
+| `silk-scarf-6.webp` | Silk Scarf Max | silk scarf | pdm 1.0 | SilkScarf_Lover | [link](https://www.flickr.com/photos/190092733@N06/53410039051) |
+| `skincare-gift-kit-1.webp` | Skincare Gift Kit | cosmetics set | by 2.0 | Cardinator25 | [link](https://www.flickr.com/photos/188077531@N05/54337691285) |
+| `skincare-gift-kit-2.webp` | Skincare Gift Kit Classic | cosmetics set | by-sa 2.0 | PattayaPatrol | [link](https://www.flickr.com/photos/194424926@N05/54588777910) |
+| `skincare-gift-kit-3.webp` | Skincare Gift Kit Lite | cosmetics set | by 2.0 | nenadstojkovicart | [link](https://www.flickr.com/photos/202846129@N03/54566672771) |
+| `skincare-gift-kit-4.webp` | Skincare Gift Kit Pro | cosmetics set | by 2.0 | nenadstojkovicart | [link](https://www.flickr.com/photos/202846129@N03/54563742327) |
+| `skincare-gift-kit-5.webp` | Skincare Gift Kit Ultra | cosmetics set | by 2.0 | nenadstojkovicart | [link](https://www.flickr.com/photos/202846129@N03/54596645397) |
+| `skincare-gift-kit-6.webp` | Skincare Gift Kit Max | cosmetics set | by 2.0 | nenadstojkovicart | [link](https://www.flickr.com/photos/202846129@N03/54592663701) |
+| `smartwatch-1.webp` | Smartwatch | smartwatch | by 2.0 | ccnull.de Bilddatenbank | [link](https://www.flickr.com/photos/115225894@N07/54338018063) |
+| `smartwatch-2.webp` | Smartwatch Classic | smartwatch | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/5916394/photo-image-public-domain-black-technology) |
+| `smartwatch-3.webp` | Smartwatch Lite | smartwatch | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/5926461/photo-image-background-public-domain-black) |
+| `smartwatch-4.webp` | Smartwatch Pro | smartwatch | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/6042008/photo-image-cloud-light-public-domain) |
+| `smartwatch-5.webp` | Smartwatch Ultra | smartwatch | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/3285846/free-photo-image-hands-cc0-creative-commons) |
+| `smartwatch-6.webp` | Smartwatch Max | smartwatch | by 2.0 | susanjanegolding | [link](https://www.flickr.com/photos/67936502@N00/51514467078) |
+| `sunscreen-spf-50-1.webp` | Sunscreen SPF 50 | sunscreen | cc0 1.0 | snelson951 | [link](https://www.flickr.com/photos/106274066@N07/54146786833) |
+| `sunscreen-spf-50-2.webp` | Sunscreen SPF 50 Classic | sunscreen | by 2.0 | Joe Crawford (artlung) | [link](https://www.flickr.com/photos/37996599088@N01/51362375828) |
+| `sunscreen-spf-50-3.webp` | Sunscreen SPF 50 Lite | sunscreen | by 2.0 | sarahstierch | [link](https://www.flickr.com/photos/7633518@N08/52976072698) |
+| `sunscreen-spf-50-4.webp` | Sunscreen SPF 50 Pro | sunscreen | by 2.0 | planashleygo | [link](https://www.flickr.com/photos/199052585@N05/53425712891) |
+| `sunscreen-spf-50-5.webp` | Sunscreen SPF 50 Ultra | sunscreen | by 2.0 | edenpictures | [link](https://www.flickr.com/photos/10485077@N06/53817118419) |
+| `sunscreen-spf-50-6.webp` | Sunscreen SPF 50 Max | sunscreen | cc0 1.0 | The Fun Chronicles | [link](https://www.flickr.com/photos/196406308@N04/52907939491) |
+| `usb-c-charger-65w-1.webp` | USB-C Charger 65W | power charger | by 2.0 | Triple-green | [link](https://www.flickr.com/photos/66451944@N03/53092752271) |
+| `usb-c-charger-65w-2.webp` | USB-C Charger 65W Classic | power charger | by 2.0 | Triple-green | [link](https://www.flickr.com/photos/66451944@N03/53165533732) |
+| `usb-c-charger-65w-3.webp` | USB-C Charger 65W Lite | power charger | by 2.0 | Triple-green | [link](https://www.flickr.com/photos/66451944@N03/53166048574) |
+| `usb-c-charger-65w-4.webp` | USB-C Charger 65W Pro | power charger | by 2.0 | Triple-green | [link](https://www.flickr.com/photos/66451944@N03/52940029049) |
+| `usb-c-charger-65w-5.webp` | USB-C Charger 65W Ultra | power charger | by 2.0 | Triple-green | [link](https://www.flickr.com/photos/66451944@N03/53093148570) |
+| `usb-c-charger-65w-6.webp` | USB-C Charger 65W Max | power charger | by 2.0 | Triple-green | [link](https://www.flickr.com/photos/66451944@N03/53108565861) |
