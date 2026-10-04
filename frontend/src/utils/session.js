@@ -67,3 +67,23 @@ export function tokenIsCurrent(token) {
 export function tokenRole(token) {
   return readClaims(token)?.role ?? null;
 }
+
+/**
+ * Decides whether the admin console may be rendered.
+ *
+ * Returns null when access is allowed, or the path to send the visitor to:
+ *   '/'        signed out, or holding a token we cannot read or that has expired
+ *   '/products' signed in, but not as an admin
+ *
+ * Kept out of the route component so the rule can be tested directly. Getting it
+ * wrong is invisible in a normal click-through and only shows up as an admin
+ * being bounced to the catalogue on a refresh.
+ */
+export function adminGuard(token, cachedRole) {
+  if (!tokenIsCurrent(token)) return '/';
+
+  // The signed claim is the authority; the cached copy is only a fallback for a
+  // token that predates the claim being issued.
+  const role = tokenRole(token) || cachedRole || null;
+  return role === 'ADMIN' || role === 'STAFF' ? null : '/products';
+}

@@ -1,4 +1,4 @@
-import { tokenIsCurrent, tokenRole } from './utils/session';
+import { tokenIsCurrent, adminGuard } from './utils/session';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LanguageProvider } from './context/LanguageContext';
 import { CompareProvider } from './context/CompareContext';
@@ -30,15 +30,11 @@ function ProtectedRoute({ children }) {
 }
 
 function AdminRoute({ children }) {
-  const token = localStorage.getItem('token');
-  if (!tokenIsCurrent(token)) return <Navigate to="/" replace />;
-
-  // The role claim is signed by the server, so it survives the copy cached in
-  // localStorage going missing - which is what used to dump an admin on the
-  // customer catalogue every time the page was refreshed.
-  const role = tokenRole(token) || localStorage.getItem('role');
-  if (role !== 'ADMIN' && role !== 'STAFF') return <Navigate to="/products" replace />;
-  return children;
+  // The rule lives in utils/session so it can be tested: reading the role from
+  // localStorage is what used to dump an admin on the customer catalogue every
+  // time the page was refreshed.
+  const blocked = adminGuard(localStorage.getItem('token'), localStorage.getItem('role'));
+  return blocked ? <Navigate to={blocked} replace /> : children;
 }
 
 function App() {
