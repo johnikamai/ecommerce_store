@@ -3,9 +3,11 @@ package com.ecommerce.ecommerce_system.service;
 import com.ecommerce.ecommerce_system.model.AdminAlert;
 import com.ecommerce.ecommerce_system.model.Customer;
 import com.ecommerce.ecommerce_system.model.Product;
+import com.ecommerce.ecommerce_system.model.RestockRequest;
 import com.ecommerce.ecommerce_system.model.Wishlist;
 import com.ecommerce.ecommerce_system.repository.AdminAlertRepository;
 import com.ecommerce.ecommerce_system.repository.CustomerRepository;
+import com.ecommerce.ecommerce_system.repository.RestockRequestRepository;
 import com.ecommerce.ecommerce_system.repository.WishlistRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,7 +42,7 @@ public class StockAlertService {
     private NotificationService notificationService;
 
     @Autowired
-    private RestockService restockService;
+    private RestockRequestRepository restockRequestRepository;
 
     /**
      * Fires after a product's stock has been persisted.
@@ -86,7 +88,29 @@ public class StockAlertService {
 
         // "Notify me when in stock" subscribers, fired on every rise above zero.
         if (now > 0 && before <= 0) {
-            restockService.checkRestock(product);
+            notifyRestockSubscribers(product);
+        }
+    }
+
+    /**
+     * Tells every "notify me when in stock" subscriber that the product is
+     * available again, then marks each subscription handled so nobody is
+     * notified twice for the same restock.
+     */
+    private void notifyRestockSubscribers(Product product) {
+        List<RestockRequest> subscribers =
+                restockRequestRepository.findByProductIdAndNotifiedFalse(product.getId());
+
+        for (RestockRequest req : subscribers) {
+            if (req.getNotified() != null && req.getNotified()) {
+                continue; // safety: skip already-notified
+            }
+
+            // In-app notification plus the restock email.
+            notificationService.restocked(req.getCustomer(), product.getName());
+
+            req.setNotified(true);
+            restockRequestRepository.save(req);
         }
     }
 

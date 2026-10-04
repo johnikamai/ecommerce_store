@@ -3,14 +3,16 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Zap, Heart, Bell, ChevronRight } from 'lucide-react';
 import axiosClient from '../api/axiosClient';
 import { useCart } from '../context/CartContext';
+import { useLanguage } from '../context/LanguageContext';
 import ProductCard from '../components/ProductCard';
+import PersonalizedRecommendations from '../components/PersonalizedRecommendations';
 import ProductImage from '../components/ProductImage';
 import { getCustomerId } from '../utils/customer';
 
 const AVAILABILITY = {
-  in: { label: 'In Stock', cls: 'bg-[var(--color-success-bg)] text-[var(--color-success)]' },
-  low: { label: 'Low Stock', cls: 'bg-[var(--color-warning-bg)] text-[var(--color-warning)]' },
-  out: { label: 'Out of Stock', cls: 'bg-[var(--color-error-bg)] text-[var(--color-error)]' },
+  in: { label: 'product.inStock', cls: 'bg-[var(--color-success-bg)] text-[var(--color-success)]' },
+  low: { label: 'product.lowStock', cls: 'bg-[var(--color-warning-bg)] text-[var(--color-warning)]' },
+  out: { label: 'product.outOfStock', cls: 'bg-[var(--color-error-bg)] text-[var(--color-error)]' },
 };
 
 const SUSTAIN_ROW = {
@@ -105,6 +107,7 @@ function Stars({ rating, size = 'text-lg' }) {
 export default function ProductDetail() {
   const { id } = useParams();
   const { addToCart } = useCart();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -129,7 +132,7 @@ export default function ProductDetail() {
     let active = true;
     axiosClient.get(`/products/${id}`)
       .then((res) => { if (active) setProduct(res.data); })
-      .catch(() => { if (active) setError('We couldn\'t load this product'); })
+      .catch(() => { if (active) setError(t('product.loadFailed')); })
       .finally(() => { if (active) setLoading(false); });
     axiosClient.get(`/products/${id}/recommendations?limit=4`)
       .then((res) => { if (active) setRelated(res.data); })
@@ -144,7 +147,7 @@ export default function ProductDetail() {
       .then((res) => { if (active) setIsWishlisted(res.data.some((i) => i.product.id === Number(id))); })
       .catch(() => {});
     return () => { active = false; };
-  }, [id]);
+  }, [id, t]);
 
   if (loading) {
     return (
@@ -167,10 +170,10 @@ export default function ProductDetail() {
       <div className="container-x py-20 text-center">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[var(--color-error-bg)] mb-4 text-2xl">!</div>
         <h4 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-1">Something went wrong.</h4>
-        <p className="text-[var(--color-text-muted)] mb-4">{error || 'Product not found'}</p>
-        <Link to="/products" className="rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white px-5 py-2.5 text-sm font-semibold hover:bg-[var(--color-primary-hover)] transition-colors">
-          Back to products
-        </Link>
+          <p className="text-[var(--color-text-muted)] mb-4">{error || t('product.notFound')}</p>
+          <Link to="/products" className="rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white px-5 py-2.5 text-sm font-semibold hover:bg-[var(--color-primary-hover)] transition-colors">
+            {t('product.backToProducts')}
+          </Link>
       </div>
     );
   }
@@ -178,6 +181,7 @@ export default function ProductDetail() {
   const isOutOfStock = product.stockQuantity === 0;
   const isLowStock = !isOutOfStock && product.stockQuantity <= 5;
   const avail = isOutOfStock ? AVAILABILITY.out : isLowStock ? AVAILABILITY.low : AVAILABILITY.in;
+  const availLabel = t(avail.label);
   const label = product.sustainabilityLabel || 'Not Rated';
   const score = product.sustainabilityScore;
 
@@ -186,7 +190,7 @@ export default function ProductDetail() {
     ['Brand', brand],
     ['Category', product.category],
     ['Item Code', `SHOP-${product.id}`],
-    ['Availability', avail.label],
+    ['Availability', availLabel],
     ['Stock', `${product.stockQuantity} units`],
     ['Price', `₹${product.price}`],
     ['Sustainability', `${label}${score != null ? ` (${score}/100)` : ''}`],
@@ -325,7 +329,7 @@ export default function ProductDetail() {
           </p>
 
           <div className="flex flex-wrap gap-2 mb-4">
-            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${avail.cls}`}>{avail.label}</span>
+                <span className={`rounded-full px-3 py-1 text-xs font-semibold ${avail.cls}`}>{availLabel}</span>
             <span className={`rounded-full px-3 py-1 text-xs font-semibold ${SUSTAIN_ROW[label]} bg-[var(--color-card-bg-tint)]`}>
               Sustainability: {label}{score != null ? ` (${score}/100)` : ''}
             </span>
@@ -366,18 +370,18 @@ export default function ProductDetail() {
               >
                 <span className="inline-flex items-center justify-center gap-2">
                   <Bell size={18} />
-                  {notifyStatus === 'subscribed' ? "We'll notify you" : notifyStatus === 'duplicate' ? 'Already subscribed' : 'Notify me when in stock'}
+                    {notifyStatus === 'subscribed' ? "We'll notify you" : notifyStatus === 'duplicate' ? 'Already subscribed' : t('product.notifyMe')}
                 </span>
               </button>
             ) : (
               <>
                 <button onClick={handleAddToCart} className="flex-1 min-h-[52px] rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white px-6 text-sm font-semibold hover:bg-[var(--color-primary-hover)] hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 transition-all">
-                  {justAdded ? '✓ Added to cart' : (
-                    <span className="inline-flex items-center justify-center gap-2"><ShoppingCart size={18} /> Add to Cart</span>
+                  {justAdded ? t('product.addedToCart') : (
+                    <span className="inline-flex items-center justify-center gap-2"><ShoppingCart size={18} /> {t('product.addToCart')}</span>
                   )}
                 </button>
                 <button onClick={handleBuyNow} className="flex-1 min-h-[52px] rounded-[var(--radius-md)] bg-gradient-premium text-white px-6 text-sm font-semibold hover:opacity-90 hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 transition-all">
-                  <span className="inline-flex items-center justify-center gap-2"><Zap size={18} /> Buy Now</span>
+                  <span className="inline-flex items-center justify-center gap-2"><Zap size={18} /> {t('product.buyNow')}</span>
                 </button>
               </>
             )}
@@ -424,7 +428,7 @@ export default function ProductDetail() {
                 {product.description}
               </p>
               <div className="flex flex-wrap gap-2">
-                <span className={`rounded-full px-3 py-1 text-xs font-semibold ${avail.cls}`}>{avail.label}</span>
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${avail.cls}`}>{availLabel}</span>
                 <span className={`rounded-full px-3 py-1 text-xs font-semibold ${SUSTAIN_ROW[label]} bg-[var(--color-card-bg-tint)]`}>
                   Sustainability: {label}{score != null ? ` (${score}/100)` : ''}
                 </span>
@@ -606,17 +610,27 @@ export default function ProductDetail() {
         )}
       </div>
 
-      {/* Related */}
+      {/* Co-occurrence picks for this specific product */}
       {related.length > 0 && (
-        <div>
-          <h3 className="font-[family-name:var(--font-heading)] text-[24px] font-semibold mb-5">You might also like</h3>
+        <div className="mb-[var(--space-9)]">
+          <h3 className="font-[family-name:var(--font-heading)] text-[24px] font-semibold mb-5">{t('recs.related')}</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
             {related.map((rec) => (
-              <ProductCard key={rec.id} product={rec} />
+              <div key={rec.id} className="flex flex-col">
+                <ProductCard product={rec} />
+                {rec.reasonCode && (
+                  <p className="text-[11px] text-[var(--color-text-muted)] mt-1.5 px-1 leading-snug">
+                    {t(rec.reasonCode, rec.reasonParams)}
+                  </p>
+                )}
+              </div>
             ))}
           </div>
         </div>
       )}
+
+      {/* Shopper-level picks, ranked from their own order history */}
+      <PersonalizedRecommendations limit={4} />
     </div>
   );
 }

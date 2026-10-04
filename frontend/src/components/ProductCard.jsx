@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, ShoppingCart, Bell } from 'lucide-react';
+import { Heart, ShoppingCart, Bell, Scale } from 'lucide-react';
 import axiosClient from '../api/axiosClient';
 import { useCart } from '../context/CartContext';
+import { useCompare } from '../context/CompareContext';
+import { useLanguage } from '../context/LanguageContext';
 import { getCustomerId } from '../utils/customer';
 import ProductImage from './ProductImage';
 
@@ -18,6 +20,16 @@ const SUSTAIN_BG = {
   'Moderate Impact': 'bg-[var(--color-warning-bg)]',
   'High Impact': 'bg-[var(--color-error-bg)]',
   'Not Rated': 'bg-[var(--color-card-bg-tint)]',
+};
+
+// The badge arrives from the API as an English enum, so the colour classes are
+// keyed by that value while the visible text is looked up by key. Mapping the
+// text by value would bake English into the API contract.
+const SUSTAIN_LABEL_KEYS = {
+  'Eco-Friendly': 'sustain.ecoFriendly',
+  'Moderate Impact': 'sustain.moderate',
+  'High Impact': 'sustain.high',
+  'Not Rated': 'sustain.notRated',
 };
 
 function Stars({ rating }) {
@@ -37,6 +49,10 @@ function Stars({ rating }) {
 
 export default function ProductCard({ product, defaultRating, defaultReviewCount }) {
   const { addToCart } = useCart();
+  const { t, formatCurrency } = useLanguage();
+  const { toggle: toggleCompare, isSelected: isComparing } = useCompare();
+  const compareSelected = isComparing(product.id);
+  const [compareFullMessage, setCompareFullMessage] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -48,6 +64,7 @@ export default function ProductCard({ product, defaultRating, defaultReviewCount
   const isOutOfStock = product.stockQuantity === 0;
   const isLowStock = !isOutOfStock && product.stockQuantity <= 5;
   const label = product.sustainabilityLabel || 'Not Rated';
+  const labelText = t(SUSTAIN_LABEL_KEYS[label] || SUSTAIN_LABEL_KEYS['Not Rated']);
   const score = product.sustainabilityScore;
 
   useEffect(() => {
@@ -92,6 +109,17 @@ export default function ProductCard({ product, defaultRating, defaultReviewCount
     }
   };
 
+  const handleCompare = () => {
+    // The context refuses the fourth pick, so say so rather than letting the
+    // button look broken when nothing happens.
+    if (toggleCompare(product.id)) {
+      setCompareFullMessage('');
+      return;
+    }
+    setCompareFullMessage(t('product.compareLimit'));
+    setTimeout(() => setCompareFullMessage(''), 2500);
+  };
+
   return (
     <div className="group relative flex flex-col bg-[var(--color-card-bg)] rounded-[var(--radius-lg)] shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] hover:-translate-y-1 transition-all duration-[var(--transition-base)] overflow-hidden">
       {/* Image */}
@@ -102,13 +130,13 @@ export default function ProductCard({ product, defaultRating, defaultReviewCount
         />
 
         {isOutOfStock && (
-          <span className="absolute top-2 left-2 rounded-full bg-[var(--color-text-muted)] text-white text-xs font-semibold px-2.5 py-1">
-            OUT OF STOCK
+          <span className="absolute top-2 left-2 rounded-full bg-[var(--color-text-muted)] text-white text-xs font-semibold px-2.5 py-1 uppercase">
+            {t('product.outOfStock')}
           </span>
         )}
         {!isOutOfStock && isLowStock && (
-          <span className="absolute top-2 left-2 rounded-full bg-[var(--color-warning)] text-white text-xs font-semibold px-2.5 py-1">
-            LOW STOCK
+          <span className="absolute top-2 left-2 rounded-full bg-[var(--color-warning)] text-white text-xs font-semibold px-2.5 py-1 uppercase">
+            {t('product.lowStock')}
           </span>
         )}
       </Link>
@@ -116,10 +144,27 @@ export default function ProductCard({ product, defaultRating, defaultReviewCount
       {/* Wishlist */}
       <button
         onClick={toggleWishlist}
-        aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+        aria-label={isWishlisted ? t('product.removeFromWishlist') : t('product.addToWishlist')}
         className="absolute top-2 right-2 z-10 w-9 h-9 rounded-full bg-[var(--color-surface)] shadow-[var(--shadow-sm)] flex items-center justify-center transition-transform hover:scale-110"
       >
         <Heart size={18} className={isWishlisted ? 'fill-[var(--color-secondary)] text-[var(--color-secondary)]' : 'text-[var(--color-text-muted)]'} />
+      </button>
+
+      {/* Compare tick. Sits under the wishlist heart so the two never overlap. */}
+      <button
+        onClick={handleCompare}
+        aria-pressed={compareSelected}
+        aria-label={compareSelected ? t('product.removeFromCompare', { name: product.name }) : t('product.compareNamed', { name: product.name })}
+        title={compareSelected ? t('product.removeFromCompareShort') : t('product.addToCompare')}
+        className={
+          'absolute top-12 right-2 z-10 h-7 px-2 rounded-full bg-[var(--color-surface)] shadow-[var(--shadow-sm)] flex items-center gap-1 text-[11px] font-semibold transition-transform hover:scale-110 ' +
+          (compareSelected
+            ? 'text-[var(--color-primary)] ring-[1.5px] ring-[var(--color-primary)]'
+            : 'text-[var(--color-text-muted)]')
+        }
+      >
+        <Scale size={13} />
+        {compareSelected ? t('product.addedShort') : t('product.compare')}
       </button>
 
       {/* Body */}
@@ -135,14 +180,14 @@ export default function ProductCard({ product, defaultRating, defaultReviewCount
         <div className="flex items-center gap-2 mb-2">
           <Stars rating={summary.averageRating} />
           <span className="text-xs text-[var(--color-text-muted)]">
-            {summary.reviewCount > 0 ? `(${summary.reviewCount})` : '(no reviews)'}
+            {summary.reviewCount > 0 ? `(${summary.reviewCount})` : t('product.noReviews')}
           </span>
         </div>
 
         {/* Sustainability */}
         <div className="mb-3">
           <div className="flex items-center justify-between mb-1">
-            <span className={`text-xs font-medium ${SUSTAIN_COLORS[label]}`}>{label}</span>
+            <span className={`text-xs font-medium ${SUSTAIN_COLORS[label]}`}>{labelText}</span>
             {score != null && <span className="text-xs text-[var(--color-text-muted)]">{score}/100</span>}
           </div>
           {score != null && (
@@ -158,7 +203,7 @@ export default function ProductCard({ product, defaultRating, defaultReviewCount
         {/* Price + CTA */}
         <div className="mt-auto">
           <p className="font-[family-name:var(--font-heading)] text-xl font-bold text-[var(--color-text-primary)] mb-3">
-            ₹{product.price}
+            {formatCurrency(product.price)}
           </p>
 
           {isOutOfStock ? (
@@ -169,7 +214,11 @@ export default function ProductCard({ product, defaultRating, defaultReviewCount
             >
               <span className="inline-flex items-center gap-2">
                 <Bell size={16} />
-                {notifyStatus === 'subscribed' ? "We'll notify you" : notifyStatus === 'duplicate' ? 'Already subscribed' : 'Notify me when in stock'}
+                {notifyStatus === 'subscribed'
+                  ? t('product.willNotify')
+                  : notifyStatus === 'duplicate'
+                    ? t('product.alreadySubscribed')
+                    : t('product.notifyWhenInStock')}
               </span>
             </button>
           ) : (
@@ -187,9 +236,9 @@ export default function ProductCard({ product, defaultRating, defaultReviewCount
                 className="flex-1 min-h-[44px] rounded-[var(--radius-md)] bg-white border-[1.5px] border-[var(--color-primary)] text-[var(--color-primary)] py-2 px-4 text-sm font-semibold hover:bg-[var(--color-card-bg-tint)] transition-colors"
               >
                 <span className="inline-flex items-center gap-2">
-                  {justAdded ? '✓ Added' : (
+                  {justAdded ? `\u2713 ${t('product.addedToCart')}` : (
                     <>
-                      <ShoppingCart size={16} /> Add to Cart
+                      <ShoppingCart size={16} /> {t('product.addToCart')}
                     </>
                   )}
                 </span>
@@ -197,6 +246,13 @@ export default function ProductCard({ product, defaultRating, defaultReviewCount
             </div>
           )}
         </div>
+
+        {/* Shown when the shopper tries to tick a fourth product. */}
+        {compareFullMessage && (
+          <p className="absolute bottom-2 left-2 right-2 z-10 text-[11px] font-medium text-[var(--color-error)] bg-[var(--color-error-bg)] rounded-[var(--radius-sm)] px-2 py-1.5">
+            {compareFullMessage}
+          </p>
+        )}
       </div>
     </div>
   );

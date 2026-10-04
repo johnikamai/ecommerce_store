@@ -80,6 +80,134 @@
   --z-toast: 500;
 }
 
+/*
+ * Customer-selectable themes.
+ *
+ * Every colour in the app is referenced through a variable, so a theme is only a
+ * set of overrides - no component changes and no rebuild per theme. The `data-theme`
+ * attribute is set on <html> by ThemeSwitcher and restored from localStorage on
+ * boot, so the choice survives a reload.
+ *
+ * Only the palette is overridden. Status colours stay put on purpose: a red error
+ * has to read as an error in every theme, and tinting it per theme would make the
+ * same failure look like a different severity depending on the customer's taste.
+ * Text pairs are kept dark-on-light so contrast holds in all five.
+ */
+[data-theme='midnight'] {
+  --color-primary: #6D8BFF;
+  --color-primary-hover: #5C7BEB;
+  --color-primary-active: #4C6BD8;
+  --color-secondary: #7BD0E8;
+  --color-accent: #F0B429;
+  --color-info: #6D8BFF;
+  --color-background: #10131C;
+  --color-surface: #171B27;
+  --color-card-bg: #1C2130;
+  --color-card-bg-tint: #232941;
+  --color-border: #2C3346;
+  --color-text-primary: #F2F5FC;
+  --color-text-secondary: #B6BED2;
+  --color-text-muted: #7F8AA3;
+  --color-text-on-primary: #0B0E15;
+  --gradient-hero: linear-gradient(135deg, #1A2033 0%, #16232E 100%);
+  --gradient-promo: linear-gradient(135deg, #1E2436 0%, #241E2E 100%);
+  --gradient-premium: linear-gradient(135deg, #6D8BFF 0%, #7BD0E8 100%);
+  --shadow-glow-primary: 0 0 0 4px rgba(109, 139, 255, 0.28);
+  --shadow-glow-secondary: 0 0 0 4px rgba(123, 208, 232, 0.24);
+}
+
+[data-theme='forest'] {
+  --color-primary: #2F855A;
+  --color-primary-hover: #276E4A;
+  --color-primary-active: #1F5A3C;
+  --color-secondary: #9CC98B;
+  --color-accent: #E8A93B;
+  --color-info: #4A9DA8;
+  --color-background: #F3F7F2;
+  --color-surface: #FFFFFF;
+  --color-card-bg: #FFFFFF;
+  --color-card-bg-tint: #E7F0E4;
+  --color-border: #D6E3D2;
+  --color-text-primary: #1B2A20;
+  --color-text-secondary: #4A5B50;
+  --color-text-muted: #869588;
+  --color-text-on-primary: #FFFFFF;
+  --gradient-hero: linear-gradient(135deg, #E4F0E1 0%, #EFF6E9 100%);
+  --gradient-promo: linear-gradient(135deg, #F3F0E2 0%, #E9F2E6 100%);
+  --gradient-premium: linear-gradient(135deg, #2F855A 0%, #6BAF7E 100%);
+  --shadow-glow-primary: 0 0 0 4px rgba(47, 133, 90, 0.18);
+  --shadow-glow-secondary: 0 0 0 4px rgba(156, 201, 139, 0.22);
+}
+
+[data-theme='sunset'] {
+  --color-primary: #E2603F;
+  --color-primary-hover: #CB4F31;
+  --color-primary-active: #AE4227;
+  --color-secondary: #F2A65A;
+  --color-accent: #FFD166;
+  --color-info: #4C93B8;
+  --color-background: #FDF6F2;
+  --color-surface: #FFFFFF;
+  --color-card-bg: #FFFFFF;
+  --color-card-bg-tint: #FBE8E0;
+  --color-border: #F0D8CD;
+  --color-text-primary: #33201A;
+  --color-text-secondary: #63483F;
+  --color-text-muted: #9C8378;
+  --color-text-on-primary: #FFFFFF;
+  --gradient-hero: linear-gradient(135deg, #FDE4D8 0%, #FEF0D9 100%);
+  --gradient-promo: linear-gradient(135deg, #FDEBD2 0%, #FBDDD6 100%);
+  --gradient-premium: linear-gradient(135deg, #E2603F 0%, #F2A65A 100%);
+  --shadow-glow-primary: 0 0 0 4px rgba(226, 96, 63, 0.18);
+  --shadow-glow-secondary: 0 0 0 4px rgba(242, 166, 90, 0.22);
+}
+
+[data-theme='mono'] {
+  --color-primary: #171717;
+  --color-primary-hover: #333333;
+  --color-primary-active: #404040;
+  --color-secondary: #737373;
+  --color-accent: #A3A3A3;
+  --color-info: #525252;
+  --color-background: #FAFAFA;
+  --color-surface: #FFFFFF;
+  --color-card-bg: #FFFFFF;
+  --color-card-bg-tint: #F0F0F0;
+  --color-border: #E0E0E0;
+  --color-text-primary: #171717;
+  --color-text-secondary: #525252;
+  --color-text-muted: #8C8C8C;
+  --color-text-on-primary: #FFFFFF;
+  --gradient-hero: linear-gradient(135deg, #F0F0F0 0%, #FAFAFA 100%);
+  --gradient-promo: linear-gradient(135deg, #F5F5F5 0%, #EDEDED 100%);
+  --gradient-premium: linear-gradient(135deg, #171717 0%, #525252 100%);
+  --shadow-glow-primary: 0 0 0 4px rgba(23, 23, 23, 0.14);
+  --shadow-glow-secondary: 0 0 0 4px rgba(115, 115, 115, 0.16);
+}
+
+[data-theme='ocean'] {
+  --color-primary: #0E7490;
+  --color-primary-hover: #0B6079;
+  --color-primary-active: #094E62;
+  --color-secondary: #5EEAD4;
+  --color-accent: #FDBA74;
+  --color-info: #38BDF8;
+  --color-background: #F0F9FB;
+  --color-surface: #FFFFFF;
+  --color-card-bg: #FFFFFF;
+  --color-card-bg-tint: #DCF2F7;
+  --color-border: #CBE7EE;
+  --color-text-primary: #10303A;
+  --color-text-secondary: #3D5F6B;
+  --color-text-muted: #7C99A3;
+  --color-text-on-primary: #FFFFFF;
+  --gradient-hero: linear-gradient(135deg, #D6F0F6 0%, #E6F7F4 100%);
+  --gradient-promo: linear-gradient(135deg, #E4F4F8 0%, #DDF3EE 100%);
+  --gradient-premium: linear-gradient(135deg, #0E7490 0%, #14B8A6 100%);
+  --shadow-glow-primary: 0 0 0 4px rgba(14, 116, 144, 0.18);
+  --shadow-glow-secondary: 0 0 0 4px rgba(94, 234, 212, 0.24);
+}
+
 @layer base {
   body {
     background-color: var(--color-background);

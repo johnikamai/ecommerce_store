@@ -2,8 +2,12 @@ import { useState, useEffect } from 'react';
 import axiosClient from '../api/axiosClient';
 import { getCustomerId } from '../utils/customer';
 import ReceiptModal from '../components/ReceiptModal';
+import OrderTracking from '../components/OrderTracking';
+import { useLanguage } from '../context/LanguageContext';
 
-const STATUS_STEPS = ['PLACED', 'SHIPPED', 'DELIVERED'];
+// PACKED and OUT_FOR_DELIVERY are real backend states, so the rail has to
+// include them or an order sitting in one of them renders no progress at all.
+const STATUS_STEPS = ['PLACED', 'PACKED', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED'];
 
 const TIER_STYLES = {
   GOLD: 'bg-[var(--color-warning-bg)] text-[var(--color-warning)]',
@@ -36,27 +40,39 @@ function StatusChip({ value, styles, fallback }) {
 }
 
 function OrderTimeline({ status }) {
+  const { t } = useLanguage();
+
   if (status === 'CANCELLED') {
     return (
       <div className="flex items-center gap-2 text-[var(--color-error)] text-sm font-medium">
         <span className="w-3 h-3 rounded-full bg-[var(--color-error)]" />
-        Cancelled
+        {t('status.CANCELLED')}
       </div>
     );
   }
 
   const currentIndex = STATUS_STEPS.indexOf(status);
 
+  // Show the milestones actually reached, plus DELIVERED if it is still ahead.
+  // PACKED / OUT_FOR_DELIVERY are optional waypoints, so an order that skipped
+  // them must not display a pending step for a stage it never went through.
+  const steps = currentIndex < 0
+    ? STATUS_STEPS
+    : [
+        ...STATUS_STEPS.slice(0, currentIndex + 1),
+        ...(currentIndex < STATUS_STEPS.length - 1 ? ['DELIVERED'] : []),
+      ];
+
   return (
-    <div className="flex items-center">
-      {STATUS_STEPS.map((step, i) => {
+    <div className="flex items-center overflow-x-auto pb-1">
+      {steps.map((step, i) => {
         const isDone = i <= currentIndex;
-        const isLast = i === STATUS_STEPS.length - 1;
+        const isLast = i === steps.length - 1;
         return (
           <div key={step} className="flex items-center">
             <div className="flex flex-col items-center">
               <div
-                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors shrink-0 ${
                   isDone
                     ? 'bg-[var(--color-success)] text-white'
                     : 'bg-[var(--color-border)] text-[var(--color-text-muted)]'
@@ -64,13 +80,13 @@ function OrderTimeline({ status }) {
               >
                 {isDone ? '✓' : ''}
               </div>
-              <span className={`text-xs mt-1 ${isDone ? 'text-[var(--color-text-primary)] font-medium' : 'text-[var(--color-text-muted)]'}`}>
-                {step.charAt(0) + step.slice(1).toLowerCase()}
+              <span className={`text-xs mt-1 whitespace-nowrap ${isDone ? 'text-[var(--color-text-primary)] font-medium' : 'text-[var(--color-text-muted)]'}`}>
+                {t(`status.${step}`)}
               </span>
             </div>
             {!isLast && (
               <div
-                className={`w-12 h-0.5 mb-4 transition-colors ${
+                className={`w-8 h-0.5 mb-4 transition-colors shrink-0 ${
                   i < currentIndex ? 'bg-[var(--color-success)]' : 'bg-[var(--color-border)]'
                 }`}
               />
@@ -83,6 +99,7 @@ function OrderTimeline({ status }) {
 }
 
 function Orders() {
+  const { t, formatDate, formatDateTime, formatCurrency, formatNumber } = useLanguage();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -145,18 +162,18 @@ function Orders() {
       await axiosClient.put(`/orders/${orderId}/status`, { status: newStatus });
       fetchOrders();
     } catch (err) {
-      alert('Failed to update status');
+      alert(t('orders.statusUpdateFailed'));
     }
   };
 
   const cancelMyOrder = async (orderId) => {
-    if (!window.confirm(`Cancel order #${orderId}? Any reserved stock will be released back.`)) return;
+    if (!window.confirm(t('orders.cancelConfirm', { id: orderId }))) return;
     setCancelling((prev) => ({ ...prev, [orderId]: true }));
     try {
       await axiosClient.post(`/orders/${orderId}/cancel`);
       fetchOrders();
     } catch (err) {
-      alert(err.response?.data || 'Failed to cancel order');
+      alert(err.response?.data || t('orders.cancelFailed'));
     } finally {
       setCancelling((prev) => ({ ...prev, [orderId]: false }));
     }
@@ -172,15 +189,15 @@ function Orders() {
   const submitReturn = async (itemId) => {
     const form = returnForms[itemId] || {};
     if (!form.reason || !form.reason.trim()) {
-      setReturnForms((prev) => ({ ...prev, [itemId]: { ...prev[itemId], error: 'Please enter a reason' } }));
+      setReturnForms((prev) => ({ ...prev, [itemId]: { ...prev[itemId], error: t('orders.returnReasonRequired') } }));
       return;
     }
     try {
       await axiosClient.post('/returns', { orderItemId: itemId, customerId, reason: form.reason });
-      setReturnForms((prev) => ({ ...prev, [itemId]: { open: false, reason: '', error: '✓ Return requested' } }));
+      setReturnForms((prev) => ({ ...prev, [itemId]: { open: false, reason: '', error: t('orders.returnRequested') } }));
       fetchReturns();
     } catch (err) {
-      setReturnForms((prev) => ({ ...prev, [itemId]: { ...prev[itemId], error: err.response?.data || 'Request failed' } }));
+      setReturnForms((prev) => ({ ...prev, [itemId]: { ...prev[itemId], error: err.response?.data || t('action.retry') } }));
     }
   };
 
@@ -223,26 +240,26 @@ function Orders() {
       const res = await axiosClient.get(`/payments/order/${orderId}`);
       setReceiptFor(res.data.id);
     } catch {
-      setError('No payment record found for this order.');
+      setError(t('orders.noReceipt'));
     }
   };
 
-  if (loading) return <p className="max-w-[1320px] mx-auto px-6 py-12">Loading orders...</p>;
-  if (error) return <p className="max-w-[1320px] mx-auto px-6 py-12 text-[var(--color-error)]">{error}</p>;
+  if (loading) return <p className="max-w-[1320px] mx-auto px-6 py-12">{t('orders.loading')}</p>;
+  if (error) return <p className="max-w-[1320px] mx-auto px-6 py-12 text-[var(--color-error)]">{t('orders.error')}</p>;
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
     <div className="max-w-[1320px] mx-auto px-6 py-8">
       <h2 className="font-[family-name:var(--font-heading)] text-[32px] font-bold mb-6">
-        {role === 'ADMIN' ? 'All Orders' : 'My Orders'}
+        {role === 'ADMIN' ? t('orders.title.all') : t('orders.title.mine')}
       </h2>
 
       {/* Account: loyalty + referral + notifications */}
       {role !== 'ADMIN' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="rounded-[var(--radius-lg)] bg-[var(--color-card-bg)] shadow-[var(--shadow-sm)] p-5">
-            <p className="text-xs text-[var(--color-text-muted)] mb-1">Loyalty Points</p>
+            <p className="text-xs text-[var(--color-text-muted)] mb-1">{t('account.loyaltyPoints')}</p>
             {customer ? (
               <>
                 <div className="flex items-center gap-2 mb-1">
@@ -256,12 +273,12 @@ function Orders() {
                 </p>
               </>
             ) : (
-              <p className="text-sm text-[var(--color-text-muted)]">Unavailable</p>
+              <p className="text-sm text-[var(--color-text-muted)]">{t('account.unavailable')}</p>
             )}
           </div>
 
           <div className="rounded-[var(--radius-lg)] bg-[var(--color-card-bg)] shadow-[var(--shadow-sm)] p-5">
-            <p className="text-xs text-[var(--color-text-muted)] mb-1">Referral Program</p>
+            <p className="text-xs text-[var(--color-text-muted)] mb-1">{t('account.referralProgram')}</p>
             {customer?.referralCode ? (
               <>
                 <button
@@ -284,16 +301,16 @@ function Orders() {
 
           <div className="rounded-[var(--radius-lg)] bg-[var(--color-card-bg)] shadow-[var(--shadow-sm)] p-5">
             <p className="text-xs text-[var(--color-text-muted)] mb-2 flex items-center justify-between">
-              Notifications
+              {t('account.notifications')}
               {unreadCount > 0 && (
                 <button onClick={markAllRead} className="text-[var(--color-primary)] font-semibold hover:underline">
-                  Mark all read
+                  {t('account.markAllRead')}
                 </button>
               )}
             </p>
             {notifications.length === 0 ? (
               <p className="text-sm text-[var(--color-text-muted)]">
-                No notifications yet. Order updates, shipping alerts and offers land here.
+                {t('account.noNotifications')}
               </p>
             ) : (
               <ul className="space-y-1.5 max-h-36 overflow-y-auto">
@@ -306,7 +323,7 @@ function Orders() {
                       <span className="block text-xs text-[var(--color-text-secondary)]">{n.message}</span>
                       {n.sentAt && (
                         <span className="block text-[var(--color-text-muted)] text-[11px] mt-0.5">
-                          {new Date(n.sentAt).toLocaleString()}
+                          {formatDateTime(n.sentAt)}
                         </span>
                       )}
                     </button>
@@ -321,7 +338,7 @@ function Orders() {
       {/* My Returns */}
       {role !== 'ADMIN' && returns.length > 0 && (
         <div className="mb-8">
-          <h3 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-3">My Returns</h3>
+          <h3 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-3">{t('orders.myReturns')}</h3>
           <div className="rounded-[var(--radius-lg)] bg-[var(--color-card-bg)] shadow-[var(--shadow-sm)] p-5">
             <ul className="space-y-2 text-sm">
               {returns.map((r) => (
@@ -343,7 +360,7 @@ function Orders() {
 
       {orders.length === 0 && (
         <div className="text-center py-20">
-          <p className="text-[var(--color-text-muted)]">No orders yet.</p>
+          <p className="text-[var(--color-text-muted)]">{t('orders.empty')}</p>
         </div>
       )}
 
@@ -352,9 +369,9 @@ function Orders() {
           <div key={order.id} className="rounded-[var(--radius-lg)] bg-[var(--color-card-bg)] shadow-[var(--shadow-sm)] p-6">
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
               <div>
-                <p className="font-semibold text-[var(--color-text-primary)]">Order #{order.id}</p>
+                <p className="font-semibold text-[var(--color-text-primary)]">{t('orders.number', { id: order.id })}</p>
                 <p className="text-sm text-[var(--color-text-muted)]">
-                  {new Date(order.orderDate).toLocaleDateString()}
+                  {formatDate(order.orderDate)}
                   {order.paymentMethod && (
                     <span className="ml-2 inline-block rounded-full px-2 py-0.5 text-xs bg-[var(--color-card-bg-tint)] text-[var(--color-text-secondary)]">
                       {PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod}
@@ -371,23 +388,28 @@ function Orders() {
                 </p>
               </div>
               <div className="text-right">
-                <p className="font-[family-name:var(--font-heading)] text-xl font-bold">₹{order.totalAmount}</p>
+                <p className="font-[family-name:var(--font-heading)] text-xl font-bold">{formatCurrency(order.totalAmount)}</p>
                 {order.discountAmount > 0 && (
-                  <p className="text-xs text-[var(--color-success)]">Coupon saved ₹{order.discountAmount}</p>
+                  <p className="text-xs text-[var(--color-success)]">{t('orders.couponSaved', { amount: formatNumber(order.discountAmount) })}</p>
                 )}
-                {order.couponCode && <p className="text-xs text-[var(--color-text-muted)]">Code: {order.couponCode}</p>}
+                {order.couponCode && <p className="text-xs text-[var(--color-text-muted)]">{t('orders.couponCode', { code: order.couponCode })}</p>}
               </div>
             </div>
 
             {order.shippingAddress && (
               <p className="text-xs text-[var(--color-text-muted)] mb-3">
-                Delivering to: {order.shippingAddress}
+                {t('orders.deliveringTo', { address: order.shippingAddress })}
               </p>
             )}
 
             <div className="mb-4">
               <OrderTimeline status={order.status} />
             </div>
+
+            {/* Live courier tracking. Polls itself only while the parcel moves. */}
+            {order.status !== 'CANCELLED' && (
+              <OrderTracking orderId={order.id} status={order.status} />
+            )}
 
             {/* Customer cancel: only while order is still PLACED */}
             {role !== 'ADMIN' && order.status === 'PLACED' && (
@@ -397,7 +419,7 @@ function Orders() {
                   disabled={cancelling[order.id]}
                   className="rounded-[var(--radius-md)] bg-white border-[1.5px] border-[var(--color-error)] text-[var(--color-error)] px-4 py-2 text-xs font-semibold hover:bg-[var(--color-error-bg)] transition-colors disabled:opacity-50"
                 >
-                  {cancelling[order.id] ? 'Cancelling...' : 'Cancel Order'}
+                  {cancelling[order.id] ? t('orders.cancelling') : t('action.cancelOrder')}
                 </button>
               </div>
             )}
@@ -409,33 +431,52 @@ function Orders() {
                 onClick={() => openReceipt(order.id)}
                 className="rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] text-[var(--color-text-secondary)] px-4 py-2 text-xs font-semibold hover:bg-[var(--color-border)] transition-colors"
               >
-                View Receipt
+                {t('orders.viewReceipt')}
               </button>
             </div>
 
+            {/* Admin fulfilment controls. The options mirror the backend's
+                allowed transitions, so the console only offers moves the API
+                will actually accept. */}
             {role === 'ADMIN' && order.status !== 'CANCELLED' && order.status !== 'DELIVERED' && (
-              <div className="flex gap-2 mb-4">
+              <div className="flex flex-wrap gap-2 mb-4">
                 {order.status === 'PLACED' && (
+                  <button
+                    onClick={() => updateStatus(order.id, 'PACKED')}
+                    className="rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] text-[var(--color-text-primary)] px-4 py-2 text-xs font-semibold hover:bg-[var(--color-border)] transition-colors"
+                  >
+                    {t('admin.markPacked')}
+                  </button>
+                )}
+                {(order.status === 'PLACED' || order.status === 'PACKED') && (
                   <button
                     onClick={() => updateStatus(order.id, 'SHIPPED')}
                     className="rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white px-4 py-2 text-xs font-semibold hover:bg-[var(--color-primary-hover)] transition-colors"
                   >
-                    Mark as Shipped
+                    {t('admin.markShipped')}
                   </button>
                 )}
                 {order.status === 'SHIPPED' && (
                   <button
-                    onClick={() => updateStatus(order.id, 'DELIVERED')}
-                    className="rounded-[var(--radius-md)] bg-[var(--color-success)] text-white px-4 py-2 text-xs font-semibold hover:opacity-90 transition-opacity"
+                    onClick={() => updateStatus(order.id, 'OUT_FOR_DELIVERY')}
+                    className="rounded-[var(--radius-md)] bg-[var(--color-info)] text-white px-4 py-2 text-xs font-semibold hover:opacity-90 transition-opacity"
                   >
-                    Mark as Delivered
+                    {t('admin.markOutForDelivery')}
                   </button>
                 )}
+                {/* Every non-terminal state can jump straight to delivered; the
+                    guard above already excludes CANCELLED and DELIVERED. */}
+                <button
+                  onClick={() => updateStatus(order.id, 'DELIVERED')}
+                  className="rounded-[var(--radius-md)] bg-[var(--color-success)] text-white px-4 py-2 text-xs font-semibold hover:opacity-90 transition-opacity"
+                >
+                  {t('admin.markDelivered')}
+                </button>
                 <button
                   onClick={() => updateStatus(order.id, 'CANCELLED')}
                   className="rounded-[var(--radius-md)] bg-white border-[1.5px] border-[var(--color-error)] text-[var(--color-error)] px-4 py-2 text-xs font-semibold hover:bg-[var(--color-error-bg)] transition-colors"
                 >
-                  Cancel Order
+                  {t('action.cancelOrder')}
                 </button>
               </div>
             )}
@@ -448,19 +489,19 @@ function Orders() {
                       {item.product.name} × {item.quantity} — ₹{item.unitPrice} each
                     </span>
                     <span className="font-semibold text-[var(--color-text-primary)] tabular-nums">
-                      ₹{Number(item.lineTotal ?? Number(item.unitPrice) * item.quantity).toLocaleString('en-IN')}
+                      {formatCurrency(item.lineTotal ?? Number(item.unitPrice) * item.quantity)}
                     </span>
                   </span>
                   {order.status === 'DELIVERED' && role !== 'ADMIN' && (
                     <div className="flex items-center gap-2">
                       {returnForms[item.id]?.open ? (
-                        formReturnInline(item, returnForms[item.id], setReturnForms, submitReturn)
+                        formReturnInline(item, returnForms[item.id], setReturnForms, submitReturn, t)
                       ) : (
                         <button
                           onClick={() => toggleReturnForm(item.id)}
                           className="rounded-[var(--radius-md)] bg-white border-[1.5px] border-[var(--color-error)] text-[var(--color-error)] px-3 py-1.5 text-xs font-semibold hover:bg-[var(--color-error-bg)] transition-colors"
                         >
-                          Request Return
+                          {t('orders.requestReturn')}
                         </button>
                       )}
                     </div>
@@ -477,12 +518,12 @@ function Orders() {
   );
 }
 
-function formReturnInline(item, form, setReturnForms, submitReturn) {
+function formReturnInline(item, form, setReturnForms, submitReturn, t) {
   return (
     <div className="flex items-center gap-2">
       <input
         type="text"
-        placeholder="Reason for return..."
+        placeholder={t('orders.returnReason')}
         value={form?.reason || ''}
         onChange={(e) =>
           setReturnForms((prev) => ({ ...prev, [item.id]: { ...prev[item.id], reason: e.target.value } }))
@@ -493,7 +534,7 @@ function formReturnInline(item, form, setReturnForms, submitReturn) {
         onClick={() => submitReturn(item.id)}
         className="rounded-[var(--radius-md)] bg-[var(--color-error)] text-white px-3 py-1.5 text-xs font-semibold hover:opacity-90 transition-opacity"
       >
-        Submit
+        {t('action.submit')}
       </button>
       {form?.error && <span className="text-xs text-[var(--color-error)]">{form.error}</span>}
     </div>

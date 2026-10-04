@@ -1,4 +1,5 @@
 package com.ecommerce.ecommerce_system.model;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -40,6 +41,11 @@ public class Order {
     // Amount knocked off by the coupon (stored so the invoice stays auditable).
     private BigDecimal discountAmount = BigDecimal.ZERO;
 
+    // Amount knocked off by the multi-item bundle tier. Kept separate from
+    // discountAmount so the cart and the invoice can show *why* the order was
+    // cheaper; the two are applied one after the other and both stack.
+    private BigDecimal bundleDiscountAmount = BigDecimal.ZERO;
+
     // Delivery snapshot captured at checkout (address book entry or manual entry).
     private String shippingAddress;
 
@@ -49,6 +55,46 @@ public class Order {
     // Current payment state for this order (null for legacy orders).
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
+
+    // ---- Order tracking ----
+    //
+    // These are persisted here but deliberately NOT serialized onto the order
+    // JSON. GET /api/orders/{id}/tracking (OrderService.trackingFor) is the
+    // single source of truth for tracking, and it returns a superset of these
+    // fields plus the derived milestone rail and scan history.
+    //
+    // Exposing them in both places let the two drift apart, and embedding the
+    // scan history in every order response cost an extra query per order on
+    // list endpoints that never display it.
+
+    // Courier reference, issued when the parcel is handed over. Null until then.
+    @JsonIgnore
+    private String trackingNumber;
+
+    // Carrier name, e.g. "Delhivery". Null for digital goods or unfulfilled orders.
+    @JsonIgnore
+    private String carrier;
+
+    // Promised delivery date shown to the customer, set when the order ships.
+    @JsonIgnore
+    private LocalDateTime expectedDelivery;
+
+    // When the parcel actually left the warehouse and when it arrived.
+    @JsonIgnore
+    private LocalDateTime shippedAt;
+    @JsonIgnore
+    private LocalDateTime deliveredAt;
+
+    // Append-only scan history powering the customer-facing tracker. Read only
+    // through the tracking endpoint, which shapes it for display.
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<OrderStatusEvent> statusEvents = new ArrayList<>();
+
+    public void addStatusEvent(OrderStatusEvent event) {
+        event.setOrder(this);
+        statusEvents.add(event);
+    }
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference

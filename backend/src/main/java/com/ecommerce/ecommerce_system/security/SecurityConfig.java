@@ -53,6 +53,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         // Error dispatch must not 403 to anonymous users
                         .requestMatchers("/error").permitAll()
+
+        // The shopping assistant is a browsing tool like search, so it has to
+        // work before sign-in. It only ever reads the public catalogue and is
+        // rate limited in AssistantController.
+        .requestMatchers("/api/assistant/**").permitAll()
                         // Public reads
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
@@ -61,6 +66,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/orders").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/orders/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/orders/customer/**").authenticated()
+                        // Order tracking is the customer's own parcel, so any signed-in
+                        // user may read it; CustomerGuard in the controller enforces
+                        // ownership. Must sit above the staff/admin order rules below.
+                        .requestMatchers(HttpMethod.GET, "/api/orders/*/tracking").authenticated()
+                        // Personalized recommendations are derived from the signed-in
+                        // shopper's own order history, which is customer-private data.
+                        .requestMatchers("/api/recommendations/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/reviews").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/reviews/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/reviews/**").authenticated()
@@ -83,7 +95,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/products/**").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers(HttpMethod.PUT, "/api/products/**").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN")
-                        .requestMatchers("/api/inventory/**").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/categories/**").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers(HttpMethod.PUT, "/api/categories/**").hasAnyRole("ADMIN", "STAFF")

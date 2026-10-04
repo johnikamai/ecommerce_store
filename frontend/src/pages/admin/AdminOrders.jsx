@@ -3,7 +3,9 @@ import axiosClient from '../../api/axiosClient';
 
 const STATUS_COLORS = {
   PLACED: 'bg-[var(--color-info-bg)] text-[var(--color-info)]',
+  PACKED: 'bg-[var(--color-card-bg-tint)] text-[var(--color-text-secondary)]',
   SHIPPED: 'bg-[var(--color-warning-bg)] text-[var(--color-warning)]',
+  OUT_FOR_DELIVERY: 'bg-[var(--color-warning-bg)] text-[var(--color-warning)]',
   DELIVERED: 'bg-[var(--color-success-bg)] text-[var(--color-success)]',
   CANCELLED: 'bg-[var(--color-error-bg)] text-[var(--color-error)]',
 };

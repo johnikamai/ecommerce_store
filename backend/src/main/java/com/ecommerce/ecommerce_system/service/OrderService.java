@@ -8,11 +8,21 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 @Service
 public class OrderService {
+
+    /** Used when a parcel ships without the warehouse naming a courier. */
+    private static final String DEFAULT_CARRIER = "ShopEase Logistics";
+
+    /** Working-day estimate shown as the promised delivery date. */
+    private static final int TRANSIT_DAYS = 4;
 
     @Autowired
     private OrderRepository orderRepository;
@@ -129,6 +139,24 @@ public class OrderService {
             total = total.subtract(couponDiscount);
         }
 
+        // Bundle tier: buying more *different* products in one order earns an
+        // extra discount. Applied after the coupon so the two stack - a coupon
+        // is never swallowed by the bundle, which is the whole point of showing
+        // both lines on the invoice.
+        int distinctProducts = (int) order.getOrderItems().stream()
+                .map(item -> item.getProduct())
+                .filter(java.util.Objects::nonNull)
+                .map(Product::getId)
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .count();
+        BigDecimal bundlePercent = bundleDiscountPercent(distinctProducts);
+        BigDecimal bundleDiscount = total
+                .multiply(bundlePercent)
+                .setScale(2, java.math.RoundingMode.HALF_UP);
+        order.setBundleDiscountAmount(bundleDiscount);
+        total = total.subtract(bundleDiscount);
+
         // Apply tier-based discount (tier may be null for legacy customers -> treat as BRONZE)
         String tier = customer.getTier() != null ? customer.getTier() : "BRONZE";
         java.math.BigDecimal discountPercent = switch (tier) {
@@ -211,6 +239,12 @@ public class OrderService {
         // Order confirmation + email.
         notificationService.orderPlaced(customer, saved.getId(), total.toPlainString());
 
+        // Opens the tracking timeline so the order is not born with an empty
+        // history; every later milestone appends to it.
+        saved.addStatusEvent(new OrderStatusEvent(
+                null, saved, OrderStatus.PLACED, "Order placed", saved.getShippingAddress(), LocalDateTime.now()));
+        saved = orderRepository.save(saved);
+
         return saved;
     }
 
@@ -231,6 +265,8 @@ public class OrderService {
         }
 
         order.setStatus(OrderStatus.CANCELLED);
+        order.addStatusEvent(new OrderStatusEvent(
+                null, order, OrderStatus.CANCELLED, "Cancelled by customer", order.getShippingAddress(), LocalDateTime.now()));
 
         // If the customer had paid online, issue the refund right away.
         boolean refunded = refundIfPaid(order);
@@ -263,7 +299,7 @@ public class OrderService {
         return false;
     }
 
-    /** Puts every ordered unit back into inventory. */
+    /** Puts every ordered unit back into stock. Stock lives on Product.stockQuantity. */
     private void releaseStock(Order order) {
         for (OrderItem item : order.getOrderItems()) {
             Product product = item.getProduct();
@@ -296,6 +332,7 @@ public class OrderService {
         }
 
         order.setStatus(newStatus);
+        applyTrackingMilestone(order, previous, newStatus);
         Order saved = orderRepository.save(order);
 
         Customer customer = order.getCustomer();
@@ -318,5 +355,221 @@ public class OrderService {
         }
 
         return saved;
+    }
+
+    /**
+     * Stamps the tracking fields and appends a scan whenever the parcel moves.
+     *
+     * Timestamps are only ever written once, so a repeated transition onto the
+     * same milestone cannot overwrite the real ship time with a later one.
+     */
+    private void applyTrackingMilestone(Order order, OrderStatus previous, OrderStatus next) {
+        LocalDateTime now = LocalDateTime.now();
+
+        if (next == OrderStatus.SHIPPED) {
+            if (order.getShippedAt() == null) {
+                order.setShippedAt(now);
+            }
+            // A consignment number is issued by the courier at handover. Generate
+            // one only if the warehouse has not supplied its own.
+            if (isBlank(order.getTrackingNumber())) {
+                order.setTrackingNumber(generateTrackingNumber());
+            }
+            if (isBlank(order.getCarrier())) {
+                order.setCarrier(DEFAULT_CARRIER);
+            }
+            if (order.getExpectedDelivery() == null) {
+                order.setExpectedDelivery(now.plusDays(TRANSIT_DAYS));
+            }
+        }
+
+        if (next == OrderStatus.DELIVERED && order.getDeliveredAt() == null) {
+            order.setDeliveredAt(now);
+        }
+
+        order.addStatusEvent(new OrderStatusEvent(
+                null,
+                order,
+                next,
+                describeMilestone(next, order),
+                order.getShippingAddress(),
+                now
+        ));
+    }
+
+    private static String describeMilestone(OrderStatus status, Order order) {
+        return switch (status) {
+            case PLACED -> "Order placed";
+            case PACKED -> "Packed at warehouse";
+            case SHIPPED -> "Handed to " + (isBlank(order.getCarrier()) ? DEFAULT_CARRIER : order.getCarrier());
+            case OUT_FOR_DELIVERY -> "Out for delivery";
+            case DELIVERED -> "Delivered";
+            case CANCELLED -> "Order cancelled";
+        };
+    }
+
+    /**
+     * Assigns courier details by hand, for orders shipped outside the normal flow.
+     * Refuses to overwrite a tracking number that already exists, because
+     * customers quote it to the carrier and a silent change breaks that lookup.
+     */
+    @Transactional
+    public Order assignTracking(Long orderId, String carrier, String trackingNumber, LocalDateTime expectedDelivery) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
+
+        if (isBlank(trackingNumber)) {
+            throw new IllegalArgumentException("Tracking number is required");
+        }
+        if (!isBlank(order.getTrackingNumber()) && !order.getTrackingNumber().equalsIgnoreCase(trackingNumber.trim())) {
+            throw new IllegalArgumentException("Order #" + orderId + " already has tracking number "
+                    + order.getTrackingNumber());
+        }
+        if (order.getStatus() == OrderStatus.CANCELLED || order.getStatus() == OrderStatus.DELIVERED) {
+            throw new IllegalStateException("Order #" + orderId + " is " + order.getStatus()
+                    + " and cannot be handed to a carrier");
+        }
+
+        order.setTrackingNumber(trackingNumber.trim());
+        if (!isBlank(carrier)) {
+            order.setCarrier(carrier.trim());
+        }
+        if (expectedDelivery != null) {
+            order.setExpectedDelivery(expectedDelivery);
+        }
+        if (order.getShippedAt() == null) {
+            order.setShippedAt(LocalDateTime.now());
+            if (order.getExpectedDelivery() == null) {
+                order.setExpectedDelivery(LocalDateTime.now().plusDays(TRANSIT_DAYS));
+            }
+        }
+        order.addStatusEvent(new OrderStatusEvent(
+                null,
+                order,
+                order.getStatus(),
+                "Tracking updated: " + order.getTrackingNumber(),
+                order.getShippingAddress(),
+                LocalDateTime.now()
+        ));
+
+        return orderRepository.save(order);
+    }
+
+    /**
+     * Builds the customer-facing tracking view: the milestones this order
+     * actually passed through, each paired with its scan time.
+     */
+    @Transactional(readOnly = true)
+    public Map<String, Object> trackingFor(Order order) {
+        List<OrderStatusEvent> events = new ArrayList<>(order.getStatusEvents());
+        events.sort(Comparator.comparing(OrderStatusEvent::getCreatedAt));
+
+        // Latest scan per milestone, so a status that was toggled more than once
+        // shows the most recent handover rather than the first.
+        Map<OrderStatus, OrderStatusEvent> scanByStatus = new LinkedHashMap<>();
+        for (OrderStatusEvent event : events) {
+            scanByStatus.put(event.getStatus(), event);
+        }
+
+        // PLACED is always recorded at checkout, but fall back to the order date
+        // so an order placed before this feature shipped still has a start.
+        boolean reachedAnything = !events.isEmpty();
+        List<Map<String, Object>> steps = new ArrayList<>();
+        for (OrderStatus milestone : OrderStatus.fulfilmentPath()) {
+            OrderStatusEvent scan = scanByStatus.get(milestone);
+            boolean reached = scan != null;
+            if (milestone == OrderStatus.PLACED && !reached) {
+                reached = true;
+            }
+            // PACKED and OUT_FOR_DELIVERY are optional waypoints; drop the ones
+            // this order skipped instead of rendering a step that never happened.
+            if (!reached && milestone != OrderStatus.PLACED && milestone != OrderStatus.SHIPPED
+                    && milestone != OrderStatus.DELIVERED) {
+                continue;
+            }
+
+            Map<String, Object> step = new LinkedHashMap<>();
+            step.put("status", milestone.name());
+            step.put("reached", reached);
+            step.put("at", reached
+                    ? (scan != null ? scan.getCreatedAt().toString() : order.getOrderDate().toString())
+                    : null);
+            step.put("note", scan == null || scan.getNote() == null ? "" : scan.getNote());
+            steps.add(step);
+        }
+
+        List<Map<String, Object>> history = new ArrayList<>();
+        for (OrderStatusEvent event : events) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("id", event.getId());
+            row.put("status", event.getStatus().name());
+            row.put("note", event.getNote());
+            row.put("location", event.getLocation());
+            row.put("createdAt", event.getCreatedAt().toString());
+            history.add(row);
+        }
+
+        Map<String, Object> view = new LinkedHashMap<>();
+        view.put("orderId", order.getId());
+        view.put("status", order.getStatus().name());
+        view.put("cancelled", order.getStatus() == OrderStatus.CANCELLED);
+        // A delivered or cancelled order still has a timeline worth reading, so
+        // this only gates the "live" parcel view, not the history itself.
+        view.put("trackable", order.getTrackingNumber() != null && order.getStatus().isInTransit());
+        view.put("trackingNumber", order.getTrackingNumber());
+        view.put("carrier", order.getCarrier());
+        view.put("shippedAt", order.getShippedAt() == null ? null : order.getShippedAt().toString());
+        view.put("deliveredAt", order.getDeliveredAt() == null ? null : order.getDeliveredAt().toString());
+        view.put("expectedDelivery", order.getExpectedDelivery() == null ? null : order.getExpectedDelivery().toString());
+        view.put("shippingAddress", order.getShippingAddress());
+        view.put("steps", steps);
+        view.put("events", history);
+        return view;
+    }
+
+    /**
+     * Bundle discount earned by buying several different products in one order.
+     *
+     * <p>Tiers: 2 products 5%, 3 products 10%, 4 or more 15%. A single product
+     * earns nothing. Quantities do not count towards a tier - buying three of
+     * the same shirt is not a bundle, and counting it that way would let one
+     * shopper clear the whole ladder with a single line.
+     *
+     * <p>Public and static so the checkout screen, the cart preview and the
+     * tests all read the same table instead of three copies that drift.
+     */
+    public static BigDecimal bundleDiscountPercent(int distinctProducts) {
+        if (distinctProducts >= 4) {
+            return new BigDecimal("0.15");
+        }
+        if (distinctProducts == 3) {
+            return new BigDecimal("0.10");
+        }
+        if (distinctProducts == 2) {
+            return new BigDecimal("0.05");
+        }
+        return BigDecimal.ZERO;
+    }
+
+    /** The next tier up and how many more distinct products unlock it, or null at the top. */
+    public static int nextBundleTier(int distinctProducts) {
+        if (distinctProducts < 2) {
+            return 2;
+        }
+        if (distinctProducts < 3) {
+            return 3;
+        }
+        if (distinctProducts < 4) {
+            return 4;
+        }
+        return 0;
+    }
+
+    private static String generateTrackingNumber() {
+        return "SE" + UUID.randomUUID().toString().replace("-", "").substring(0, 14).toUpperCase();
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 }

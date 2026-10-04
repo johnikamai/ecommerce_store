@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Banknote, CreditCard, Smartphone, MapPin, Plus } from 'lucide-react';
+import { Banknote, CreditCard, Smartphone, MapPin, Plus, LocateFixed, Loader2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import axiosClient from '../api/axiosClient';
 import { getCustomerId } from '../utils/customer';
@@ -11,13 +11,55 @@ const PAYMENT_METHODS = [
   { key: 'CARD', label: 'Card', desc: 'Mock gateway — instant approval', icon: CreditCard },
 ];
 
+const BUNDLE_TIERS = [
+  { products: 2, off: '5%' },
+  { products: 3, off: '10%' },
+  { products: 4, off: '15%' },
+];
+
 function formatAddress(a) {
   const parts = [a.name, a.addressLine, a.city, a.state ? `${a.state} ${a.pincode || ''}`.trim() : a.pincode].filter(Boolean);
   return parts.join(', ') + (a.phone ? ` ${a.phone}` : '');
 }
 
+/**
+ * Nudges the shopper toward the next bundle tier. Kept inline rather than in
+ * components/ because it is only ever used here and reads off cart state.
+ */
+function BundleProgress() {
+  const { distinctProductCount, bundlePercent, bundleDiscount, nextBundleAt } = useCart();
+
+  if (distinctProductCount === 0) return null;
+
+  if (bundlePercent > 0) {
+    return (
+      <div className="p-4 rounded-[var(--radius-lg)] bg-[var(--color-card-bg)] border-[1.5px] border-[var(--color-primary)] shadow-[var(--shadow-sm)]">
+        <p className="text-sm font-semibold text-[var(--color-primary)]">
+          Bundle discount unlocked — {Math.round(bundlePercent * 100)}% off, saving ₹{bundleDiscount}
+        </p>
+        <p className="text-xs text-[var(--color-text-muted)] mt-1">
+          {nextBundleAt > 0
+            ? `Add ${nextBundleAt - distinctProductCount} more product${nextBundleAt - distinctProductCount > 1 ? 's' : ''} to reach ${BUNDLE_TIERS.find((t) => t.products === nextBundleAt)?.off} off.`
+            : 'You are on the best bundle tier available.'}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 rounded-[var(--radius-lg)] bg-[var(--color-card-bg)] shadow-[var(--shadow-sm)]">
+      <p className="text-sm font-semibold">Buy 2+ different products and save automatically</p>
+      <p className="text-xs text-[var(--color-text-muted)] mt-1">
+        {nextBundleAt - distinctProductCount} more product
+        {nextBundleAt - distinctProductCount > 1 ? 's' : ''} unlocks{' '}
+        {BUNDLE_TIERS.find((t) => t.products === nextBundleAt)?.off} off — stacks with your coupon.
+      </p>
+    </div>
+  );
+}
+
 function Cart() {
-  const { items, removeFromCart, updateQuantity, clearCart, totalPrice } = useCart();
+  const { items, removeFromCart, updateQuantity, clearCart, totalPrice, bundleDiscount } = useCart();
   const [error, setError] = useState('');
   const [placing, setPlacing] = useState(false);
   const [couponCode, setCouponCode] = useState('');
@@ -30,6 +72,7 @@ function Cart() {
   const [useManual, setUseManual] = useState(false);
   const [manualAddress, setManualAddress] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('CASH');
+  const [locating, setLocating] = useState(false);
 
   useEffect(() => {
     axiosClient.get(`/addresses/customer/${customerId}`)
@@ -44,6 +87,57 @@ function Cart() {
       })
       .catch(() => setUseManual(true));
   }, [customerId]);
+
+  /**
+   * Fills the delivery address from the browser's GPS.
+   *
+   * The coordinates alone are useless to a courier, so they are reversed into a
+   * readable address. BigDataCloud is used because it needs no API key and
+   * accepts browser calls; if it is unreachable the coordinates are still filled
+   * in rather than failing outright, since a rough area beats nothing.
+   */
+  const detectLocation = () => {
+    if (!navigator.geolocation) {
+      setError('This browser cannot share a location. Please type your address.');
+      return;
+    }
+    setLocating(true);
+    setError('');
+
+    navigator.geolocation.getCurrentPosition(
+      async ({ coords }) => {
+        const { latitude, longitude } = coords;
+        let place = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+        try {
+          const res = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+          );
+          if (res.ok) {
+            const d = await res.json();
+            // The API spells it "postcode" and omits it for some coordinates, so
+            // both spellings are checked before the pincode is dropped.
+            const pin = d.postcode || d.postalCode || '';
+            const area = [d.city || d.locality, d.principalSubdivision, pin]
+              .filter(Boolean)
+              .join(', ');
+            // Only replace the field if the lookup gave us something readable.
+            if (area) place = area;
+          }
+        } catch {
+          // Keep the coordinates; the customer can edit from here.
+        }
+        setManualAddress(place);
+        setLocating(false);
+      },
+      () => {
+        setLocating(false);
+        setError(
+          'Could not get your location. Check your browser permission, or type your address.'
+        );
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+    );
+  };
 
   const resolvedAddress = useManual || addresses.length === 0
     ? manualAddress
@@ -169,13 +263,35 @@ function Cart() {
         )}
 
         {useManual ? (
-          <textarea
-            value={manualAddress}
-            onChange={(e) => setManualAddress(e.target.value)}
-            placeholder="Flat / House no, Street, Area, City - State Pincode, Phone"
-            rows={3}
-            className="w-full p-3 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] outline-none focus:border-[var(--color-primary)] text-sm"
-          />
+          <>
+            <button
+              type="button"
+              onClick={detectLocation}
+              disabled={locating}
+              className="mb-2 inline-flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] text-sm font-semibold text-[var(--color-primary)] hover:bg-[var(--color-card-bg-tint)] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {locating ? (
+                <>
+                  <Loader2 size={15} className="animate-spin" /> Finding your location...
+                </>
+              ) : (
+                <>
+                  <LocateFixed size={15} /> Use my current location
+                </>
+              )}
+            </button>
+            <textarea
+              value={manualAddress}
+              onChange={(e) => setManualAddress(e.target.value)}
+              placeholder="Flat / House no, Street, Area, City - State Pincode, Phone"
+              rows={3}
+              className="w-full p-3 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] outline-none focus:border-[var(--color-primary)] text-sm"
+            />
+            <p className="mt-1.5 text-xs text-[var(--color-text-muted)]">
+              Using your location fills in the area and pincode. Add your flat or
+              house number so the courier can find you.
+            </p>
+          </>
         ) : null}
 
         <div className="flex items-center gap-3">
@@ -236,10 +352,21 @@ function Cart() {
         </div>
       </div>
 
+      <BundleProgress />
+
       <div className="flex items-center justify-between p-6 rounded-[var(--radius-xl)] bg-[var(--color-card-bg-tint)]">
         <div>
-          <p className="text-sm text-[var(--color-text-muted)]">Total</p>
-          <p className="font-[family-name:var(--font-heading)] text-2xl font-bold">₹{totalPrice}</p>
+          <p className="text-sm text-[var(--color-text-muted)]">
+            Total
+            {bundleDiscount > 0 && (
+              <span className="ml-2 text-xs text-[var(--color-success)]">
+                bundle −₹{bundleDiscount}
+              </span>
+            )}
+          </p>
+          <p className="font-[family-name:var(--font-heading)] text-2xl font-bold">
+            ₹{totalPrice}
+          </p>
         </div>
         <button
           onClick={handleCheckout}

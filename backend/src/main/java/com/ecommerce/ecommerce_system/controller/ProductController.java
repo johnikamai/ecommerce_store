@@ -4,6 +4,7 @@ import com.ecommerce.ecommerce_system.model.Product;
 import com.ecommerce.ecommerce_system.repository.OrderItemRepository;
 import com.ecommerce.ecommerce_system.repository.ProductRepository;
 import com.ecommerce.ecommerce_system.repository.ReviewRepository;
+import com.ecommerce.ecommerce_system.service.SearchService;
 import com.ecommerce.ecommerce_system.service.StockAlertService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,9 @@ public class ProductController {
     @Autowired
     private OrderItemRepository orderItemRepository;
 
+    @Autowired
+    private SearchService searchService;
+
     @GetMapping
     public List<Product> getAll() {
         return productRepository.findAll();
@@ -43,6 +47,60 @@ public class ProductController {
      */
     @GetMapping("/catalog")
     public List<Map<String, Object>> catalog() {
+        return enrich(productRepository.findAll());
+    }
+
+    /**
+     * Natural-language search.
+     *
+     * Deliberately unauthenticated and un-paged: the storefront searches before
+     * login, and 600-odd products is small enough that paging here would add
+     * latency and break the "did you mean" hint, which needs the full vocabulary.
+     *
+     * Responds with the corrected query and any suggestions so the UI can be
+     * honest that it understood a typo rather than silently returning odd results.
+     */
+    @GetMapping("/search")
+    public ResponseEntity<Map<String, Object>> search(
+            @RequestParam(name = "q", required = false) String q,
+            @RequestParam(name = "limit", defaultValue = "0") int limit) {
+
+        SearchService.Result result = searchService.search(q, productRepository.findAll());
+        List<Map<String, Object>> enriched = enrich(
+                result.hits().stream().map(SearchService.Hit::product).toList());
+
+        // Re-attach the relevance score to the enriched rows.
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (int i = 0; i < enriched.size(); i++) {
+            Map<String, Object> row = new HashMap<>(enriched.get(i));
+            row.put("relevance", Math.round(result.hits().get(i).score() * 1000) / 1000.0);
+            rows.add(row);
+        }
+
+        // limit > 0 is for autocomplete, which wants a handful of names not cards.
+        if (limit > 0 && rows.size() > limit) rows = rows.subList(0, limit);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("query", q == null ? "" : q.trim());
+        body.put("correctedQuery", result.correctedQuery());
+        body.put("suggestions", result.suggestions());
+        body.put("total", result.total());
+        // A budget in the phrasing ("earbuds under 3000") comes back separately so
+        // the storefront can apply it as a filter rather than as a search term.
+        body.put("minPrice", result.minPrice());
+        body.put("maxPrice", result.maxPrice());
+        body.put("results", rows);
+        return ResponseEntity.ok(body);
+    }
+
+    /**
+     * Attaches rating aggregates and units sold to each product.
+     *
+     * Shared by /catalog and /search so a product looks identical wherever the
+     * storefront finds it, which matters once the same product can appear in the
+     * grid, a search result and the compare table at once.
+     */
+    private List<Map<String, Object>> enrich(List<Product> products) {
         Map<Long, double[]> reviewStats = new HashMap<>(); // pid -> [count, avg]
         for (Object[] row : reviewRepository.aggregateByProduct()) {
             Long pid = ((Number) row[0]).longValue();
@@ -58,7 +116,7 @@ public class ProductController {
         }
 
         List<Map<String, Object>> result = new ArrayList<>();
-        for (Product p : productRepository.findAll()) {
+        for (Product p : products) {
             Map<String, Object> entry = new HashMap<>();
             entry.put("id", p.getId());
             entry.put("name", p.getName());

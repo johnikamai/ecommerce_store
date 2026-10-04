@@ -1,13 +1,17 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { LanguageProvider } from './context/LanguageContext';
+import { CompareProvider } from './context/CompareContext';
 import Login from './pages/Login';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
 import Orders from './pages/Orders';
 import Cart from './pages/Cart';
 import WishlistPage from './pages/WishlistPage';
+import Compare from './pages/Compare';
 import Account from './pages/Account';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import ChatAssistant from './components/ChatAssistant';
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProducts from './pages/admin/AdminProducts';
@@ -34,34 +38,41 @@ function AdminRoute({ children }) {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Header />
-      <main className="min-h-[70vh]">
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
-          <Route path="/product/:id" element={<ProtectedRoute><ProductDetail /></ProtectedRoute>} />
-          <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="products" element={<AdminProducts />} />
-            <Route path="orders" element={<AdminOrders />} />
-            <Route path="customers" element={<AdminCustomers />} />
-            <Route path="categories" element={<AdminCategories />} />
-            <Route path="coupons" element={<AdminCoupons />} />
-            <Route path="payments" element={<AdminPayments />} />
-            <Route path="reviews" element={<AdminReviews />} />
-            <Route path="reports" element={<AdminReports />} />
-          </Route>
-          <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
-          <Route path="/wishlist" element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
-          <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
-          <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </main>
-      <Footer />
-    </BrowserRouter>
+    <LanguageProvider>
+      <CompareProvider>
+        <BrowserRouter>
+          <Header />
+          <main className="min-h-[70vh]">
+            <Routes>
+              <Route path="/" element={<Login />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
+              <Route path="/product/:id" element={<ProtectedRoute><ProductDetail /></ProtectedRoute>} />
+              <Route path="/compare" element={<ProtectedRoute><Compare /></ProtectedRoute>} />
+              <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="products" element={<AdminProducts />} />
+                <Route path="orders" element={<AdminOrders />} />
+                <Route path="customers" element={<AdminCustomers />} />
+                <Route path="categories" element={<AdminCategories />} />
+                <Route path="coupons" element={<AdminCoupons />} />
+                <Route path="payments" element={<AdminPayments />} />
+                <Route path="reviews" element={<AdminReviews />} />
+                <Route path="reports" element={<AdminReports />} />
+              </Route>
+              <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+              <Route path="/wishlist" element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
+              <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+              <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </main>
+          <Footer />
+          {/* Site-wide, so it is reachable from every page including checkout. */}
+          <ChatAssistant />
+        </BrowserRouter>
+      </CompareProvider>
+    </LanguageProvider>
   );
 }
 

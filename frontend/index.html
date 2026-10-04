@@ -7,7 +7,26 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
-    <title>ecommerce-frontend</title>
+    <title>ShopEase</title>
+    <meta name="description" content="ShopEase - electronics, fashion, beauty and home essentials with loyalty rewards on every order." />
+    <script>
+      /*
+       * Applies the saved theme before first paint.
+       *
+       * Without this the page renders in the default palette and then snaps to the
+       * chosen one once React mounts, which reads as a glitch on every reload.
+       */
+      (function () {
+        try {
+          var saved = localStorage.getItem('shopease-theme');
+          if (saved && saved !== 'violet') {
+            document.documentElement.setAttribute('data-theme', saved);
+          }
+        } catch (e) {
+          /* private browsing can block storage; the default theme is fine */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

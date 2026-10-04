@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 
@@ -77,6 +79,52 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You can only view your own orders");
         }
         return ResponseEntity.ok(orderRepository.findByCustomerId(customerId));
+    }
+
+    /**
+     * Delivery timeline for one order.
+     *
+     * Reachable by the customer who owns the order and by staff, so the same
+     * endpoint backs both the storefront tracker and the admin console.
+     */
+    @GetMapping("/{id}/tracking")
+    public ResponseEntity<?> tracking(@PathVariable Long id, Authentication auth) {
+        Order order = orderRepository.findById(id).orElse(null);
+        if (order == null) {
+            return ResponseEntity.notFound().build();
+        }
+        Long customerId = order.getCustomer() == null ? null : order.getCustomer().getId();
+        boolean staff = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_STAFF"));
+        if (!staff && !customerGuard.canAccess(customerId, auth)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You can only track your own orders");
+        }
+        return ResponseEntity.ok(orderService.trackingFor(order));
+    }
+
+    /**
+     * Records courier handover for an order moving outside the normal flow.
+     * Admin only, like the status endpoint it complements.
+     */
+    @PutMapping("/{id}/tracking")
+    public ResponseEntity<?> assignTracking(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String trackingNumber = body.get("trackingNumber");
+        String carrier = body.get("carrier");
+        LocalDateTime expected = null;
+        String rawDate = body.get("expectedDelivery");
+        if (rawDate != null && !rawDate.isBlank()) {
+            try {
+                expected = LocalDateTime.parse(rawDate);
+            } catch (DateTimeParseException e) {
+                return ResponseEntity.badRequest()
+                        .body("expectedDelivery must be ISO-8601, e.g. 2026-10-09T18:00:00");
+            }
+        }
+        try {
+            return ResponseEntity.ok(orderService.assignTracking(id, carrier, trackingNumber, expected));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     // Admin (and internal shipping flow) moves an order through its lifecycle.
