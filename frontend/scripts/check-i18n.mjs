@@ -8,7 +8,7 @@
  * in a screenshot but obvious here, so this fails loudly instead.
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, extname } from 'node:path';
+import { join, extname, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DICTIONARIES, LANGUAGES } from '../src/i18n/dictionaries.js';
 
@@ -25,26 +25,47 @@ function walk(dir, out = []) {
   return out;
 }
 
+// The dictionary file itself must not be scanned for usage. It contains every
+// key as a quoted literal, so counting it would mark all of them as used and
+// silently disable the "defined but never used" check below. Compared on a
+// normalised path so a case-insensitive filesystem cannot hide the match.
+const normalizePath = (file) => file.split(sep).join('/').toLowerCase();
+const DICTIONARY_FILE_SUFFIX = '/i18n/dictionaries.js';
+
 const files = walk(SRC);
+const sourceFiles = files.filter((f) => !normalizePath(f).endsWith(DICTIONARY_FILE_SUFFIX));
+
+// Keys that are not written as a literal t('...') call fall into two buckets:
+//   1. Lookup maps resolved later, e.g. OrderTracking's HEADLINES map,
+//      ProductDetail's AVAILABILITY map, ProductCard's SUSTAIN_LABEL_KEYS map
+//      and the catalogue's SORT_OPTIONS labelKey list.
+//   2. Keys held in state and translated at render (t(error)), so the text
+//      follows a language switch instead of freezing at request time.
+// Both still appear in the source as plain quoted strings, so rather than
+// maintaining a list of namespaces here we intersect every dotted string
+// literal with the English dictionary. A namespace that is added later needs
+// no change to this file, and a literal can only count as "used" if the key
+// genuinely exists.
+const enKeys = Object.keys(DICTIONARIES.en);
+
 const used = new Set();
 
-// Prefixes that are referenced through a lookup map rather than a literal
-// t('...') call, e.g. OrderTracking's HEADLINES map and ProductDetail's
-// AVAILABILITY map both hold bare key strings resolved later with t(map[key]).
-const INDIRECT_PREFIXES = ['tracking.', 'status.', 'recs.reason.', 'product.'];
-
-for (const file of files) {
+for (const file of sourceFiles) {
   const text = readFileSync(file, 'utf8');
 
-  // Direct calls: t('key') / t("key"). Template literals such as
-  // t(`status.${step}`) are resolved at runtime instead.
-  for (const m of text.matchAll(/\bt\(\s*['"]([a-zA-Z][\w.]*)['"]/g)) {
-    used.add(m[1]);
+  // Every quoted dotted string, e.g. 'status.SHIPPED' or 'cart.checkoutFailed'.
+  // Counted as used only when the key genuinely exists in English, so a new
+  // namespace needs no change to this file and unrelated dotted strings (API
+  // paths and the like) are ignored.
+  for (const m of text.matchAll(/['"]([a-zA-Z][\w]*(?:\.[\w]+)+)['"]/g)) {
+    if (enKeys.includes(m[1])) used.add(m[1]);
   }
 
-  // Indirect keys held as plain string values in a map.
-  for (const m of text.matchAll(/['"]([a-zA-Z][\w.]*)['"]/g)) {
-    if (INDIRECT_PREFIXES.some((p) => m[1].startsWith(p))) used.add(m[1]);
+  // Direct calls: t('key') / t("key"). Added unconditionally so a typo is still
+  // reported below as missing. Template literals such as t(`status.${step}`)
+  // are resolved at runtime instead and are seeded after the loop.
+  for (const m of text.matchAll(/\bt\(\s*['"]([a-zA-Z][\w.]*)['"]/g)) {
+    used.add(m[1]);
   }
 }
 
@@ -66,12 +87,11 @@ for (const { code } of LANGUAGES) {
   }
 }
 
-const enKeys = Object.keys(DICTIONARIES.en);
 for (const key of enKeys) {
   if (!used.has(key)) problems.push(`[en] defined but never used: ${key}`);
 }
 
-console.log(`checked ${used.size} keys across ${LANGUAGES.length} locales in ${files.length} files`);
+console.log(`checked ${used.size} keys across ${LANGUAGES.length} locales in ${sourceFiles.length} files`);
 if (problems.length) {
   for (const p of problems) console.log(p);
   console.log(`\n${problems.length} problem(s)`);

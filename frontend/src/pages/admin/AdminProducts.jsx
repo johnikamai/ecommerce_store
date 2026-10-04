@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Search, Pencil, Trash2, X } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
+import { useLanguage } from '../../context/LanguageContext';
 
 const PAGE_SIZE = 20;
 
@@ -9,6 +10,7 @@ const emptyForm = {
 };
 
 export default function AdminProducts() {
+  const { t, formatCurrency, formatNumber } = useLanguage();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState('');
@@ -38,7 +40,7 @@ export default function AdminProducts() {
       setProducts(p.data);
       setCategories(c.data);
     } catch {
-      setMessage({ type: 'error', text: 'Failed to load products' });
+      setMessage({ type: 'error', text: t('admin.products.loadFailed') });
     } finally {
       setLoading(false);
     }
@@ -85,19 +87,19 @@ export default function AdminProducts() {
       closeModal();
       load();
     } catch (err) {
-      setMessage({ type: 'error', text: err.response?.data || 'Save failed' });
+      setMessage({ type: 'error', text: err.response?.data || t('admin.products.saveFailed') });
     } finally {
       setSaving(false);
     }
   };
 
   const remove = async (product) => {
-    if (!window.confirm(`Delete "${product.name}"? This cannot be undone.`)) return;
+    if (!window.confirm(t('admin.products.deleteConfirm', { name: product.name }))) return;
     try {
       await axiosClient.delete(`/products/${product.id}`);
       load();
     } catch (err) {
-      alert(err.response?.data || 'Delete failed — product may be referenced by orders.');
+      alert(err.response?.data || t('admin.products.deleteFailed'));
     }
   };
 
@@ -109,17 +111,17 @@ export default function AdminProducts() {
 
   const inputClass = 'w-full px-3 py-2 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] bg-white focus:border-[var(--color-primary)] outline-none text-sm';
 
-  if (loading) return <p className="py-12 text-center text-[var(--color-text-muted)]">Loading products...</p>;
+  if (loading) return <p className="py-12 text-center text-[var(--color-text-muted)]">{t('admin.products.loading')}</p>;
 
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <h2 className="font-[family-name:var(--font-heading)] text-[28px] font-bold">Products</h2>
+        <h2 className="font-[family-name:var(--font-heading)] text-[28px] font-bold">{t('admin.nav.products')}</h2>
         <button
           onClick={() => openModal(null)}
           className="inline-flex items-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white px-4 py-2.5 text-sm font-semibold hover:bg-[var(--color-primary-hover)] transition-colors"
         >
-          <Plus size={16} /> Add Product
+          <Plus size={16} /> {t('admin.products.add')}
         </button>
       </div>
 
@@ -130,7 +132,7 @@ export default function AdminProducts() {
             <input
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              placeholder={`Search ${products.length} products...`}
+              placeholder={t('admin.products.searchPlaceholder', { count: formatNumber(products.length) })}
               className="w-full bg-transparent outline-none text-sm"
             />
           </div>
@@ -140,13 +142,13 @@ export default function AdminProducts() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs uppercase tracking-wide text-[var(--color-text-muted)] border-b border-[var(--color-border)]">
-                <th className="py-3 px-4">Image</th>
-                <th className="py-3 px-4">Product</th>
-                <th className="py-3 px-4">Category</th>
-                <th className="py-3 px-4 text-right">Price</th>
-                <th className="py-3 px-4 text-right">Stock</th>
-                <th className="py-3 px-4 text-center">Sust.</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                <th className="py-3 px-4">{t('admin.products.colImage')}</th>
+                <th className="py-3 px-4">{t('admin.products.colProduct')}</th>
+                <th className="py-3 px-4">{t('common.category')}</th>
+                <th className="py-3 px-4 text-right">{t('admin.products.colPrice')}</th>
+                <th className="py-3 px-4 text-right">{t('admin.products.colStock')}</th>
+                <th className="py-3 px-4 text-center">{t('admin.products.colSustainability')}</th>
+                <th className="py-3 px-4 text-right">{t('admin.categories.colActions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -164,19 +166,19 @@ export default function AdminProducts() {
                     <div className="text-xs text-[var(--color-text-muted)] max-w-xs truncate">{p.description}</div>
                   </td>
                   <td className="py-3 px-4 text-[var(--color-text-secondary)]">{p.category}</td>
-                  <td className="py-3 px-4 text-right font-medium">₹{Number(p.price).toLocaleString('en-IN')}</td>
+                  <td className="py-3 px-4 text-right font-medium">{formatCurrency(p.price)}</td>
                   <td className={`py-3 px-4 text-right font-medium ${p.lowStock ? 'text-[var(--color-warning)]' : ''}`}>
-                    {p.stockQuantity}
+                    {formatNumber(p.stockQuantity)}
                   </td>
                   <td className="py-3 px-4 text-center text-xs">{p.sustainabilityScore ?? '—'}</td>
                   <td className="py-3 px-4">
                     <div className="flex justify-end gap-1.5">
-<button onClick={() => openModal(p)} aria-label="Edit"
+<button onClick={() => openModal(p)} aria-label={t('common.edit')}
                           className="w-8 h-8 rounded-[var(--radius-md)] flex items-center justify-center text-[var(--color-text-secondary)] hover:bg-[var(--color-border)] transition-colors">
                           <Pencil size={15} />
                         </button>
                         {isAdmin && (
-                          <button onClick={() => remove(p)} aria-label="Delete"
+                          <button onClick={() => remove(p)} aria-label={t('common.delete')}
                             className="w-8 h-8 rounded-[var(--radius-md)] flex items-center justify-center text-[var(--color-error)] hover:bg-[var(--color-error-bg)] transition-colors">
                             <Trash2 size={15} />
                           </button>
@@ -192,13 +194,17 @@ export default function AdminProducts() {
         {pages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-[var(--color-border)] text-sm">
             <span className="text-[var(--color-text-muted)]">
-              Page {page} of {pages} · {filtered.length} products
+              {t('admin.products.pageOf', {
+                page: formatNumber(page),
+                pages: formatNumber(pages),
+                count: formatNumber(filtered.length),
+              })}
             </span>
             <div className="flex gap-1.5">
               <button disabled={page <= 1} onClick={() => setPage(page - 1)}
-                className="px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] text-xs font-semibold disabled:opacity-40">Prev</button>
+                className="px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] text-xs font-semibold disabled:opacity-40">{t('admin.products.prev')}</button>
               <button disabled={page >= pages} onClick={() => setPage(page + 1)}
-                className="px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] text-xs font-semibold disabled:opacity-40">Next</button>
+                className="px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] text-xs font-semibold disabled:opacity-40">{t('admin.products.next')}</button>
             </div>
           </div>
         )}
@@ -209,31 +215,33 @@ export default function AdminProducts() {
           <div className="w-full max-w-lg rounded-[var(--radius-xl)] bg-[var(--color-surface)] shadow-[var(--shadow-lg)] mt-10" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between p-5 border-b border-[var(--color-border)]">
               <h3 className="font-[family-name:var(--font-heading)] text-lg font-semibold">
-                {modal.product ? `Edit: ${modal.product.name}` : 'Add a new product'}
+                {modal.product
+                  ? t('admin.products.modalEdit', { name: modal.product.name })
+                  : t('admin.products.modalAdd')}
               </h3>
-              <button onClick={closeModal} aria-label="Close" className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--color-text-secondary)] hover:bg-[var(--color-card-bg-tint)]">
+              <button onClick={closeModal} aria-label={t('common.close')} className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--color-text-secondary)] hover:bg-[var(--color-card-bg-tint)]">
                 <X size={18} />
               </button>
             </div>
             <form onSubmit={save} className="p-5 space-y-3">
-              <input className={inputClass} placeholder="Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-              <input className={inputClass} placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+              <input className={inputClass} placeholder={t('admin.products.namePlaceholder')} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+              <input className={inputClass} placeholder={t('common.description')} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
               <select className={inputClass} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} required>
-                <option value="">Select category...</option>
+                <option value="">{t('admin.products.selectCategory')}</option>
                 {categories.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
               </select>
               <div className="grid grid-cols-3 gap-3">
-                <input className={inputClass} placeholder="Price (₹) *" type="number" min="0" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
-                <input className={inputClass} placeholder="Stock *" type="number" min="0" value={form.stockQuantity} onChange={(e) => setForm({ ...form, stockQuantity: e.target.value })} required />
-                <input className={inputClass} placeholder="Alert below (default 10)" type="number" min="0" value={form.reorderLevel} onChange={(e) => setForm({ ...form, reorderLevel: e.target.value })} />
+                <input className={inputClass} placeholder={t('admin.products.pricePlaceholder')} type="number" min="0" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
+                <input className={inputClass} placeholder={t('admin.products.stockPlaceholder')} type="number" min="0" value={form.stockQuantity} onChange={(e) => setForm({ ...form, stockQuantity: e.target.value })} required />
+                <input className={inputClass} placeholder={t('admin.products.reorderPlaceholder')} type="number" min="0" value={form.reorderLevel} onChange={(e) => setForm({ ...form, reorderLevel: e.target.value })} />
               </div>
-              <input className={inputClass} placeholder="Sustainability score (0-100, optional)" type="number" min="0" max="100" value={form.sustainabilityScore} onChange={(e) => setForm({ ...form, sustainabilityScore: e.target.value })} />
-              <input className={inputClass} placeholder="Image URL (optional, e.g. /images/1.jpg)" value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} />
+              <input className={inputClass} placeholder={t('admin.products.sustainabilityPlaceholder')} type="number" min="0" max="100" value={form.sustainabilityScore} onChange={(e) => setForm({ ...form, sustainabilityScore: e.target.value })} />
+              <input className={inputClass} placeholder={t('admin.products.imagePlaceholder')} value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} />
               {message && <p className={`text-sm ${message.type === 'error' ? 'text-[var(--color-error)]' : 'text-[var(--color-success)]'}`}>{message.text}</p>}
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={closeModal} className="flex-1 rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] text-[var(--color-text-secondary)] py-2.5 text-sm font-semibold">Cancel</button>
+                <button type="button" onClick={closeModal} className="flex-1 rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] text-[var(--color-text-secondary)] py-2.5 text-sm font-semibold">{t('common.cancel')}</button>
                 <button type="submit" disabled={saving} className="flex-1 rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white py-2.5 text-sm font-semibold disabled:opacity-50">
-                  {saving ? 'Saving...' : modal.product ? 'Save Changes' : 'Add Product'}
+                  {saving ? t('admin.products.saving') : modal.product ? t('admin.categories.saveChanges') : t('admin.products.add')}
                 </button>
               </div>
             </form>

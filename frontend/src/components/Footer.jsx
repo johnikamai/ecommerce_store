@@ -1,8 +1,12 @@
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
 
+// Category values, not chrome: these are API strings used as query params, so
+// they must stay in English to keep matching product.category in the catalogue.
 const CATEGORY_LINKS = ['Food', 'Electronics', 'Fashion', 'Beauty'];
 
 export default function Footer() {
+  const { t } = useLanguage();
   const year = new Date().getFullYear();
 
   return (
@@ -16,12 +20,12 @@ export default function Footer() {
             <span className="font-[family-name:var(--font-heading)] text-lg font-bold">ShopEase</span>
           </div>
           <p className="text-sm text-[var(--color-text-secondary)]">
-            A calm, friendly place to shop. Earn loyalty points, get restock alerts, and discover what's bought together.
+            {t('footer.blurb')}
           </p>
         </div>
 
         <div>
-          <h4 className="font-[family-name:var(--font-heading)] text-sm font-semibold mb-3">Shop</h4>
+          <h4 className="font-[family-name:var(--font-heading)] text-sm font-semibold mb-3">{t('nav.shop')}</h4>
           <ul className="space-y-2 text-sm text-[var(--color-text-secondary)]">
             {CATEGORY_LINKS.map((c) => (
               <li key={c}>
@@ -34,29 +38,29 @@ export default function Footer() {
         </div>
 
         <div>
-          <h4 className="font-[family-name:var(--font-heading)] text-sm font-semibold mb-3">Account</h4>
+          <h4 className="font-[family-name:var(--font-heading)] text-sm font-semibold mb-3">{t('nav.account')}</h4>
           <ul className="space-y-2 text-sm text-[var(--color-text-secondary)]">
-            <li><Link to="/orders" className="hover:text-[var(--color-primary)] transition-colors">My Orders</Link></li>
-            <li><Link to="/wishlist" className="hover:text-[var(--color-primary)] transition-colors">Wishlist</Link></li>
-            <li><Link to="/cart" className="hover:text-[var(--color-primary)] transition-colors">Cart</Link></li>
+            <li><Link to="/orders" className="hover:text-[var(--color-primary)] transition-colors">{t('nav.orders')}</Link></li>
+            <li><Link to="/wishlist" className="hover:text-[var(--color-primary)] transition-colors">{t('nav.wishlist')}</Link></li>
+            <li><Link to="/cart" className="hover:text-[var(--color-primary)] transition-colors">{t('nav.cart')}</Link></li>
           </ul>
         </div>
 
         <div>
-          <h4 className="font-[family-name:var(--font-heading)] text-sm font-semibold mb-3">Perks</h4>
+          <h4 className="font-[family-name:var(--font-heading)] text-sm font-semibold mb-3">{t('footer.perks')}</h4>
           <ul className="space-y-2 text-sm text-[var(--color-text-secondary)]">
-            <li>1 point per ₹100 spent</li>
-            <li>GOLD tier = 5% off</li>
-            <li>Back-in-stock alerts</li>
-            <li>+500 pts per successful referral</li>
+            <li>{t('footer.perkPoints')}</li>
+            <li>{t('footer.perkGold')}</li>
+            <li>{t('footer.perkRestock')}</li>
+            <li>{t('footer.perkReferral')}</li>
           </ul>
         </div>
       </div>
 
       <div className="border-t border-[var(--color-border)]">
         <div className="container-x py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[var(--color-text-muted)]">
-          <p>© {year} ShopEase. Demo only — not a real store.</p>
-          <p>Built with the ShopEase design system.</p>
+          <p>{t('footer.disclaimer', { year })}</p>
+          <p>{t('footer.builtWith')}</p>
         </div>
       </div>
     </footer>

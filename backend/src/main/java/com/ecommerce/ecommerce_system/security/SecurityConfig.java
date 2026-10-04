@@ -159,17 +159,22 @@ public class SecurityConfig {
     /**
      * Reads extra origins from a comma-separated env var.
      *
+     * REQUIRED_ORIGINS is always the baseline: returning an empty list when the
+     * variable is unset silently revoked localhost and the deployed storefront
+     * too, so every browser request failed with 403 while the log just showed
+     * an empty list.
+     *
      * Entries are trimmed and unquoted because the value is usually typed by hand
      * into a dashboard: a stray quote or a space after the comma otherwise becomes
      * part of the origin, and since no browser ever sends that exact string every
      * request is rejected while the log shows no clue why.
      */
     private static List<String> configuredOrigins() {
+        List<String> origins = new ArrayList<>(REQUIRED_ORIGINS);
         String raw = System.getenv("CORS_ALLOWED_ORIGINS");
         if (raw == null || raw.isBlank()) {
-            return List.of();
+            return origins;
         }
-        List<String> origins = new ArrayList<>(REQUIRED_ORIGINS);
         for (String part : raw.split(",")) {
             String cleaned = part.trim().replaceAll("^[\"']|[\"']$", "");
             if (!cleaned.isBlank() && !origins.contains(cleaned)) {

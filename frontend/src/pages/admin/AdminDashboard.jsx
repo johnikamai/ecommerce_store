@@ -4,12 +4,22 @@ import axiosClient from '../../api/axiosClient';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts';
+import { useLanguage } from '../../context/LanguageContext';
 
 const STATUS_COLORS = {
   PLACED: '#7FB6E8',
   SHIPPED: '#FFC98B',
   DELIVERED: '#4CAF7D',
   CANCELLED: '#E0607A',
+};
+
+// The API sends an alert type enum. Mapping it to keys keeps the badge readable
+// in the active language, and keeps the key literals statically visible to the
+// i18n checker, which cannot follow a template-built key.
+const ALERT_TYPE_KEYS = {
+  OUT_OF_STOCK: 'admin.alert.OUT_OF_STOCK',
+  LOW_STOCK: 'admin.alert.LOW_STOCK',
+  RESTOCKED: 'admin.alert.RESTOCKED',
 };
 
 function Card({ label, value, color }) {
@@ -24,6 +34,7 @@ function Card({ label, value, color }) {
 }
 
 export default function AdminDashboard() {
+  const { t, formatCurrency, formatNumber } = useLanguage();
   const [summary, setSummary] = useState(null);
   const [salesReport, setSalesReport] = useState({});
   const [products, setProducts] = useState([]);
@@ -45,7 +56,7 @@ export default function AdminDashboard() {
         setProducts(productRes.data);
         setAlerts(alertRes.data || { unread: 0, alerts: [] });
       } catch (err) {
-        setError('Failed to load dashboard');
+        setError(t('admin.dashboard.loadFailed'));
       } finally {
         setLoading(false);
       }
@@ -61,7 +72,7 @@ export default function AdminDashboard() {
         alerts: (prev.alerts || []).map((a) => ({ ...a, isRead: true })),
       }));
     } catch {
-      setError('Failed to mark alerts as read');
+      setError(t('admin.dashboard.markAllReadFailed'));
     }
   };
 
@@ -73,11 +84,11 @@ export default function AdminDashboard() {
         alerts: (prev.alerts || []).map((a) => (a.id === id ? { ...a, isRead: true } : a)),
       }));
     } catch {
-      setError('Failed to mark alert as read');
+      setError(t('admin.dashboard.markReadFailed'));
     }
   };
 
-  if (loading) return <p className="py-12 text-center text-[var(--color-text-muted)]">Loading dashboard...</p>;
+  if (loading) return <p className="py-12 text-center text-[var(--color-text-muted)]">{t('admin.dashboard.loading')}</p>;
   if (error) return <p className="py-12 text-center text-[var(--color-error)]">{error}</p>;
 
   const statusChartData = Object.entries(salesReport).map(([status, count]) => ({ status, count }));
@@ -85,11 +96,11 @@ export default function AdminDashboard() {
   const lowStock = products.filter((p) => p.lowStock).sort((a, b) => a.stockQuantity - b.stockQuantity).slice(0, 8);
 
   const statCards = [
-    { label: 'Total Revenue', value: `₹${summary.totalRevenue.toLocaleString('en-IN')}`, color: 'var(--color-primary)' },
-    { label: 'Total Orders', value: summary.totalOrders, color: 'var(--color-info)' },
-    { label: 'Total Products', value: summary.totalProducts, color: 'var(--color-success)' },
-    { label: 'Total Customers', value: summary.totalCustomers, color: 'var(--color-secondary)' },
-    { label: 'Low Stock Alerts', value: summary.lowStockAlerts, color: 'var(--color-warning)' },
+    { label: t('admin.reports.totalRevenue'), value: formatCurrency(summary.totalRevenue), color: 'var(--color-primary)' },
+    { label: t('admin.reports.totalOrders'), value: formatNumber(summary.totalOrders), color: 'var(--color-info)' },
+    { label: t('admin.dashboard.totalProducts'), value: formatNumber(summary.totalProducts), color: 'var(--color-success)' },
+    { label: t('admin.dashboard.totalCustomers'), value: formatNumber(summary.totalCustomers), color: 'var(--color-secondary)' },
+    { label: t('admin.dashboard.lowStockAlerts'), value: formatNumber(summary.lowStockAlerts), color: 'var(--color-warning)' },
   ];
 
   const ALERT_STYLES = {
@@ -100,7 +111,7 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      <h2 className="font-[family-name:var(--font-heading)] text-[28px] font-bold mb-6">Dashboard</h2>
+      <h2 className="font-[family-name:var(--font-heading)] text-[28px] font-bold mb-6">{t('admin.nav.dashboard')}</h2>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
         {statCards.map((card) => <Card key={card.label} {...card} />)}
@@ -109,11 +120,11 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 flex flex-col gap-6">
           <div className="rounded-[var(--radius-lg)] bg-[var(--color-card-bg)] shadow-[var(--shadow-sm)] p-6">
-          <h3 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-4">Orders by Status</h3>
+          <h3 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-4">{t('admin.dashboard.ordersByStatus')}</h3>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={statusChartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-              <XAxis dataKey="status" tick={{ fontSize: 12 }} />
+              <XAxis dataKey="status" tickFormatter={(value) => t(`status.${value}`)} tick={{ fontSize: 12 }} />
               <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
               <Tooltip />
               <Bar dataKey="count" radius={[8, 8, 0, 0]}>
@@ -128,10 +139,10 @@ export default function AdminDashboard() {
           <div className="rounded-[var(--radius-lg)] bg-[var(--color-card-bg)] shadow-[var(--shadow-sm)] p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-[family-name:var(--font-heading)] text-lg font-semibold flex items-center gap-2">
-                Stock Alerts
+                {t('admin.dashboard.stockAlerts')}
                 {alerts.unread > 0 && (
                   <span className="rounded-full bg-[var(--color-error-bg)] text-[var(--color-error)] text-xs font-bold px-2 py-0.5">
-                    {alerts.unread} new
+                    {t('admin.dashboard.newAlerts', { count: formatNumber(alerts.unread) })}
                   </span>
                 )}
               </h3>
@@ -141,12 +152,12 @@ export default function AdminDashboard() {
                   onClick={markAllRead}
                   className="text-xs font-semibold text-[var(--color-primary)] hover:underline"
                 >
-                  Mark all read
+                  {t('admin.dashboard.markAllRead')}
                 </button>
               )}
             </div>
             {alerts.alerts.length === 0 ? (
-              <p className="text-sm text-[var(--color-text-muted)]">No stock alerts yet.</p>
+              <p className="text-sm text-[var(--color-text-muted)]">{t('admin.dashboard.noStockAlerts')}</p>
             ) : (
               <ul className="divide-y divide-[var(--color-border)] text-sm">
                 {alerts.alerts.slice(0, 10).map((a) => (
@@ -156,7 +167,7 @@ export default function AdminDashboard() {
                   >
                     <div className="min-w-0">
                       <span className={`inline-block text-[10px] font-bold uppercase tracking-wide rounded px-1.5 py-0.5 mr-2 ${ALERT_STYLES[a.type] || ALERT_STYLES.LOW_STOCK}`}>
-                        {String(a.type).replace('_', ' ')}
+                        {t(ALERT_TYPE_KEYS[a.type] || 'admin.alert.LOW_STOCK')}
                       </span>
                       <span className="text-[var(--color-text-secondary)]">{a.productName}</span>
                       <p className="text-[var(--color-text-muted)] text-xs mt-0.5 truncate">{a.message}</p>
@@ -167,7 +178,7 @@ export default function AdminDashboard() {
                         onClick={() => markRead(a.id)}
                         className="shrink-0 text-[10px] font-semibold text-[var(--color-primary)] hover:underline"
                       >
-                        Dismiss
+                        {t('admin.dashboard.dismiss')}
                       </button>
                     )}
                   </li>
@@ -179,20 +190,22 @@ export default function AdminDashboard() {
 
         <div className="rounded-[var(--radius-lg)] bg-[var(--color-card-bg)] shadow-[var(--shadow-sm)] p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-[family-name:var(--font-heading)] text-lg font-semibold">Low Stock</h3>
+            <h3 className="font-[family-name:var(--font-heading)] text-lg font-semibold">{t('admin.dashboard.lowStock')}</h3>
             <Link to="/admin/products" className="text-xs font-semibold text-[var(--color-primary)] hover:underline">
-              Manage
+              {t('admin.dashboard.manage')}
             </Link>
           </div>
           {lowStock.length === 0 ? (
-            <p className="text-sm text-[var(--color-text-muted)]">All products are well stocked.</p>
+            <p className="text-sm text-[var(--color-text-muted)]">{t('admin.dashboard.wellStocked')}</p>
           ) : (
             <ul className="divide-y divide-[var(--color-border)] text-sm">
               {lowStock.map((p) => (
                 <li key={p.id} className="flex items-center justify-between py-2.5">
                   <span className="text-[var(--color-text-secondary)] truncate pr-3">{p.name}</span>
                   <span className={`shrink-0 font-semibold ${p.stockQuantity <= 0 ? 'text-[var(--color-error)]' : 'text-[var(--color-warning)]'}`}>
-                    {p.stockQuantity <= 0 ? 'Out of stock' : `${p.stockQuantity} left`}
+                    {p.stockQuantity <= 0
+                      ? t('admin.dashboard.outOfStock')
+                      : t('admin.dashboard.unitsLeft', { count: formatNumber(p.stockQuantity) })}
                   </span>
                 </li>
               ))}
@@ -202,7 +215,7 @@ export default function AdminDashboard() {
             to="/admin/reports"
             className="mt-4 block text-center rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] text-[var(--color-text-secondary)] px-3 py-2 text-xs font-semibold hover:bg-[var(--color-border)] transition-colors"
           >
-            View Reports →
+            {t('admin.dashboard.viewReports')}
           </Link>
         </div>
       </div>

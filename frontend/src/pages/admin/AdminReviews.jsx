@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Star, Trash2 } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
+import { useLanguage } from '../../context/LanguageContext';
 
 function Stars({ rating }) {
   return (
@@ -13,6 +14,7 @@ function Stars({ rating }) {
 }
 
 export default function AdminReviews() {
+  const { t, formatDateTime } = useLanguage();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -25,24 +27,24 @@ export default function AdminReviews() {
   useEffect(() => { load(); }, []);
 
   const remove = async (review) => {
-    if (!window.confirm('Delete this review?')) return;
+    if (!window.confirm(t('admin.reviews.deleteConfirm'))) return;
     try {
       await axiosClient.delete(`/admin/reviews/${review.id}`);
       load();
     } catch (err) {
-      alert(err.response?.data || 'Delete failed');
+      alert(err.response?.data || t('admin.reviews.deleteFailed'));
     }
   };
 
-  if (loading) return <p className="py-12 text-center text-[var(--color-text-muted)]">Loading reviews...</p>;
+  if (loading) return <p className="py-12 text-center text-[var(--color-text-muted)]">{t('admin.reviews.loading')}</p>;
 
   return (
     <div>
-      <h2 className="font-[family-name:var(--font-heading)] text-[28px] font-bold mb-6">Reviews</h2>
+      <h2 className="font-[family-name:var(--font-heading)] text-[28px] font-bold mb-6">{t('admin.nav.reviews')}</h2>
 
       <div className="rounded-[var(--radius-lg)] bg-[var(--color-card-bg)] shadow-[var(--shadow-sm)] overflow-hidden">
         {reviews.length === 0 ? (
-          <p className="p-6 text-sm text-[var(--color-text-muted)]">No reviews yet.</p>
+          <p className="p-6 text-sm text-[var(--color-text-muted)]">{t('admin.reviews.empty')}</p>
         ) : (
           <ul className="divide-y divide-[var(--color-border)]">
             {reviews.map((r) => (
@@ -51,15 +53,15 @@ export default function AdminReviews() {
                   <div className="flex items-center gap-3 mb-1">
                     <Stars rating={r.rating} />
                     <span className="text-xs text-[var(--color-text-muted)]">
-                      {new Date(r.createdAt).toLocaleString('en-IN')}
+                      {formatDateTime(r.createdAt)}
                     </span>
                   </div>
                   <p className="font-semibold text-sm">
-                    {r.customer?.name || 'Customer'} on {r.product?.name}
+                    {r.customer?.name || t('admin.reviews.customer')} {t('admin.reviews.on')} {r.product?.name}
                   </p>
                   <p className="text-sm text-[var(--color-text-secondary)]">{r.comment || '—'}</p>
                 </div>
-                <button onClick={() => remove(r)} aria-label="Delete review"
+                <button onClick={() => remove(r)} aria-label={t('admin.reviews.deleteAria')}
                   className="w-8 h-8 shrink-0 rounded-[var(--radius-md)] flex items-center justify-center text-[var(--color-error)] hover:bg-[var(--color-error-bg)] transition-colors">
                   <Trash2 size={15} />
                 </button>

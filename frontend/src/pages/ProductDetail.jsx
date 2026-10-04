@@ -15,81 +15,88 @@ const AVAILABILITY = {
   out: { label: 'product.outOfStock', cls: 'bg-[var(--color-error-bg)] text-[var(--color-error)]' },
 };
 
+// The API sends the sustainability enum in English; this maps it to both the
+// pill colour and a translation key so the row reads correctly in any language.
 const SUSTAIN_ROW = {
-  'Eco-Friendly': 'text-[var(--color-success)]',
-  'Moderate Impact': 'text-[var(--color-warning)]',
-  'High Impact': 'text-[var(--color-error)]',
-  'Not Rated': 'text-[var(--color-text-muted)]',
+  'Eco-Friendly': { cls: 'text-[var(--color-success)]', key: 'sustain.ecoFriendly' },
+  'Moderate Impact': { cls: 'text-[var(--color-warning)]', key: 'sustain.moderate' },
+  'High Impact': { cls: 'text-[var(--color-error)]', key: 'sustain.high' },
+  'Not Rated': { cls: 'text-[var(--color-text-muted)]', key: 'sustain.notRated' },
 };
+const SUSTAIN_DEFAULT = SUSTAIN_ROW['Not Rated'];
 
 const BRANDS = ['Apex', 'Nova', 'Vertex'];
 
+// Category is the API value so the lookup still matches; both halves of each
+// pair are translation keys.
 const EXTRA_SPECS = {
   'Electronics': [
-    ['Power', 'Standard mains / rechargeable'],
-    ['Connectivity', 'Wireless + wired options'],
-    ['In the Box', 'Product, cables, manual'],
+    ['spec.power', 'spec.electronics.power'],
+    ['spec.connectivity', 'spec.electronics.connectivity'],
+    ['spec.inTheBox', 'spec.electronics.inTheBox'],
   ],
   'Fashion': [
-    ['Material', 'Premium fabric'],
-    ['Care', 'Gentle machine wash'],
-    ['Fit', 'Regular fit'],
+    ['spec.material', 'spec.fashion.material'],
+    ['spec.care', 'spec.fashion.care'],
+    ['spec.fit', 'spec.fashion.fit'],
   ],
   'Beauty': [
-    ['Suitable For', 'All skin types'],
-    ['Usage', 'Use as directed'],
-    ['Shelf Life', '24 months'],
+    ['spec.suitableFor', 'spec.beauty.suitableFor'],
+    ['spec.usage', 'spec.beauty.usage'],
+    ['spec.shelfLife', 'spec.beauty.shelfLife'],
   ],
   'Home & Living': [
-    ['Material', 'Durable premium build'],
-    ['Care', 'Wipe clean'],
-    ['Assembly', 'Ready to use'],
+    ['spec.material', 'spec.home.material'],
+    ['spec.care', 'spec.home.care'],
+    ['spec.assembly', 'spec.home.assembly'],
   ],
   'Sports': [
-    ['Material', 'High-durability build'],
-    ['Care', 'Wipe with damp cloth'],
-    ['Usage', 'Indoor & outdoor use'],
+    ['spec.material', 'spec.sports.material'],
+    ['spec.care', 'spec.sports.care'],
+    ['spec.usage', 'spec.sports.usage'],
   ],
   'Books & Stationery': [
-    ['Format', 'Standard size'],
-    ['Material', 'Premium paper'],
-    ['In the Box', 'Main item + extras'],
+    ['spec.format', 'spec.books.format'],
+    ['spec.material', 'spec.books.material'],
+    ['spec.inTheBox', 'spec.books.inTheBox'],
   ],
   'Toys & Kids': [
-    ['Age Range', '3+ years'],
-    ['Safety', 'Non-toxic, tested'],
-    ['Pieces', 'Multiple pieces'],
+    ['spec.ageRange', 'spec.toys.ageRange'],
+    ['spec.safety', 'spec.toys.safety'],
+    ['spec.pieces', 'spec.toys.pieces'],
   ],
   'Groceries & Food': [
-    ['Package', 'Sealed pack'],
-    ['Storage', 'Cool, dry place'],
-    ['Shelf Life', '6–12 months'],
+    ['spec.package', 'spec.groceries.package'],
+    ['spec.storage', 'spec.groceries.storage'],
+    ['spec.shelfLife', 'spec.groceries.shelfLife'],
   ],
   'Automotive': [
-    ['Material', 'Heavy-duty build'],
-    ['Compatibility', 'Universal fit'],
-    ['Installation', 'DIY friendly'],
+    ['spec.material', 'spec.automotive.material'],
+    ['spec.compatibility', 'spec.automotive.compatibility'],
+    ['spec.installation', 'spec.automotive.installation'],
   ],
   'Pets': [
-    ['Material', 'Pet-safe materials'],
-    ['Care', 'Easy to clean'],
-    ['Size', 'One size'],
+    ['spec.material', 'spec.pets.material'],
+    ['spec.care', 'spec.pets.care'],
+    ['spec.size', 'spec.pets.size'],
   ],
 };
 
 const WARRANTY_POINTS = [
-  '1-Year Limited Warranty on manufacturing defects',
-  '7-day no-questions-asked replacement',
-  'Free 1-month extended support',
-  'Warranty requires proof of purchase',
+  'product.warranty.defects',
+  'product.warranty.replacement',
+  'product.warranty.support',
+  'product.warranty.proof',
 ];
 
+// Label key plus a value that is either a translation key or literal text
+// (company name, emails), which is filled in after the brand is resolved.
 const MANUFACTURER_INFO = [
-  ['Brand', ''],
-  ['Country of Origin', 'India'],
-  ['Marketed & Packaged by', 'ShopEase Retail Pvt. Ltd., Bengaluru, Karnataka'],
-  ['Customer Care', 'support@shopease.in · Mon–Sat, 9 AM – 6 PM IST'],
-  ['Grievance Officer', 'contact@shopease.in (replied within 48 hours)'],
+  ['mfr.brand', ''],
+  ['mfr.countryOfOrigin', 'mfr.countryOfOriginValue'],
+  ['mfr.marketedBy', 'mfr.marketedByValue'],
+  ['mfr.customerCare', 'mfr.customerCareValue'],
+  ['mfr.grievanceOfficer', 'mfr.grievanceOfficerValue'],
 ];
 
 function Stars({ rating, size = 'text-lg' }) {
@@ -107,7 +114,7 @@ function Stars({ rating, size = 'text-lg' }) {
 export default function ProductDetail() {
   const { id } = useParams();
   const { addToCart } = useCart();
-  const { t } = useLanguage();
+  const { t, formatCurrency } = useLanguage();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -169,7 +176,7 @@ export default function ProductDetail() {
     return (
       <div className="container-x py-20 text-center">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[var(--color-error-bg)] mb-4 text-2xl">!</div>
-        <h4 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-1">Something went wrong.</h4>
+        <h4 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-1">{t('common.somethingWentWrong')}</h4>
           <p className="text-[var(--color-text-muted)] mb-4">{error || t('product.notFound')}</p>
           <Link to="/products" className="rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white px-5 py-2.5 text-sm font-semibold hover:bg-[var(--color-primary-hover)] transition-colors">
             {t('product.backToProducts')}
@@ -183,21 +190,28 @@ export default function ProductDetail() {
   const avail = isOutOfStock ? AVAILABILITY.out : isLowStock ? AVAILABILITY.low : AVAILABILITY.in;
   const availLabel = t(avail.label);
   const label = product.sustainabilityLabel || 'Not Rated';
+  const sustain = SUSTAIN_ROW[label] || SUSTAIN_DEFAULT;
+  const sustainText = t(sustain.key);
   const score = product.sustainabilityScore;
 
   const brand = BRANDS.find((b) => product.name.startsWith(b)) || 'ShopEase';
+  // Every cell is [labelKey, displayText] with the value already resolved, so
+  // the table renders identically in every language.
   const specs = [
-    ['Brand', brand],
-    ['Category', product.category],
-    ['Item Code', `SHOP-${product.id}`],
-    ['Availability', availLabel],
-    ['Stock', `${product.stockQuantity} units`],
-    ['Price', `₹${product.price}`],
-    ['Sustainability', `${label}${score != null ? ` (${score}/100)` : ''}`],
-    ...(EXTRA_SPECS[product.category] || []),
+    ['spec.brand', brand],
+    ['spec.category', product.category],
+    ['spec.itemCode', `SHOP-${product.id}`],
+    ['spec.availability', availLabel],
+    ['spec.stock', t('spec.units', { count: product.stockQuantity })],
+    ['spec.price', formatCurrency(product.price)],
+    ['spec.sustainability', `${sustainText}${score != null ? ` (${score}/100)` : ''}`],
+    ...(EXTRA_SPECS[product.category] || []).map(([labelKey, valueKey]) => [labelKey, t(valueKey)]),
   ];
-  const warranty = WARRANTY_POINTS;
-  const manufacturer = MANUFACTURER_INFO.map(([k, v]) => [k, k === 'Brand' ? brand : v]);
+  const warranty = WARRANTY_POINTS.map((key) => t(key));
+  const manufacturer = MANUFACTURER_INFO.map(([labelKey, value]) => [
+    labelKey,
+    labelKey === 'mfr.brand' ? brand : t(value),
+  ]);
 
   const toggleWishlist = async () => {
     try {
@@ -248,12 +262,12 @@ export default function ProductDetail() {
       await axiosClient.post('/reviews', { product: { id: product.id }, customer: { id: getCustomerId() }, rating, comment });
       setComment('');
       setShowReviewForm(false);
-      setReviewMsg('✓ Review submitted');
-      setTimeout(() => setReviewMsg(''), 2500);
+      setReviewMsg({ ok: true, value: 'product.review.submitted' });
+      setTimeout(() => setReviewMsg(null), 2500);
       await refreshReviews();
     } catch (err) {
-      const msg = err.response?.data || 'Failed to submit review';
-      setReviewMsg(typeof msg === 'string' ? msg : 'Failed to submit review');
+      const msg = err.response?.data || 'product.review.submitFailed';
+      setReviewMsg({ ok: false, value: msg });
       setShowReviewForm(false);
     }
   };
@@ -262,7 +276,7 @@ export default function ProductDetail() {
     setEditingReviewId(r.id);
     setEditRating(r.rating || 5);
     setEditComment(r.comment || '');
-    setReviewMsg('');
+    setReviewMsg(null);
   };
 
   const handleEditReview = async (e) => {
@@ -270,23 +284,23 @@ export default function ProductDetail() {
     try {
       await axiosClient.put(`/reviews/${editingReviewId}`, { customerId: getCustomerId(), rating: editRating, comment: editComment });
       setEditingReviewId(null);
-      setReviewMsg('✓ Review updated');
-      setTimeout(() => setReviewMsg(''), 2500);
+      setReviewMsg({ ok: true, value: 'product.review.updated' });
+      setTimeout(() => setReviewMsg(null), 2500);
       await refreshReviews();
     } catch (err) {
-      setReviewMsg(err.response?.data || 'Failed to update review');
+      setReviewMsg({ ok: false, value: err.response?.data || 'product.review.updateFailed' });
     }
   };
 
   const handleDeleteReview = async (r) => {
-    if (!window.confirm('Delete your review?')) return;
+    if (!window.confirm(t('product.review.deleteConfirm'))) return;
     try {
       await axiosClient.delete(`/reviews/${r.id}`, { data: { customerId: getCustomerId() } });
-      setReviewMsg('✓ Review deleted');
-      setTimeout(() => setReviewMsg(''), 2500);
+      setReviewMsg({ ok: true, value: 'product.review.deleted' });
+      setTimeout(() => setReviewMsg(null), 2500);
       await refreshReviews();
     } catch (err) {
-      setReviewMsg(err.response?.data || 'Failed to delete review');
+      setReviewMsg({ ok: false, value: err.response?.data || 'product.review.deleteFailed' });
     }
   };
 
@@ -294,7 +308,7 @@ export default function ProductDetail() {
     <div className="container-x py-[var(--space-8)]">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-sm text-[var(--color-text-muted)] mb-6">
-        <Link to="/products" className="hover:text-[var(--color-primary)]">Shop</Link>
+        <Link to="/products" className="hover:text-[var(--color-primary)]">{t('nav.shop')}</Link>
         <ChevronRight size={14} />
         <span className="text-[var(--color-text-secondary)]">{product.category}</span>
         <ChevronRight size={14} />
@@ -317,12 +331,14 @@ export default function ProductDetail() {
           <div className="flex items-center gap-2 mt-2 mb-4">
             <Stars rating={summary.averageRating} size="text-lg" />
             <span className="text-sm text-[var(--color-text-muted)]">
-              {summary.reviewCount > 0 ? `${summary.averageRating} (${summary.reviewCount} reviews)` : 'No reviews yet'}
+              {summary.reviewCount > 0
+                ? t('product.reviewsCount', { count: summary.reviewCount, rating: summary.averageRating })
+                : t('product.noReviewsYet')}
             </span>
           </div>
 
-          <p className="font-[family-name:var(--font-heading)] text-[28px] font-bold mb-1">₹{product.price}</p>
-          <p className="text-xs text-[var(--color-text-muted)] mb-4">Inclusive of all taxes</p>
+          <p className="font-[family-name:var(--font-heading)] text-[28px] font-bold mb-1">{formatCurrency(product.price)}</p>
+          <p className="text-xs text-[var(--color-text-muted)] mb-4">{t('product.inclusiveOfTaxes')}</p>
 
           <p className="text-[var(--color-text-secondary)] text-[17px] leading-[1.5] mb-5">
             {product.description}
@@ -330,10 +346,10 @@ export default function ProductDetail() {
 
           <div className="flex flex-wrap gap-2 mb-4">
                 <span className={`rounded-full px-3 py-1 text-xs font-semibold ${avail.cls}`}>{availLabel}</span>
-            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${SUSTAIN_ROW[label]} bg-[var(--color-card-bg-tint)]`}>
-              Sustainability: {label}{score != null ? ` (${score}/100)` : ''}
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${sustain.cls} bg-[var(--color-card-bg-tint)]`}>
+              {t('product.sustainability', { label: sustainText })}{score != null ? ` (${score}/100)` : ''}
             </span>
-            {isWishlisted && <span className="rounded-full px-3 py-1 text-xs font-semibold bg-[var(--color-secondary)] text-white">In wishlist</span>}
+            {isWishlisted && <span className="rounded-full px-3 py-1 text-xs font-semibold bg-[var(--color-secondary)] text-white">{t('product.inWishlist')}</span>}
           </div>
 
           {score != null && (
@@ -370,7 +386,11 @@ export default function ProductDetail() {
               >
                 <span className="inline-flex items-center justify-center gap-2">
                   <Bell size={18} />
-                    {notifyStatus === 'subscribed' ? "We'll notify you" : notifyStatus === 'duplicate' ? 'Already subscribed' : t('product.notifyMe')}
+                    {notifyStatus === 'subscribed'
+                      ? t('product.willNotify')
+                      : notifyStatus === 'duplicate'
+                        ? t('product.alreadySubscribed')
+                        : t('product.notifyMe')}
                 </span>
               </button>
             ) : (
@@ -389,7 +409,7 @@ export default function ProductDetail() {
 
           <button onClick={toggleWishlist} className="inline-flex items-center gap-2 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-secondary)] transition-colors">
             <Heart size={18} className={isWishlisted ? 'fill-[var(--color-secondary)] text-[var(--color-secondary)]' : ''} />
-            {isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+            {isWishlisted ? t('product.removeFromWishlist') : t('product.addToWishlist')}
           </button>
         </div>
       </div>
@@ -398,21 +418,23 @@ export default function ProductDetail() {
       <div className="rounded-[var(--radius-xl)] bg-[var(--color-card-bg)] shadow-[var(--shadow-sm)] p-6 mb-[var(--space-9)]">
         <div className="flex gap-1 sm:gap-6 border-b border-[var(--color-border)] mb-5 overflow-x-auto">
           {[
-            ['showcase', 'Showcase'],
-            ['description', 'Description'],
-            ['specifications', 'Specifications'],
-            ['warranty', 'Warranty'],
-            ['manufacturer', 'Manufacturer Info'],
-            ['reviews', `Reviews (${summary.reviewCount})`],
-          ].map(([t, label]) => (
+            ['showcase', 'product.tab.showcase'],
+            ['description', 'product.tab.description'],
+            ['specifications', 'product.tab.specifications'],
+            ['warranty', 'product.tab.warranty'],
+            ['manufacturer', 'product.tab.manufacturer'],
+            ['reviews', 'product.tab.reviews'],
+          ].map(([tabId, labelKey]) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
+              key={tabId}
+              onClick={() => setTab(tabId)}
               className={`whitespace-nowrap pb-3 text-sm font-semibold border-b-2 -mb-px transition-colors ${
-                tab === t ? 'border-[var(--color-primary)] text-[var(--color-primary)]' : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'
+                tab === tabId ? 'border-[var(--color-primary)] text-[var(--color-primary)]' : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'
               }`}
             >
-              {label}
+              {tabId === 'reviews'
+                ? t('product.tab.reviews', { count: summary.reviewCount })
+                : t(labelKey)}
             </button>
           ))}
         </div>
@@ -423,14 +445,14 @@ export default function ProductDetail() {
               <ProductImage product={product} className="w-full h-full object-cover" />
             </div>
             <div className="flex flex-col justify-center">
-              <h4 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-2">Product showcase</h4>
+              <h4 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-2">{t('product.showcase')}</h4>
               <p className="text-[var(--color-text-secondary)] text-[15px] leading-[1.6] mb-4">
                 {product.description}
               </p>
               <div className="flex flex-wrap gap-2">
             <span className={`rounded-full px-3 py-1 text-xs font-semibold ${avail.cls}`}>{availLabel}</span>
-                <span className={`rounded-full px-3 py-1 text-xs font-semibold ${SUSTAIN_ROW[label]} bg-[var(--color-card-bg-tint)]`}>
-                  Sustainability: {label}{score != null ? ` (${score}/100)` : ''}
+                <span className={`rounded-full px-3 py-1 text-xs font-semibold ${sustain.cls} bg-[var(--color-card-bg-tint)]`}>
+                  {t('product.sustainability', { label: sustainText })}{score != null ? ` (${score}/100)` : ''}
                 </span>
               </div>
             </div>
@@ -442,13 +464,13 @@ export default function ProductDetail() {
             <p className="text-[var(--color-text-secondary)] mb-2">{product.description}</p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
               {[
-                ['Category', product.category],
-                ['Stock', String(product.stockQuantity ?? 0)],
-                ['Sustainability', `${label}${score != null ? ` ${score}/100` : ''}`],
-                ['Price', `₹${product.price}`],
-              ].map(([k, v]) => (
-                <div key={k} className="rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] p-3">
-                  <p className="text-xs text-[var(--color-text-muted)]">{k}</p>
+                ['spec.category', product.category],
+                ['spec.stock', String(product.stockQuantity ?? 0)],
+                ['spec.sustainability', `${sustainText}${score != null ? ` ${score}/100` : ''}`],
+                ['spec.price', formatCurrency(product.price)],
+              ].map(([labelKey, v]) => (
+                <div key={labelKey} className="rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] p-3">
+                  <p className="text-xs text-[var(--color-text-muted)]">{t(labelKey)}</p>
                   <p className="text-sm font-semibold mt-0.5">{v}</p>
                 </div>
               ))}
@@ -458,9 +480,9 @@ export default function ProductDetail() {
 
         {tab === 'specifications' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {specs.map(([k, v]) => (
-              <div key={k} className="flex items-center justify-between gap-4 rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] p-4">
-                <span className="text-sm text-[var(--color-text-muted)]">{k}</span>
+            {specs.map(([labelKey, v]) => (
+              <div key={labelKey} className="flex items-center justify-between gap-4 rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] p-4">
+                <span className="text-sm text-[var(--color-text-muted)]">{t(labelKey)}</span>
                 <span className="text-sm font-semibold text-right">{v}</span>
               </div>
             ))}
@@ -469,7 +491,7 @@ export default function ProductDetail() {
 
         {tab === 'warranty' && (
           <div>
-            <h4 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-2">Warranty & returns</h4>
+            <h4 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-2">{t('product.warrantyTitle')}</h4>
             <ul className="space-y-2.5">
               {warranty.map((w) => (
                 <li key={w} className="flex items-start gap-2.5 text-[15px] text-[var(--color-text-secondary)] leading-[1.5]">
@@ -479,16 +501,16 @@ export default function ProductDetail() {
               ))}
             </ul>
             <p className="text-sm text-[var(--color-text-muted)] mt-4">
-              This product is covered by the ShopEase customer protection plan. Please retain your invoice for any warranty claims.
+              {t('product.warrantyNote')}
             </p>
           </div>
         )}
 
         {tab === 'manufacturer' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {manufacturer.map(([k, v]) => (
-              <div key={k} className="rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] p-4">
-                <p className="text-xs text-[var(--color-text-muted)]">{k}</p>
+            {manufacturer.map(([labelKey, v]) => (
+              <div key={labelKey} className="rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] p-4">
+                <p className="text-xs text-[var(--color-text-muted)]">{t(labelKey)}</p>
                 <p className="text-sm font-semibold mt-0.5">{v}</p>
               </div>
             ))}
@@ -501,11 +523,11 @@ export default function ProductDetail() {
               onClick={() => setShowReviewForm(!showReviewForm)}
               className="mb-4 inline-flex items-center min-h-[44px] rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white px-5 text-sm font-semibold hover:bg-[var(--color-primary-hover)] transition-colors"
             >
-              {showReviewForm ? 'Cancel' : 'Write a review'}
+              {showReviewForm ? t('common.cancel') : t('product.writeReview')}
             </button>
             {reviewMsg && (
-              <p className={`text-sm mb-3 ${reviewMsg.startsWith('✓') ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}>
-                {reviewMsg}
+              <p className={`text-sm mb-3 ${reviewMsg.ok ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}>
+                {t(reviewMsg.value)}
               </p>
             )}
 
@@ -521,18 +543,18 @@ export default function ProductDetail() {
                 <textarea
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
-                  placeholder="Share your thoughts..."
+                  placeholder={t('product.reviewPlaceholder')}
                   rows={3}
                   className="w-full p-3 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] outline-none focus:border-[var(--color-primary)] text-sm"
                 />
                 <button type="submit" className="mt-2 w-full rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white py-2.5 text-sm font-semibold hover:bg-[var(--color-primary-hover)] transition-colors">
-                  Submit Review
+                  {t('product.submitReview')}
                 </button>
               </form>
             )}
 
             {reviews.length === 0 ? (
-              <p className="text-sm text-[var(--color-text-muted)]">No reviews yet. Be the first!</p>
+              <p className="text-sm text-[var(--color-text-muted)]">{t('product.noReviewsFirst')}</p>
             ) : (
               <ul className="space-y-3">
                 {reviews.map((r) => {
@@ -556,20 +578,20 @@ export default function ProductDetail() {
                           <textarea
                             value={editComment}
                             onChange={(e) => setEditComment(e.target.value)}
-                            placeholder="Update your review..."
+                            placeholder={t('product.editReviewPlaceholder')}
                             rows={2}
                             className="w-full p-3 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] outline-none focus:border-[var(--color-primary)] text-sm"
                           />
                           <div className="flex gap-2 mt-2">
                             <button type="submit" className="rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white px-4 py-2 text-xs font-semibold hover:bg-[var(--color-primary-hover)] transition-colors">
-                              Save
+                              {t('product.saveReview')}
                             </button>
                             <button
                               type="button"
                               onClick={() => setEditingReviewId(null)}
                               className="rounded-[var(--radius-md)] bg-white border-[1.5px] border-[var(--color-border)] text-[var(--color-text-secondary)] px-4 py-2 text-xs font-semibold hover:bg-[var(--color-card-bg)] transition-colors"
                             >
-                              Cancel
+                              {t('common.cancel')}
                             </button>
                           </div>
                         </form>
@@ -579,7 +601,7 @@ export default function ProductDetail() {
                             <Stars rating={r.rating} size="text-sm" />
                             <span className="text-sm font-medium">{r.customer.name}</span>
                             {isMine && (
-                              <span className="text-[11px] text-[var(--color-text-muted)]">(you)</span>
+                              <span className="text-[11px] text-[var(--color-text-muted)]">{t('product.you')}</span>
                             )}
                           </div>
                           {r.comment && <p className="text-sm text-[var(--color-text-secondary)]">{r.comment}</p>}
@@ -589,13 +611,13 @@ export default function ProductDetail() {
                                 onClick={() => startEdit(r)}
                                 className="text-xs font-semibold text-[var(--color-primary)] hover:underline"
                               >
-                                Edit
+                                {t('common.edit')}
                               </button>
                               <button
                                 onClick={() => handleDeleteReview(r)}
                                 className="text-xs font-semibold text-[var(--color-error)] hover:underline"
                               >
-                                Delete
+                                {t('common.delete')}
                               </button>
                             </div>
                           )}

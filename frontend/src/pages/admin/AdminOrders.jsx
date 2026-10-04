@@ -1,5 +1,6 @@
 import { Fragment, useState, useEffect } from 'react';
 import axiosClient from '../../api/axiosClient';
+import { useLanguage } from '../../context/LanguageContext';
 
 const STATUS_COLORS = {
   PLACED: 'bg-[var(--color-info-bg)] text-[var(--color-info)]',
@@ -17,11 +18,23 @@ const RETURN_COLORS = {
   REFUNDED: 'bg-[var(--color-success-bg)] text-[var(--color-success)]',
 };
 
-function Badge({ status, map }) {
-  return <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${map[status] || 'bg-[var(--color-card-bg-tint)] text-[var(--color-text-secondary)]'}`}>{status}</span>;
+// Kept as literals so the i18n checker can see them; the checker cannot follow a
+// template-built key.
+const RETURN_STATUS_KEYS = {
+  REQUESTED: 'admin.return.REQUESTED',
+  APPROVED: 'admin.return.APPROVED',
+  REJECTED: 'admin.return.REJECTED',
+  REFUNDED: 'admin.return.REFUNDED',
+};
+
+// The API sends enums for both order status and return status; the badge colour
+// comes from the map but the text is translated in the active language.
+function Badge({ status, map, label }) {
+  return <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${map[status] || 'bg-[var(--color-card-bg-tint)] text-[var(--color-text-secondary)]'}`}>{label ?? status}</span>;
 }
 
 export default function AdminOrders() {
+  const { t, formatCurrency, formatNumber, formatDateTime } = useLanguage();
   const [tab, setTab] = useState('orders');
   const [orders, setOrders] = useState([]);
   const [returns, setReturns] = useState([]);
@@ -43,7 +56,7 @@ export default function AdminOrders() {
 
   useEffect(() => {
     Promise.all([loadOrders(), loadReturns()])
-      .catch((err) => setError(err.response?.data || 'Failed to load orders'))
+      .catch((err) => setError(err.response?.data || t('admin.orders.loadFailed')))
       .finally(() => setLoading(false));
   }, []);
 
@@ -53,10 +66,13 @@ export default function AdminOrders() {
     setNotice('');
     try {
       await axiosClient.put(`/orders/${orderId}/status`, { status });
-      setNotice(`Order #${orderId} set to ${status}.`);
+      setNotice(t('admin.orders.statusUpdated', {
+        id: formatNumber(orderId),
+        status: t(`status.${status}`),
+      }));
       await loadOrders();
     } catch (err) {
-      setError(err.response?.data || 'Failed to update status');
+      setError(err.response?.data || t('admin.orders.statusUpdateFailed'));
     } finally {
       setBusy(null);
     }
@@ -69,17 +85,17 @@ export default function AdminOrders() {
       await axiosClient.put(`/returns/${id}/${action}`);
       await loadReturns();
     } catch (err) {
-      setError(err.response?.data || 'Action failed');
+      setError(err.response?.data || t('admin.coupons.actionFailed'));
     } finally {
       setBusy(null);
     }
   };
 
-  if (loading) return <p className="py-12 text-center text-[var(--color-text-muted)]">Loading...</p>;
+  if (loading) return <p className="py-12 text-center text-[var(--color-text-muted)]">{t('admin.orders.loading')}</p>;
 
   return (
     <div>
-      <h2 className="font-[family-name:var(--font-heading)] text-[28px] font-bold mb-6">Orders</h2>
+      <h2 className="font-[family-name:var(--font-heading)] text-[28px] font-bold mb-6">{t('admin.nav.orders')}</h2>
 
       {error && (
         <p className="mb-4 rounded-[var(--radius-md)] bg-[var(--color-error-bg)] text-[var(--color-error)] px-3 py-2 text-sm">
@@ -93,7 +109,10 @@ export default function AdminOrders() {
       )}
 
       <div className="flex gap-2 mb-6">
-        {[['orders', `Orders (${orders.length})`], ['returns', `Returns (${returns.length})`]].map(([key, label]) => (
+        {[
+          ['orders', t('admin.orders.tabOrders', { count: formatNumber(orders.length) })],
+          ['returns', t('admin.orders.tabReturns', { count: formatNumber(returns.length) })],
+        ].map(([key, label]) => (
           <button
             key={key}
             onClick={() => setTab(key)}
@@ -113,12 +132,12 @@ export default function AdminOrders() {
               <thead>
                 <tr className="text-left text-xs uppercase tracking-wide text-[var(--color-text-muted)] border-b border-[var(--color-border)]">
                   <th className="py-3 px-4">#</th>
-                  <th className="py-3 px-4">Customer</th>
-                  <th className="py-3 px-4">Date</th>
-                  <th className="py-3 px-4 text-right">Total</th>
-                  <th className="py-3 px-4">Coupon</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th className="py-3 px-4">{t('admin.payments.colCustomer')}</th>
+                  <th className="py-3 px-4">{t('admin.payments.colDate')}</th>
+                  <th className="py-3 px-4 text-right">{t('admin.orders.colTotal')}</th>
+                  <th className="py-3 px-4">{t('admin.orders.colCoupon')}</th>
+                  <th className="py-3 px-4">{t('admin.payments.colStatus')}</th>
+                  <th className="py-3 px-4 text-right">{t('admin.categories.colActions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -127,20 +146,20 @@ export default function AdminOrders() {
                     <tr className="border-b border-[var(--color-border)] hover:bg-[var(--color-card-bg-tint)]">
                       <td className="py-3 px-4 font-semibold">{o.id}</td>
                       <td className="py-3 px-4">{o.customer?.name || '—'}</td>
-                      <td className="py-3 px-4 text-[var(--color-text-secondary)]">{new Date(o.orderDate).toLocaleString('en-IN')}</td>
+                      <td className="py-3 px-4 text-[var(--color-text-secondary)]">{formatDateTime(o.orderDate)}</td>
                       <td className="py-3 px-4 text-right font-medium">
-                        ₹{Number(o.totalAmount).toLocaleString('en-IN')}
+                        {formatCurrency(o.totalAmount)}
                         {o.discountAmount > 0 && (
-                          <span className="block text-xs text-[var(--color-success)]">-₹{Number(o.discountAmount).toLocaleString('en-IN')}</span>
+                          <span className="block text-xs text-[var(--color-success)]">-{formatCurrency(o.discountAmount)}</span>
                         )}
                       </td>
                       <td className="py-3 px-4">{o.couponCode ? <Badge status={o.couponCode} map={{}} /> : '—'}</td>
-                      <td className="py-3 px-4"><Badge status={o.status} map={STATUS_COLORS} /></td>
+                      <td className="py-3 px-4"><Badge status={o.status} map={STATUS_COLORS} label={t(`status.${o.status}`)} /></td>
                       <td className="py-3 px-4">
                         <div className="flex justify-end items-center gap-2">
                           <button onClick={() => setExpanded((p) => ({ ...p, [o.id]: !p[o.id] }))}
                             className="text-xs font-semibold text-[var(--color-primary)] hover:underline">
-                            {expanded[o.id] ? 'Hide items' : 'View items'}
+                            {expanded[o.id] ? t('admin.orders.hideItems') : t('admin.orders.viewItems')}
                           </button>
                           {(o.allowedNextStatuses || []).length > 0 ? (
                             <select
@@ -149,15 +168,15 @@ export default function AdminOrders() {
                               onChange={(e) => { if (e.target.value) updateStatus(o.id, e.target.value); }}
                               className="rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] px-2 py-1 text-xs bg-white disabled:opacity-50"
                             >
-                              <option value="">Set status…</option>
+                              <option value="">{t('admin.orders.setStatus')}</option>
                               {/* Only the moves the backend will actually accept. DELIVERED
                                   and CANCELLED orders arrive here with an empty list. */}
                               {o.allowedNextStatuses.map((s) => (
-                                <option key={s} value={s}>{s}</option>
+                                <option key={s} value={s}>{t(`status.${s}`)}</option>
                               ))}
                             </select>
                           ) : (
-                            <span className="text-xs text-[var(--color-text-muted)]">Final</span>
+                            <span className="text-xs text-[var(--color-text-muted)]">{t('admin.orders.final')}</span>
                           )}
                         </div>
                       </td>
@@ -170,10 +189,10 @@ export default function AdminOrders() {
                               <li key={item.id} className="flex items-center justify-between py-1.5 gap-3">
                                 <span className="flex-1">{item.product.name} × {item.quantity}</span>
                                 <span className="text-[var(--color-text-secondary)] tabular-nums">
-                                  ₹{Number(item.unitPrice).toLocaleString('en-IN')}
+                                  {formatCurrency(item.unitPrice)}
                                 </span>
                                 <span className="font-semibold tabular-nums w-24 text-right">
-                                  ₹{Number(item.lineTotal ?? Number(item.unitPrice) * item.quantity).toLocaleString('en-IN')}
+                                  {formatCurrency(item.lineTotal ?? Number(item.unitPrice) * item.quantity)}
                                 </span>
                               </li>
                             ))}
@@ -192,18 +211,18 @@ export default function AdminOrders() {
       {tab === 'returns' && (
         <div className="rounded-[var(--radius-lg)] bg-[var(--color-card-bg)] shadow-[var(--shadow-sm)] overflow-hidden">
           {returns.length === 0 ? (
-            <p className="p-6 text-sm text-[var(--color-text-muted)]">No return requests.</p>
+            <p className="p-6 text-sm text-[var(--color-text-muted)]">{t('admin.orders.noReturns')}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-xs uppercase tracking-wide text-[var(--color-text-muted)] border-b border-[var(--color-border)]">
                     <th className="py-3 px-4">#</th>
-                    <th className="py-3 px-4">Item</th>
-                    <th className="py-3 px-4">Customer</th>
-                    <th className="py-3 px-4">Reason</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4 text-right">Actions</th>
+                    <th className="py-3 px-4">{t('admin.orders.colItem')}</th>
+                    <th className="py-3 px-4">{t('admin.payments.colCustomer')}</th>
+                    <th className="py-3 px-4">{t('admin.orders.colReason')}</th>
+                    <th className="py-3 px-4">{t('admin.payments.colStatus')}</th>
+                    <th className="py-3 px-4 text-right">{t('admin.categories.colActions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -213,20 +232,20 @@ export default function AdminOrders() {
                       <td className="py-3 px-4">{r.orderItem?.product?.name || '—'} × {r.orderItem?.quantity ?? '—'}</td>
                       <td className="py-3 px-4">{r.customer?.name || '—'}</td>
                       <td className="py-3 px-4 text-[var(--color-text-secondary)]">{r.reason || '—'}</td>
-                      <td className="py-3 px-4"><Badge status={r.status} map={RETURN_COLORS} /></td>
+                      <td className="py-3 px-4"><Badge status={r.status} map={RETURN_COLORS} label={t(RETURN_STATUS_KEYS[r.status] || RETURN_STATUS_KEYS.REQUESTED)} /></td>
                       <td className="py-3 px-4">
                         <div className="flex justify-end gap-1.5">
                           {r.status === 'REQUESTED' && (
                             <>
                               <button onClick={() => processReturn(r.id, 'approve')} disabled={busy === `return:${r.id}`}
-                                className="rounded-[var(--radius-md)] bg-[var(--color-success)] text-white px-3 py-1.5 text-xs font-semibold disabled:opacity-50">Approve</button>
+                                className="rounded-[var(--radius-md)] bg-[var(--color-success)] text-white px-3 py-1.5 text-xs font-semibold disabled:opacity-50">{t('admin.orders.approve')}</button>
                               <button onClick={() => processReturn(r.id, 'reject')} disabled={busy === `return:${r.id}`}
-                                className="rounded-[var(--radius-md)] bg-white border-[1.5px] border-[var(--color-error)] text-[var(--color-error)] px-3 py-1.5 text-xs font-semibold disabled:opacity-50">Reject</button>
+                                className="rounded-[var(--radius-md)] bg-white border-[1.5px] border-[var(--color-error)] text-[var(--color-error)] px-3 py-1.5 text-xs font-semibold disabled:opacity-50">{t('admin.orders.reject')}</button>
                             </>
                           )}
                           {r.status === 'APPROVED' && (
                             <button onClick={() => processReturn(r.id, 'refund')} disabled={busy === `return:${r.id}`}
-                              className="rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white px-3 py-1.5 text-xs font-semibold disabled:opacity-50">Mark Refunded</button>
+                              className="rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white px-3 py-1.5 text-xs font-semibold disabled:opacity-50">{t('admin.orders.markRefunded')}</button>
                           )}
                         </div>
                       </td>

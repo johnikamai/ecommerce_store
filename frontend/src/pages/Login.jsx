@@ -5,6 +5,21 @@ import {
   ShoppingBag, Heart, Award, Mail, Check,
 } from 'lucide-react';
 import axiosClient from '../api/axiosClient';
+import { useLanguage } from '../context/LanguageContext';
+
+/**
+ * Normalises an auth failure into something renderable.
+ *
+ * A missing response means the request never reached the API, so the wording is
+ * ours. Otherwise the server's own string is passed through untouched: backend
+ * messages are not translated, and t() returns an unknown key verbatim, so the
+ * same value can be either a key or a plain message at the call site.
+ */
+function authError(err, fallbackKey = 'auth.error.generic') {
+  if (!err?.response) return 'auth.error.offline';
+  const msg = err?.response?.data;
+  return typeof msg === 'string' ? msg : fallbackKey;
+}
 
 const persist = (data) => {
   localStorage.setItem('token', data.token);
@@ -18,6 +33,7 @@ const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 // Shared, branded password field: eye toggle to reveal + optional strength checklist.
 function PasswordInput({ id, value, onChange, placeholder, autoComplete, showStrength }) {
+  const { t } = useLanguage();
   const [visible, setVisible] = useState(false);
 
   const checks = {
@@ -28,15 +44,17 @@ function PasswordInput({ id, value, onChange, placeholder, autoComplete, showStr
     special: /[^A-Za-z0-9]/.test(value),
   };
   const passed = Object.values(checks).filter(Boolean).length;
-  const strength = passed >= 5 ? 'Strong' : passed >= 3 ? 'Medium' : 'Weak';
+  // A map rather than t(`auth.pw.${...}`) so the keys stay statically visible
+  // to scripts/check-i18n.mjs.
+  const strengthKey = passed >= 5 ? 'auth.pw.strong' : passed >= 3 ? 'auth.pw.medium' : 'auth.pw.weak';
   const strengthColor = passed >= 5 ? 'text-[var(--color-success)]' : passed >= 3 ? 'text-[var(--color-warning)]' : 'text-[var(--color-error)]';
 
   const rows = [
-    { key: 'len', label: 'At least 8 characters' },
-    { key: 'upper', label: 'Uppercase letter (A-Z)' },
-    { key: 'lower', label: 'Lowercase letter (a-z)' },
-    { key: 'digit', label: 'Number (0-9)' },
-    { key: 'special', label: 'Special character (!@#$...)' },
+    { key: 'len', label: t('auth.pw.len') },
+    { key: 'upper', label: t('auth.pw.upper') },
+    { key: 'lower', label: t('auth.pw.lower') },
+    { key: 'digit', label: t('auth.pw.digit') },
+    { key: 'special', label: t('auth.pw.special') },
   ];
 
   return (
@@ -54,7 +72,7 @@ function PasswordInput({ id, value, onChange, placeholder, autoComplete, showStr
         <button
           type="button"
           onClick={() => setVisible(!visible)}
-          aria-label={visible ? 'Hide password' : 'Show password'}
+          aria-label={visible ? t('auth.pw.hide') : t('auth.pw.show')}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors"
         >
           {visible ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -64,8 +82,8 @@ function PasswordInput({ id, value, onChange, placeholder, autoComplete, showStr
       {showStrength && value.length > 0 && (
         <div className="mt-2.5 rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] p-3 space-y-1">
           <div className="flex items-center justify-between text-xs font-semibold">
-            <span className="text-[var(--color-text-muted)]">Password strength</span>
-            <span className={strengthColor}>{strength}</span>
+            <span className="text-[var(--color-text-muted)]">{t('auth.pw.strength')}</span>
+            <span className={strengthColor}>{t(strengthKey)}</span>
           </div>
           <div className="flex gap-1">
             {[1, 2, 3, 4, 5].map((i) => (
@@ -94,31 +112,33 @@ function PasswordInput({ id, value, onChange, placeholder, autoComplete, showStr
 }
 
 function BrandPanel() {
+  const { t } = useLanguage();
   return (
     <div className="hidden md:flex flex-col gap-5">
       <span className="inline-flex items-center gap-1.5 w-fit rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-[var(--color-primary)]">
         <Sparkles size={14} /> ShopEase
       </span>
       <h1 className="font-[family-name:var(--font-heading)] text-[40px] leading-[1.15] font-bold text-[var(--color-text-primary)]">
-        One store.
+        {t('auth.brand.line1')}
         <br />
-        Everything you
+        {t('auth.brand.line2')}
         <br />
-        <span className="bg-[linear-gradient(135deg,#7C6AE8,#F6A6C1)] bg-clip-text text-transparent">love.</span>
+        <span className="bg-[linear-gradient(135deg,#7C6AE8,#F6A6C1)] bg-clip-text text-transparent">{t('auth.brand.line3')}</span>
       </h1>
       <p className="text-[var(--color-text-secondary)] max-w-xs">
-        Sign in to your account for tailored shopping, fast checkout and rewards that keep coming back to you.
+        {t('auth.brand.sub')}
       </p>
       <ul className="space-y-2.5 text-sm text-[var(--color-text-secondary)]">
-        <li className="flex items-center gap-2.5"><span className="w-7 h-7 rounded-full bg-white shadow-[var(--shadow-sm)] flex items-center justify-center text-[var(--color-primary)]"><ShoppingBag size={14} /></span> 100+ products across 10 categories</li>
-        <li className="flex items-center gap-2.5"><span className="w-7 h-7 rounded-full bg-white shadow-[var(--shadow-sm)] flex items-center justify-center text-[var(--color-secondary)]"><Heart size={14} /></span> Wishlist, orders and instant restock alerts</li>
-        <li className="flex items-center gap-2.5"><span className="w-7 h-7 rounded-full bg-white shadow-[var(--shadow-sm)] flex items-center justify-center text-[var(--color-accent)]"><Award size={14} /></span> Loyalty points and referral rewards</li>
+        <li className="flex items-center gap-2.5"><span className="w-7 h-7 rounded-full bg-white shadow-[var(--shadow-sm)] flex items-center justify-center text-[var(--color-primary)]"><ShoppingBag size={14} /></span> {t('auth.brand.point1')}</li>
+        <li className="flex items-center gap-2.5"><span className="w-7 h-7 rounded-full bg-white shadow-[var(--shadow-sm)] flex items-center justify-center text-[var(--color-secondary)]"><Heart size={14} /></span> {t('auth.brand.point2')}</li>
+        <li className="flex items-center gap-2.5"><span className="w-7 h-7 rounded-full bg-white shadow-[var(--shadow-sm)] flex items-center justify-center text-[var(--color-accent)]"><Award size={14} /></span> {t('auth.brand.point3')}</li>
       </ul>
     </div>
   );
 }
 
 function AdminContent() {
+  const { t } = useLanguage();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -134,21 +154,20 @@ function AdminContent() {
     e.preventDefault();
     setError('');
     if (!username.trim() || !password) {
-      setError('Enter your username and password');
+      setError('auth.credentialsRequired');
       return;
     }
     setBusy(true);
     try {
       const res = await axiosClient.post('/auth/login', { username, password });
       if (res.data.role !== 'ADMIN' && res.data.role !== 'STAFF') {
-        setError('Not a staff account — switch to Customer below.');
+        setError('auth.error.notStaff');
         return;
       }
       persist(res.data);
       navigate('/admin');
     } catch (err) {
-      const msg = err?.response?.data;
-      setError(!err?.response ? 'Cannot reach the server — is the backend running?' : typeof msg === 'string' ? msg : 'Something went wrong — try again');
+      setError(authError(err));
     } finally {
       setBusy(false);
     }
@@ -161,13 +180,13 @@ function AdminContent() {
           <ShieldCheck size={20} />
         </span>
         <div>
-          <h3 className="font-[family-name:var(--font-heading)] text-lg font-bold text-[var(--color-text-primary)]">Admin</h3>
-          <p className="text-xs text-[var(--color-text-muted)]">Store management — admins only</p>
+          <h3 className="font-[family-name:var(--font-heading)] text-lg font-bold text-[var(--color-text-primary)]">{t('auth.admin.title')}</h3>
+          <p className="text-xs text-[var(--color-text-muted)]">{t('auth.admin.sub')}</p>
         </div>
       </div>
 
       <div>
-        <label htmlFor="admin-user" className="block text-[13px] font-semibold mb-2 text-[var(--color-text-secondary)]">Username</label>
+        <label htmlFor="admin-user" className="block text-[13px] font-semibold mb-2 text-[var(--color-text-secondary)]">{t('auth.username')}</label>
         <input
           id="admin-user"
           type="text"
@@ -179,7 +198,7 @@ function AdminContent() {
         />
       </div>
       <div>
-        <label htmlFor="admin-pass" className="block text-[13px] font-semibold mb-2 text-[var(--color-text-secondary)]">Password</label>
+        <label htmlFor="admin-pass" className="block text-[13px] font-semibold mb-2 text-[var(--color-text-secondary)]">{t('auth.password')}</label>
         <PasswordInput
           id="admin-pass"
           value={password}
@@ -190,7 +209,7 @@ function AdminContent() {
       </div>
 
       {error && (
-        <p ref={errorRef} className="text-sm text-[var(--color-error)] bg-[var(--color-error-bg)] rounded-[var(--radius-md)] px-4 py-2.5" role="alert">{error}</p>
+        <p ref={errorRef} className="text-sm text-[var(--color-error)] bg-[var(--color-error-bg)] rounded-[var(--radius-md)] px-4 py-2.5" role="alert">{t(error)}</p>
       )}
 
       <button
@@ -200,7 +219,7 @@ function AdminContent() {
       >
         <span className="inline-flex items-center justify-center gap-2">
           <ShieldCheck size={16} />
-          {busy ? 'Please wait...' : 'Sign in as Admin'}
+          {busy ? t('auth.pleaseWait') : t('auth.admin.signIn')}
         </span>
       </button>
     </form>
@@ -208,6 +227,7 @@ function AdminContent() {
 }
 
 function CustomerContent() {
+  const { t } = useLanguage();
   const [mode, setMode] = useState('login'); // 'login' | 'register'
   const [step, setStep] = useState('form'); // 'form' | 'otp'
   const [resetMode, setResetMode] = useState(false);
@@ -242,12 +262,12 @@ function CustomerContent() {
     e.preventDefault();
     setError('');
     if (!username.trim() || !password) {
-      setError('Enter your username and password');
+      setError('auth.credentialsRequired');
       return;
     }
     if (mode === 'register') {
       if (!EMAIL_RE.test(email)) {
-        setError('Please enter a valid email address');
+        setError('auth.error.invalidEmail');
         return;
       }
       const checks = [
@@ -258,7 +278,7 @@ function CustomerContent() {
         /[^A-Za-z0-9]/.test(password),
       ];
       if (!checks.every(Boolean)) {
-        setError('Password too weak — follow the checklist below');
+        setError('auth.error.passwordWeak');
         return;
       }
     }
@@ -267,7 +287,7 @@ function CustomerContent() {
       if (mode === 'login') {
         const res = await axiosClient.post('/auth/login', { username, password });
         if (res.data.role === 'ADMIN' || res.data.role === 'STAFF') {
-          setError('That is a staff account — switch to Admin above.');
+          setError('auth.error.isStaff');
           return;
         }
         persist(res.data);
@@ -280,8 +300,7 @@ function CustomerContent() {
         setStep('otp');
       }
     } catch (err) {
-      const msg = err?.response?.data;
-      setError(!err?.response ? 'Cannot reach the server — is the backend running?' : typeof msg === 'string' ? msg : 'Something went wrong — try again');
+      setError(authError(err));
     } finally {
       setBusy(false);
     }
@@ -302,7 +321,7 @@ function CustomerContent() {
   const handleVerify = async () => {
     const code = otp.join('');
     if (code.length !== 6) {
-      setOtpError('Enter the 6-digit code');
+      setOtpError('auth.error.otpRequired');
       return;
     }
     setBusy(true);
@@ -318,8 +337,7 @@ function CustomerContent() {
       persist(res.data);
       navigate('/products');
     } catch (err) {
-      const msg = err?.response?.data;
-      setOtpError(!err?.response ? 'Cannot reach the server — is the backend running?' : typeof msg === 'string' ? msg : 'Verification failed');
+      setOtpError(authError(err, 'auth.error.verifyFailed'));
     } finally {
       setBusy(false);
     }
@@ -333,8 +351,7 @@ function CustomerContent() {
       setOtpError('');
       otpRefs.current[0]?.focus();
     } catch (err) {
-      const msg = err?.response?.data;
-      setOtpError(!err?.response ? 'Cannot reach the server — is the backend running?' : typeof msg === 'string' ? msg : 'Could not resend OTP');
+      setOtpError(authError(err, 'auth.error.resendFailed'));
     }
   };
 
@@ -345,16 +362,16 @@ function CustomerContent() {
       : <LogIn size={20} />;
 
   const headerText = step === 'otp'
-    ? 'Verify your account'
+    ? t('auth.otp.title')
     : mode === 'register'
-      ? 'Create your account'
-      : 'Customer sign in';
+      ? t('auth.register.title')
+      : t('auth.login.title');
 
   const headerSub = step === 'otp'
-    ? `We sent a code to ${emailSentTo || email || username}`
+    ? t('auth.otp.sub', { email: emailSentTo || email || username })
     : mode === 'register'
-      ? 'A few details and you\u2019re in'
-      : 'Shop, wishlist, orders — all in one place';
+      ? t('auth.register.sub')
+      : t('auth.login.sub');
 
   if (resetMode) {
     return <ForgotPasswordForm onBack={() => setResetMode(false)} />;
@@ -389,25 +406,27 @@ function CustomerContent() {
                     : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'
                 }`}
               >
-                {m === 'login' ? 'Sign in' : 'Create account'}
+                {m === 'login' ? t('auth.tab.login') : t('auth.tab.register')}
               </button>
             ))}
           </div>
 
           {mode === 'login' && (
             <p className="text-center text-xs text-[var(--color-text-muted)] -mt-1">
-              No account yet? Switch to <span className="font-semibold text-[var(--color-primary)]">Create account</span> — it takes 20 seconds.
+              {t('auth.noAccountBefore')}{' '}
+              <span className="font-semibold text-[var(--color-primary)]">{t('auth.tab.register')}</span>{' '}
+              {t('auth.noAccountAfter')}
             </p>
           )}
 
           <div>
-            <label htmlFor="cust-user" className="block text-[13px] font-semibold mb-2 text-[var(--color-text-secondary)]">Username or email</label>
+            <label htmlFor="cust-user" className="block text-[13px] font-semibold mb-2 text-[var(--color-text-secondary)]">{t('auth.usernameOrEmail')}</label>
             <input
               id="cust-user"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder={mode === 'login' ? 'your username or email' : 'e.g. rupa'}
+              placeholder={mode === 'login' ? t('auth.usernamePlaceholderLogin') : t('auth.usernamePlaceholderRegister')}
               autoComplete="username"
               className="w-full px-4 py-3 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] bg-white focus:border-[var(--color-primary)] focus:shadow-[var(--shadow-glow-primary)] outline-none transition-shadow"
             />
@@ -415,7 +434,7 @@ function CustomerContent() {
 
           {mode === 'register' && (
             <div>
-              <label htmlFor="cust-email" className="block text-[13px] font-semibold mb-2 text-[var(--color-text-secondary)]">Email</label>
+              <label htmlFor="cust-email" className="block text-[13px] font-semibold mb-2 text-[var(--color-text-secondary)]">{t('auth.email')}</label>
               <div className="relative">
                 <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
                 <input
@@ -428,12 +447,12 @@ function CustomerContent() {
                   className="w-full pl-10 pr-4 py-3 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] bg-white focus:border-[var(--color-primary)] focus:shadow-[var(--shadow-glow-primary)] outline-none transition-shadow"
                 />
               </div>
-              <p className="text-xs text-[var(--color-text-muted)] mt-1.5">We\u2019ll send an OTP here to verify it\u2019s really you.</p>
+              <p className="text-xs text-[var(--color-text-muted)] mt-1.5">{t('auth.emailOtpNote')}</p>
             </div>
           )}
 
           <div>
-            <label htmlFor="cust-pass" className="block text-[13px] font-semibold mb-2 text-[var(--color-text-secondary)]">Password</label>
+            <label htmlFor="cust-pass" className="block text-[13px] font-semibold mb-2 text-[var(--color-text-secondary)]">{t('auth.password')}</label>
             <PasswordInput
               id="cust-pass"
               value={password}
@@ -447,25 +466,25 @@ function CustomerContent() {
           {mode === 'register' && (
             <div>
               <label htmlFor="cust-ref" className="block text-[13px] font-semibold mb-2 text-[var(--color-text-secondary)]">
-                Referral code <span className="font-normal text-[var(--color-text-muted)]">(optional)</span>
+                {t('auth.referralCode')} <span className="font-normal text-[var(--color-text-muted)]">({t('auth.optional')})</span>
               </label>
               <input
                 id="cust-ref"
                 type="text"
                 value={referralCode}
                 onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                placeholder="e.g. JOHN-A1B2C3"
+                placeholder="JOHN-A1B2C3"
                 autoComplete="off"
                 className="w-full min-h-[48px] rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-sm focus:outline-none focus:border-[var(--color-primary)]"
               />
               <p className="mt-1.5 text-xs text-[var(--color-text-muted)]">
-                Got a code from a friend? They earn 500 points when your first order ships.
+                {t('auth.referralNote')}
               </p>
             </div>
           )}
 
           {error && (
-            <p ref={errorRef} className="text-sm text-[var(--color-error)] bg-[var(--color-error-bg)] rounded-[var(--radius-md)] px-4 py-2.5" role="alert">{error}</p>
+            <p ref={errorRef} className="text-sm text-[var(--color-error)] bg-[var(--color-error-bg)] rounded-[var(--radius-md)] px-4 py-2.5" role="alert">{t(error)}</p>
           )}
 
           <button
@@ -474,7 +493,11 @@ function CustomerContent() {
           >
             <span className="inline-flex items-center justify-center gap-2">
               {mode === 'login' ? <LogIn size={16} /> : <UserPlus size={16} />}
-              {busy ? 'Please wait...' : mode === 'login' ? 'Sign in' : 'Create account'}
+              {busy
+                ? t('auth.pleaseWait')
+                : mode === 'login'
+                  ? t('auth.tab.login')
+                  : t('auth.tab.register')}
             </span>
           </button>
 
@@ -485,7 +508,7 @@ function CustomerContent() {
                 onClick={() => setResetMode(true)}
                 className="text-sm font-semibold text-[var(--color-primary)] hover:underline"
               >
-                Forgot your password?
+                {t('auth.forgotPassword')}
               </button>
             </div>
           )}
@@ -494,12 +517,13 @@ function CustomerContent() {
         <>
 {emailDelivered ? (
           <p className="text-sm bg-[var(--color-info-bg)] text-[var(--color-info)] rounded-[var(--radius-md)] px-4 py-2.5">
-            We sent a 6-digit code to <span className="font-semibold">{emailSentTo}</span> — check your inbox
-            (and the spam folder too).
+            {t('auth.otp.sentBefore')}{' '}
+            <span className="font-semibold">{emailSentTo}</span>{' '}
+            {t('auth.otp.sentAfter')}
           </p>
         ) : devOtp ? (
           <p className="text-sm bg-[var(--color-warning-bg)] text-[var(--color-warning)] rounded-[var(--radius-md)] px-4 py-2.5">
-            Demo mode — no real email gateway configured, use this code:{' '}
+            {t('auth.otp.demo')}{' '}
             <span className="font-bold tracking-[0.2em]">{devOtp}</span>
           </p>
         ) : null}
@@ -515,14 +539,14 @@ function CustomerContent() {
                 value={digit}
                 onChange={(e) => handleOtpChange(i, e.target.value)}
                 onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                aria-label={`Digit ${i + 1}`}
+                aria-label={t('auth.otp.digitLabel', { n: i + 1 })}
                 className="w-12 h-14 text-center text-xl font-bold rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] bg-white text-[var(--color-text-primary)] outline-none focus:border-[var(--color-primary)] focus:shadow-[var(--shadow-glow-primary)] transition-shadow"
               />
             ))}
           </div>
 
           {otpError && (
-            <p className="text-sm text-[var(--color-error)] bg-[var(--color-error-bg)] rounded-[var(--radius-md)] px-4 py-2.5 text-center" role="alert">{otpError}</p>
+            <p className="text-sm text-[var(--color-error)] bg-[var(--color-error-bg)] rounded-[var(--radius-md)] px-4 py-2.5 text-center" role="alert">{t(otpError)}</p>
           )}
 
           <button
@@ -531,20 +555,20 @@ function CustomerContent() {
           >
             <span className="inline-flex items-center justify-center gap-2">
               <KeyRound size={16} />
-              {busy ? 'Verifying...' : 'Verify & Continue'}
+              {busy ? t('auth.otp.verifying') : t('auth.otp.verify')}
             </span>
           </button>
 
           <div className="flex items-center justify-center gap-4 text-xs">
             <button type="button" onClick={handleResend} className="text-[var(--color-primary)] font-semibold hover:underline">
-              Resend code
+              {t('auth.otp.resend')}
             </button>
             <button
               type="button"
               onClick={() => { setStep('form'); setOtp(['', '', '', '', '', '']); setOtpError(''); }}
               className="text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
             >
-              Change details
+              {t('auth.otp.changeDetails')}
             </button>
           </div>
         </>
@@ -554,6 +578,7 @@ function CustomerContent() {
 }
 
 function ForgotPasswordForm({ onBack }) {
+  const { t } = useLanguage();
   const [step, setStep] = useState('request'); // 'request' | 'reset' | 'done'
   const [identifier, setIdentifier] = useState('');
   const [otp, setOtp] = useState('');
@@ -573,7 +598,7 @@ function ForgotPasswordForm({ onBack }) {
     e.preventDefault();
     setError('');
     if (!identifier.trim()) {
-      setError('Enter your username or email');
+      setError('auth.reset.identifierRequired');
       return;
     }
     setBusy(true);
@@ -584,8 +609,7 @@ function ForgotPasswordForm({ onBack }) {
       setEmailDelivered(!!res.data.emailDelivered);
       setStep('reset');
     } catch (err) {
-      const msg = err?.response?.data;
-      setError(!err?.response ? 'Cannot reach the server — is the backend running?' : typeof msg === 'string' ? msg : 'Something went wrong — try again');
+      setError(authError(err));
     } finally {
       setBusy(false);
     }
@@ -595,7 +619,7 @@ function ForgotPasswordForm({ onBack }) {
     e.preventDefault();
     setError('');
     if (!/^\d{6}$/.test(otp)) {
-      setError('Enter the 6-digit code');
+      setError('auth.error.otpRequired');
       return;
     }
     setBusy(true);
@@ -603,8 +627,7 @@ function ForgotPasswordForm({ onBack }) {
       await axiosClient.post('/auth/reset-password', { username: identifier, otp, newPassword });
       setStep('done');
     } catch (err) {
-      const msg = err?.response?.data;
-      setError(!err?.response ? 'Cannot reach the server — is the backend running?' : typeof msg === 'string' ? msg : 'Something went wrong — try again');
+      setError(authError(err));
     } finally {
       setBusy(false);
     }
@@ -620,34 +643,34 @@ function ForgotPasswordForm({ onBack }) {
           <KeyRound size={20} />
         </span>
         <div>
-          <h3 className="font-[family-name:var(--font-heading)] text-lg font-bold text-[var(--color-text-primary)]">Reset your password</h3>
-          <p className="text-xs text-[var(--color-text-muted)]">We\u2019ll email you a one-time reset code</p>
+          <h3 className="font-[family-name:var(--font-heading)] text-lg font-bold text-[var(--color-text-primary)]">{t('auth.reset.title')}</h3>
+          <p className="text-xs text-[var(--color-text-muted)]">{t('auth.reset.sub')}</p>
         </div>
       </div>
 
       {step === 'request' && (
         <form onSubmit={handleRequest} className="space-y-4">
           <div>
-            <label htmlFor="reset-id" className="block text-[13px] font-semibold mb-2 text-[var(--color-text-secondary)]">Username or email</label>
+            <label htmlFor="reset-id" className="block text-[13px] font-semibold mb-2 text-[var(--color-text-secondary)]">{t('auth.usernameOrEmail')}</label>
             <input
               id="reset-id"
               type="text"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
-              placeholder="e.g. rupa or rupa@email.com"
+              placeholder={t('auth.reset.identifierPlaceholder')}
               autoComplete="username"
               className="w-full px-4 py-3 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] bg-white focus:border-[var(--color-primary)] focus:shadow-[var(--shadow-glow-primary)] outline-none transition-shadow"
             />
           </div>
-          {error && <p ref={errorRef} className={errClass} role="alert">{error}</p>}
+          {error && <p ref={errorRef} className={errClass} role="alert">{t(error)}</p>}
           <button type="submit" disabled={busy} className={btnClass}>
             <span className="inline-flex items-center justify-center gap-2">
               <KeyRound size={16} />
-              {busy ? 'Please wait...' : 'Send reset code'}
+              {busy ? t('auth.pleaseWait') : t('auth.reset.send')}
             </span>
           </button>
           <button type="button" onClick={onBack} className="w-full text-center text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]">
-            Back to sign in
+            {t('auth.backToSignIn')}
           </button>
         </form>
       )}
@@ -657,13 +680,13 @@ function ForgotPasswordForm({ onBack }) {
           {devOtp && (
             <p className="text-sm bg-[var(--color-warning-bg)] text-[var(--color-warning)] rounded-[var(--radius-md)] px-4 py-2.5">
               {emailDelivered
-                ? `We emailed a code to ${emailSentTo || 'your inbox'}. If it doesn't arrive, use this one:`
-                : 'Demo mode — no real email gateway configured, use this code:'}
+                ? t('auth.reset.emailedCode', { email: emailSentTo || t('auth.reset.yourInbox') })
+                : t('auth.reset.demoMode')}
               {' '}<span className="font-bold tracking-[0.2em]">{devOtp}</span>
             </p>
           )}
           <div>
-            <label htmlFor="reset-otp" className="block text-[13px] font-semibold mb-2 text-[var(--color-text-secondary)]">Reset code (6 digits)</label>
+            <label htmlFor="reset-otp" className="block text-[13px] font-semibold mb-2 text-[var(--color-text-secondary)]">{t('auth.reset.codeLabel')}</label>
             <input
               id="reset-otp"
               type="text"
@@ -675,18 +698,18 @@ function ForgotPasswordForm({ onBack }) {
             />
           </div>
           <div>
-            <label htmlFor="reset-pass" className="block text-[13px] font-semibold mb-2 text-[var(--color-text-secondary)]">New password</label>
+            <label htmlFor="reset-pass" className="block text-[13px] font-semibold mb-2 text-[var(--color-text-secondary)]">{t('auth.reset.newPassword')}</label>
             <PasswordInput id="reset-pass" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="••••••••" autoComplete="new-password" showStrength />
           </div>
-          {error && <p ref={errorRef} className={errClass} role="alert">{error}</p>}
+          {error && <p ref={errorRef} className={errClass} role="alert">{t(error)}</p>}
           <button type="submit" disabled={busy} className={btnClass}>
             <span className="inline-flex items-center justify-center gap-2">
               <KeyRound size={16} />
-              {busy ? 'Please wait...' : 'Reset password'}
+              {busy ? t('auth.pleaseWait') : t('auth.reset.submit')}
             </span>
           </button>
           <button type="button" onClick={onBack} className="w-full text-center text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]">
-            Back to sign in
+            {t('auth.backToSignIn')}
           </button>
         </form>
       )}
@@ -694,12 +717,12 @@ function ForgotPasswordForm({ onBack }) {
       {step === 'done' && (
         <div className="space-y-4">
           <p className="text-sm text-[var(--color-success)] bg-[var(--color-success-bg)] rounded-[var(--radius-md)] px-4 py-2.5" role="alert">
-            Password updated — you can sign in with your new password.
+            {t('auth.reset.success')}
           </p>
           <button type="button" onClick={onBack} className={btnClass}>
             <span className="inline-flex items-center justify-center gap-2">
               <LogIn size={16} />
-              Back to sign in
+              {t('auth.backToSignIn')}
             </span>
           </button>
         </div>
@@ -709,6 +732,7 @@ function ForgotPasswordForm({ onBack }) {
 }
 
 function Login() {
+  const { t } = useLanguage();
   const [view, setView] = useState('customer'); // 'customer' | 'admin'
 
   // Reaching the login page always means "not signed in" — clear any leftover
@@ -745,7 +769,7 @@ function Login() {
                     : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'
                 }`}
               >
-                {v === 'customer' ? 'Customer' : 'Admin'}
+                {v === 'customer' ? t('auth.view.customer') : t('auth.view.admin')}
               </button>
             ))}
           </div>
@@ -753,7 +777,7 @@ function Login() {
           {view === 'admin' ? <AdminContent /> : <CustomerContent />}
 
           <p className="mt-4 text-center text-[10px] tracking-widest uppercase text-[var(--color-text-muted)]">
-            build v4 — still frozen? hard refresh Ctrl+Shift+R
+            {t('auth.buildNote')}
           </p>
         </div>
       </div>

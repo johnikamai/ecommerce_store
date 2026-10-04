@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axiosClient from '../api/axiosClient';
 import { getCustomerId } from '../utils/customer';
-import ReceiptModal from '../components/ReceiptModal';
+import ReceiptModal, { MODE_LABEL_KEYS } from '../components/ReceiptModal';
 import OrderTracking from '../components/OrderTracking';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -29,14 +29,29 @@ const PAYMENT_STATUS_STYLES = {
   REFUNDED: 'bg-[var(--color-card-bg-tint)] text-[var(--color-text-muted)]',
 };
 
-const PAYMENT_METHOD_LABELS = {
-  CASH: 'Cash on Delivery',
-  UPI: 'UPI',
-  CARD: 'Card',
+const RETURN_STATUS_KEYS = {
+  REQUESTED: 'admin.return.REQUESTED',
+  APPROVED: 'admin.return.APPROVED',
+  REJECTED: 'admin.return.REJECTED',
+  REFUNDED: 'admin.return.REFUNDED',
 };
 
-function StatusChip({ value, styles, fallback }) {
-  return <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${styles[value] || fallback || ''}`}>{value}</span>;
+const PAYMENT_STATUS_KEYS = {
+  PAID: 'receipt.status.PAID',
+  PENDING: 'receipt.status.PENDING',
+  FAILED: 'receipt.status.FAILED',
+  REFUNDED: 'receipt.status.REFUNDED',
+};
+
+const TIER_KEYS = {
+  BRONZE: 'tier.BRONZE',
+  SILVER: 'tier.SILVER',
+  GOLD: 'tier.GOLD',
+  PLATINUM: 'tier.PLATINUM',
+};
+
+function StatusChip({ value, styles, fallback, label }) {
+  return <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${styles[value] || fallback || ''}`}>{label ?? value}</span>;
 }
 
 function OrderTimeline({ status }) {
@@ -120,7 +135,7 @@ function Orders() {
       const response = await axiosClient.get(url);
       setOrders(response.data);
     } catch (err) {
-      setError('Failed to load orders');
+      setError(t('orders.error'));
     } finally {
       setLoading(false);
     }
@@ -263,13 +278,17 @@ function Orders() {
             {customer ? (
               <>
                 <div className="flex items-center gap-2 mb-1">
-                  <StatusChip value={customer.tier || 'BRONZE'} styles={TIER_STYLES} />
+                  <StatusChip
+                  value={customer.tier || 'BRONZE'}
+                  styles={TIER_STYLES}
+                  label={t(TIER_KEYS[customer.tier] || TIER_KEYS.BRONZE)}
+                />
                 </div>
                 <p className="font-[family-name:var(--font-heading)] text-2xl font-bold">
-                  {customer.loyaltyPoints ?? 0} pts
+                  {t('orders.pointsValue', { points: formatNumber(customer.loyaltyPoints ?? 0) })}
                 </p>
                 <p className="text-xs text-[var(--color-text-muted)] mt-1">
-                  Earn 1 pt per ₹100. Higher tier = bigger discount at checkout.
+                  {t('orders.pointsEarningHint')}
                 </p>
               </>
             ) : (
@@ -283,18 +302,18 @@ function Orders() {
               <>
                 <button
                   onClick={copyCode}
-                  title="Copy invite code"
+                  title={t('orders.copyInviteCode')}
                   className="font-[family-name:var(--font-heading)] text-xl font-bold text-[var(--color-primary)] hover:underline"
                 >
                   {customer.referralCode} {copied ? '✓' : '⧉'}
                 </button>
                 <p className="text-xs text-[var(--color-text-muted)] mt-1">
-                  When a friend signs up with your code, you get +500 pts on their first order.
+                  {t('orders.pointsOnFirstOrder', { points: formatNumber(500) })}
                 </p>
               </>
             ) : (
               <p className="text-sm text-[var(--color-text-muted)]">
-                No code yet. New customers get one automatically.
+                {t('orders.referralNoCode')}
               </p>
             )}
           </div>
@@ -350,7 +369,11 @@ function Orders() {
                     <span className="text-[var(--color-text-muted)]"> × {r.orderItem.quantity}</span>
                     {r.reason && <span className="text-[var(--color-text-muted)]"> — {r.reason}</span>}
                   </div>
-                  <StatusChip value={r.status} styles={RETURN_STATUS_STYLES} />
+                  <StatusChip
+                    value={r.status}
+                    styles={RETURN_STATUS_STYLES}
+                    label={t(RETURN_STATUS_KEYS[r.status] || r.status)}
+                  />
                 </li>
               ))}
             </ul>
@@ -374,12 +397,12 @@ function Orders() {
                   {formatDate(order.orderDate)}
                   {order.paymentMethod && (
                     <span className="ml-2 inline-block rounded-full px-2 py-0.5 text-xs bg-[var(--color-card-bg-tint)] text-[var(--color-text-secondary)]">
-                      {PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod}
+                      {MODE_LABEL_KEYS[order.paymentMethod] ? t(MODE_LABEL_KEYS[order.paymentMethod]) : order.paymentMethod}
                       {order.paymentStatus && (
                         <>
                           {' · '}
                           <span className={PAYMENT_STATUS_STYLES[order.paymentStatus] || 'text-[var(--color-text-secondary)]'}>
-                            {order.paymentStatus}
+                            {t(PAYMENT_STATUS_KEYS[order.paymentStatus] || order.paymentStatus)}
                           </span>
                         </>
                       )}
@@ -499,7 +522,7 @@ function Orders() {
                 <li key={item.id} className="flex items-center justify-between gap-4 flex-wrap">
                   <span className="flex-1 min-w-[220px] flex items-baseline justify-between gap-3">
                     <span>
-                      {item.product.name} × {item.quantity} — ₹{item.unitPrice} each
+                      {item.product.name} × {item.quantity} — {t('orders.unitPriceEach', { price: formatCurrency(item.unitPrice) })}
                     </span>
                     <span className="font-semibold text-[var(--color-text-primary)] tabular-nums">
                       {formatCurrency(item.lineTotal ?? Number(item.unitPrice) * item.quantity)}

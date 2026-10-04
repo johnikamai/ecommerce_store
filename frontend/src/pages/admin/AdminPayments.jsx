@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axiosClient from '../../api/axiosClient';
-import ReceiptModal, { MODE_LABELS } from '../../components/ReceiptModal';
+import ReceiptModal, { MODE_LABEL_KEYS } from '../../components/ReceiptModal';
+import { useLanguage } from '../../context/LanguageContext';
 
 // Keys must match the PaymentStatus enum on the backend:
 // PENDING | PAID | FAILED | REFUNDED
@@ -11,18 +12,25 @@ const STATUS_STYLES = {
   REFUNDED: 'bg-[var(--color-card-bg-tint)] text-[var(--color-text-secondary)]',
 };
 
+const STATUS_KEYS = {
+  PAID: 'receipt.status.PAID',
+  PENDING: 'receipt.status.PENDING',
+  FAILED: 'receipt.status.FAILED',
+  REFUNDED: 'receipt.status.REFUNDED',
+  UNKNOWN: 'receipt.status.UNKNOWN',
+};
+
 function StatusChip({ status }) {
+  const { t } = useLanguage();
   return (
     <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLES[status] || 'bg-[var(--color-card-bg-tint)] text-[var(--color-text-secondary)]'}`}>
-      {status || 'UNKNOWN'}
+      {t(STATUS_KEYS[status] || STATUS_KEYS.UNKNOWN)}
     </span>
   );
 }
 
-const money = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`;
-
-
 export default function AdminPayments() {
+  const { t, formatCurrency, formatNumber, formatDateTime } = useLanguage();
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -35,7 +43,7 @@ export default function AdminPayments() {
       setPayments(res.data || []);
       setError('');
     } catch {
-      setError('Failed to load payments');
+      setError(t('admin.payments.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -49,14 +57,14 @@ export default function AdminPayments() {
       await axiosClient.put(`/payments/${payment.id}/status`, { status: next });
       await load();
     } catch (err) {
-      setError(err.response?.data || `Could not set ${next}`);
+      setError(err.response?.data || t('admin.payments.statusFailed', { status: t(STATUS_KEYS[next] || STATUS_KEYS.UNKNOWN) }));
       await load();
     } finally {
       setBusyId(null);
     }
   };
 
-  if (loading) return <p className="py-12 text-center text-[var(--color-text-muted)]">Loading payments...</p>;
+  if (loading) return <p className="py-12 text-center text-[var(--color-text-muted)]">{t('admin.payments.loading')}</p>;
 
   // Collected counts only genuinely-paid money. A refunded payment has left the
   // business, so REFUNDED is deliberately excluded rather than netted out here.
@@ -70,7 +78,7 @@ export default function AdminPayments() {
 
   return (
     <div>
-      <h2 className="font-[family-name:var(--font-heading)] text-[28px] font-bold mb-6">Payments</h2>
+      <h2 className="font-[family-name:var(--font-heading)] text-[28px] font-bold mb-6">{t('admin.nav.payments')}</h2>
 
       {error && (
         <p className="mb-4 rounded-[var(--radius-md)] bg-[var(--color-error-bg)] text-[var(--color-error)] px-3 py-2 text-sm">
@@ -80,10 +88,10 @@ export default function AdminPayments() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
-          { label: 'Total Payments', value: payments.length, color: 'var(--color-primary)' },
-          { label: 'Collected', value: money(collected), color: 'var(--color-success)' },
-          { label: 'Awaiting Collection', value: awaiting, color: 'var(--color-warning)' },
-          { label: 'Refunded', value: money(refundedTotal), color: 'var(--color-text-secondary)' },
+          { label: t('admin.payments.totalPayments'), value: formatNumber(payments.length), color: 'var(--color-primary)' },
+          { label: t('admin.payments.collected'), value: formatCurrency(collected), color: 'var(--color-success)' },
+          { label: t('admin.payments.awaitingCollection'), value: formatNumber(awaiting), color: 'var(--color-warning)' },
+          { label: t('admin.payments.refunded'), value: formatCurrency(refundedTotal), color: 'var(--color-text-secondary)' },
         ].map((c) => (
           <div key={c.label} className="rounded-[var(--radius-lg)] bg-[var(--color-card-bg)] shadow-[var(--shadow-sm)] p-5">
             <p className="text-xs text-[var(--color-text-muted)] mb-1">{c.label}</p>
@@ -94,21 +102,21 @@ export default function AdminPayments() {
 
       <div className="rounded-[var(--radius-lg)] bg-[var(--color-card-bg)] shadow-[var(--shadow-sm)] overflow-hidden">
         {payments.length === 0 ? (
-          <p className="p-6 text-sm text-[var(--color-text-muted)]">No payments recorded yet.</p>
+          <p className="p-6 text-sm text-[var(--color-text-muted)]">{t('admin.payments.empty')}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-xs uppercase tracking-wide text-[var(--color-text-muted)] border-b border-[var(--color-border)]">
                   <th className="py-3 px-4">#</th>
-                  <th className="py-3 px-4">Order</th>
-                  <th className="py-3 px-4">Customer</th>
-                  <th className="py-3 px-4">Method</th>
-                  <th className="py-3 px-4 text-right">Amount</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4">Ref</th>
-                  <th className="py-3 px-4">Date</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th className="py-3 px-4">{t('admin.payments.colOrder')}</th>
+                  <th className="py-3 px-4">{t('admin.payments.colCustomer')}</th>
+                  <th className="py-3 px-4">{t('admin.payments.colMethod')}</th>
+                  <th className="py-3 px-4 text-right">{t('admin.payments.colAmount')}</th>
+                  <th className="py-3 px-4">{t('admin.payments.colStatus')}</th>
+                  <th className="py-3 px-4">{t('admin.payments.colRef')}</th>
+                  <th className="py-3 px-4">{t('admin.payments.colDate')}</th>
+                  <th className="py-3 px-4 text-right">{t('admin.categories.colActions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -118,7 +126,7 @@ export default function AdminPayments() {
                     <td className="py-3 px-4">
                       <span className="font-medium">#{p.orderId ?? '—'}</span>
                       {p.orderStatus && (
-                        <span className="block text-xs text-[var(--color-text-muted)]">{p.orderStatus}</span>
+                        <span className="block text-xs text-[var(--color-text-muted)]">{p.orderStatus ? t(`status.${p.orderStatus}`) : ''}</span>
                       )}
                     </td>
                     <td className="py-3 px-4">
@@ -127,12 +135,12 @@ export default function AdminPayments() {
                         <span className="block text-xs text-[var(--color-text-muted)] truncate max-w-[160px]">{p.customerEmail}</span>
                       )}
                     </td>
-                    <td className="py-3 px-4 text-[var(--color-text-secondary)]">{MODE_LABELS[p.paymentMode] || p.paymentMode || '—'}</td>
-                    <td className="py-3 px-4 text-right font-medium">{money(p.amount)}</td>
+                    <td className="py-3 px-4 text-[var(--color-text-secondary)]">{t(MODE_LABEL_KEYS[p.paymentMode] || p.paymentMode || 'receipt.unknown')}</td>
+                    <td className="py-3 px-4 text-right font-medium">{formatCurrency(p.amount)}</td>
                     <td className="py-3 px-4"><StatusChip status={p.paymentStatus} /></td>
                     <td className="py-3 px-4 text-xs text-[var(--color-text-muted)] font-mono">{p.transactionRef || '—'}</td>
                     <td className="py-3 px-4 text-[var(--color-text-secondary)] whitespace-nowrap">
-                      {p.transactionDate ? new Date(p.transactionDate).toLocaleString('en-IN') : '—'}
+                      {p.transactionDate ? formatDateTime(p.transactionDate) : '—'}
                     </td>
                     <td className="py-3 px-4 text-right whitespace-nowrap">
                       <button
@@ -140,7 +148,7 @@ export default function AdminPayments() {
                         onClick={() => setReceiptFor(p.id)}
                         className="text-xs font-semibold text-[var(--color-primary)] hover:underline mr-3"
                       >
-                        Receipt
+                        {t('receipt.title')}
                       </button>
                       {(p.nextStatuses || []).map((s) => (
                         <button
@@ -150,11 +158,11 @@ export default function AdminPayments() {
                           onClick={() => setStatus(p, s)}
                           className="text-xs font-semibold text-[var(--color-text-secondary)] hover:underline mr-2 disabled:opacity-40"
                         >
-                          {s}
+                          {t(STATUS_KEYS[s] || s)}
                         </button>
                       ))}
                       {(p.nextStatuses || []).length === 0 && (
-                        <span className="text-xs text-[var(--color-text-muted)]">final</span>
+                        <span className="text-xs text-[var(--color-text-muted)]">{t('admin.payments.final')}</span>
                       )}
                     </td>
                   </tr>

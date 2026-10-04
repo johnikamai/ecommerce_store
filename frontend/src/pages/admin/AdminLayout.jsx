@@ -4,6 +4,7 @@ import {
   LayoutDashboard, Package, ShoppingBag, Users, Tags, TicketPercent,
   CreditCard, Star, BarChart3, ArrowLeft,
 } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 /**
  * adminOnly items are hidden from STAFF rather than left visible-but-broken:
@@ -12,18 +13,19 @@ import {
  * is presentation, not security.
  */
 const NAV = [
-  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/admin/products', label: 'Products', icon: Package },
-  { to: '/admin/orders', label: 'Orders', icon: ShoppingBag },
-  { to: '/admin/customers', label: 'Customers', icon: Users },
-  { to: '/admin/categories', label: 'Categories', icon: Tags },
-  { to: '/admin/coupons', label: 'Coupons', icon: TicketPercent, adminOnly: true },
-  { to: '/admin/payments', label: 'Payments', icon: CreditCard, adminOnly: true },
-  { to: '/admin/reviews', label: 'Reviews', icon: Star },
-  { to: '/admin/reports', label: 'Reports', icon: BarChart3, adminOnly: true },
+  { to: '/admin', labelKey: 'admin.nav.dashboard', icon: LayoutDashboard, end: true },
+  { to: '/admin/products', labelKey: 'admin.nav.products', icon: Package },
+  { to: '/admin/orders', labelKey: 'admin.nav.orders', icon: ShoppingBag },
+  { to: '/admin/customers', labelKey: 'admin.nav.customers', icon: Users },
+  { to: '/admin/categories', labelKey: 'admin.nav.categories', icon: Tags },
+  { to: '/admin/coupons', labelKey: 'admin.nav.coupons', icon: TicketPercent, adminOnly: true },
+  { to: '/admin/payments', labelKey: 'admin.nav.payments', icon: CreditCard, adminOnly: true },
+  { to: '/admin/reviews', labelKey: 'admin.nav.reviews', icon: Star },
+  { to: '/admin/reports', labelKey: 'admin.nav.reports', icon: BarChart3, adminOnly: true },
 ];
 
 export default function AdminLayout() {
+  const { t } = useLanguage();
   const [role, setRole] = useState(() => localStorage.getItem('role'));
 
   useEffect(() => {
@@ -54,7 +56,7 @@ export default function AdminLayout() {
                   }
                 >
                   <item.icon size={17} />
-                  {item.label}
+                  {t(item.labelKey)}
                 </NavLink>
               ))}
             </nav>
@@ -64,7 +66,7 @@ export default function AdminLayout() {
                 className="flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-md)] text-sm font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-card-bg-tint)] transition-colors"
               >
                 <ArrowLeft size={17} />
-                Back to shop
+                {t('admin.nav.backToShop')}
               </NavLink>
             </div>
           </div>

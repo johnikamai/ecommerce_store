@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axiosClient from '../../api/axiosClient';
+import { useLanguage } from '../../context/LanguageContext';
 
 function Kpi({ label, value, accent }) {
   return (
@@ -11,6 +12,7 @@ function Kpi({ label, value, accent }) {
 }
 
 export default function AdminReports() {
+  const { t, formatCurrency, formatNumber } = useLanguage();
   const [sales, setSales] = useState(null);
   const [topProducts, setTopProducts] = useState([]);
   const [activity, setActivity] = useState([]);
@@ -29,16 +31,16 @@ export default function AdminReports() {
         setActivity(a.data || []);
         setError('');
       })
-      .catch((err) => setError(err.response?.data || 'Failed to load reports'))
+      .catch((err) => setError(err.response?.data || t('admin.reports.loadFailed')))
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p className="py-12 text-center text-[var(--color-text-muted)]">Loading reports...</p>;
+  if (loading) return <p className="py-12 text-center text-[var(--color-text-muted)]">{t('admin.reports.loading')}</p>;
 
   if (error) {
     return (
       <div>
-        <h2 className="font-[family-name:var(--font-heading)] text-[28px] font-bold mb-6">Reports</h2>
+        <h2 className="font-[family-name:var(--font-heading)] text-[28px] font-bold mb-6">{t('admin.nav.reports')}</h2>
         <p className="py-12 text-center text-[var(--color-error)]">{error}</p>
       </div>
     );
@@ -48,28 +50,28 @@ export default function AdminReports() {
   // backend exactly: totalRevenue, totalOrders, avgOrderValue (not
   // "averageOrderValue"), pendingOrders, completedOrders, cancelledOrders.
   const kpis = [
-    { label: 'Total Revenue', value: `₹${Number(sales?.totalRevenue || 0).toLocaleString('en-IN')}` },
-    { label: 'Total Orders', value: sales?.totalOrders ?? 0 },
-    { label: 'Avg Order Value', value: `₹${Number(sales?.avgOrderValue || 0).toLocaleString('en-IN')}` },
-    { label: 'Pending', value: sales?.pendingOrders ?? 0, accent: 'text-[var(--color-warning)]' },
-    { label: 'Completed', value: sales?.completedOrders ?? 0, accent: 'text-[var(--color-success)]' },
-    { label: 'Cancelled', value: sales?.cancelledOrders ?? 0, accent: 'text-[var(--color-error)]' },
+    { label: t('admin.reports.totalRevenue'), value: formatCurrency(sales?.totalRevenue || 0) },
+    { label: t('admin.reports.totalOrders'), value: formatNumber(sales?.totalOrders ?? 0) },
+    { label: t('admin.reports.avgOrderValue'), value: formatCurrency(sales?.avgOrderValue || 0) },
+    { label: t('admin.reports.pending'), value: formatNumber(sales?.pendingOrders ?? 0), accent: 'text-[var(--color-warning)]' },
+    { label: t('admin.reports.completed'), value: formatNumber(sales?.completedOrders ?? 0), accent: 'text-[var(--color-success)]' },
+    { label: t('admin.reports.cancelled'), value: formatNumber(sales?.cancelledOrders ?? 0), accent: 'text-[var(--color-error)]' },
   ];
 
   return (
     <div>
-      <h2 className="font-[family-name:var(--font-heading)] text-[28px] font-bold mb-6">Reports</h2>
+      <h2 className="font-[family-name:var(--font-heading)] text-[28px] font-bold mb-6">{t('admin.nav.reports')}</h2>
 
-      <h3 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-3">Sales Overview</h3>
+      <h3 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-3">{t('admin.reports.salesOverview')}</h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         {kpis.map((k) => <Kpi key={k.label} {...k} />)}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="rounded-[var(--radius-lg)] bg-[var(--color-card-bg)] shadow-[var(--shadow-sm)] p-6">
-          <h3 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-4">Top Products</h3>
+          <h3 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-4">{t('admin.reports.topProducts')}</h3>
           {topProducts.length === 0 ? (
-            <p className="text-sm text-[var(--color-text-muted)]">No sales yet.</p>
+            <p className="text-sm text-[var(--color-text-muted)]">{t('admin.reports.noSales')}</p>
           ) : (
             <ul className="divide-y divide-[var(--color-border)] text-sm">
               {topProducts.map((p, i) => (
@@ -79,7 +81,10 @@ export default function AdminReports() {
                     <span className="font-medium truncate">{p.name || p.productName}</span>
                   </span>
                   <span className="shrink-0 text-[var(--color-text-secondary)]">
-                    {p.quantitySold ?? p.unitsSold} sold · ₹{Number(p.revenue || p.totalRevenue || 0).toLocaleString('en-IN')}
+                    {t('admin.reports.sold', {
+                      count: formatNumber(p.quantitySold ?? p.unitsSold),
+                      amount: formatCurrency(p.revenue || p.totalRevenue || 0),
+                    })}
                   </span>
                 </li>
               ))}
@@ -88,16 +93,19 @@ export default function AdminReports() {
         </div>
 
         <div className="rounded-[var(--radius-lg)] bg-[var(--color-card-bg)] shadow-[var(--shadow-sm)] p-6">
-          <h3 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-4">Customer Activity</h3>
+          <h3 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-4">{t('admin.reports.customerActivity')}</h3>
           {activity.length === 0 ? (
-            <p className="text-sm text-[var(--color-text-muted)]">No customer activity yet.</p>
+            <p className="text-sm text-[var(--color-text-muted)]">{t('admin.reports.noActivity')}</p>
           ) : (
             <ul className="divide-y divide-[var(--color-border)] text-sm">
               {activity.map((c) => (
                 <li key={c.customerId ?? c.id} className="flex items-center justify-between py-2.5">
                   <span className="font-medium min-w-0 truncate pr-3">{c.name || c.customerName}</span>
                   <span className="shrink-0 text-[var(--color-text-secondary)]">
-                    {c.orderCount} orders · ₹{Number(c.totalSpend || 0).toLocaleString('en-IN')}
+                    {t('admin.reports.orderStats', {
+                      count: formatNumber(c.orderCount),
+                      amount: formatCurrency(c.totalSpend || 0),
+                    })}
                   </span>
                 </li>
               ))}

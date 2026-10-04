@@ -218,7 +218,7 @@ export default function ProductCard({ product, defaultRating, defaultReviewCount
                   ? t('product.willNotify')
                   : notifyStatus === 'duplicate'
                     ? t('product.alreadySubscribed')
-                    : t('product.notifyWhenInStock')}
+                    : t('product.notifyMe')}
               </span>
             </button>
           ) : (
