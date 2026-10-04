@@ -1,4 +1,4 @@
-# Product photo credits
+﻿# Product photo credits
 
 Product photos come from [Openverse](https://openverse.org), which aggregates
 Flickr, Wikimedia Commons and other sources under Creative Commons licences.
@@ -30,7 +30,7 @@ commercially.
 | `smartwatch-6.webp` | Smartwatch Max | smartwatch | by 2.0 | ccnull.de Bilddatenbank | [link](https://www.flickr.com/photos/115225894@N07/54333458796) |
 | `4k-action-camera-1.webp` | 4K Action Camera | action camera | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/3303210/free-photo-image-video-camera-macbook-gopro) |
 | `4k-action-camera-2.webp` | 4K Action Camera Classic | action camera | by 2.0 | Janitors | [link](https://www.flickr.com/photos/65265630@N03/14560003521) |
-| `4k-action-camera-3.webp` | 4K Action Camera Lite | action camera | cc0 1.0 | ₡ґǘșϯγ Ɗᶏ Ⱪᶅṏⱳդ | [link](https://www.flickr.com/photos/148598741@N02/51733627413) |
+| `4k-action-camera-3.webp` | 4K Action Camera Lite | action camera | cc0 1.0 | â‚¡Ò‘Ç˜È™Ï¯Î³ ÆŠá¶ â±©á¶…á¹â±³Õ¤ | [link](https://www.flickr.com/photos/148598741@N02/51733627413) |
 | `4k-action-camera-4.webp` | 4K Action Camera Pro | action camera | by 2.0 | Janitors | [link](https://www.flickr.com/photos/65265630@N03/14562558322) |
 | `4k-action-camera-5.webp` | 4K Action Camera Ultra | action camera | by 2.0 | europeanspaceagency | [link](https://www.flickr.com/photos/37472264@N04/51420246002) |
 | `4k-action-camera-6.webp` | 4K Action Camera Max | action camera | by 2.0 | Janitors | [link](https://www.flickr.com/photos/65265630@N03/14562550562) |
@@ -66,14 +66,14 @@ commercially.
 | `power-bank-20000mah-6.webp` | Power Bank 20000mAh Max | power bank | by 2.0 | Rutger van der Maar | [link](https://www.flickr.com/photos/83468718@N06/52581675493) |
 | `smartphone-stand-1.webp` | Smartphone Stand | phone holder | cc0 1.0 | automaxfx | [link](https://www.flickr.com/photos/197103350@N07/52590371705) |
 | `smartphone-stand-2.webp` | Smartphone Stand Classic | phone holder | by 2.0 | mogollon_1 | [link](https://www.flickr.com/photos/15708120@N00/52570634869) |
-| `smartphone-stand-3.webp` | Smartphone Stand Lite | phone holder | by 2.0 | Bernt Sønvisen | [link](https://www.flickr.com/photos/38144390@N04/52172656768) |
+| `smartphone-stand-3.webp` | Smartphone Stand Lite | phone holder | by 2.0 | Bernt SÃ¸nvisen | [link](https://www.flickr.com/photos/38144390@N04/52172656768) |
 | `smartphone-stand-4.webp` | Smartphone Stand Pro | phone holder | by-sa 2.0 | mikecogh | [link](https://www.flickr.com/photos/89165847@N00/52230463386) |
 | `smartphone-stand-5.webp` | Smartphone Stand Ultra | phone holder | by-sa 2.0 | PattayaPatrol | [link](https://www.flickr.com/photos/194424926@N05/54565907630) |
 | `smartphone-stand-6.webp` | Smartphone Stand Max | phone holder | by-sa 2.0 | bellemarematt | [link](https://www.flickr.com/photos/42595976@N06/52669690062) |
 | `action-cam-mount-kit-1.webp` | Action Cam Mount Kit | camera accessory mount | cc0 1.0 | astrophotography_andy | [link](https://www.flickr.com/photos/160049573@N04/52170473424) |
 | `action-cam-mount-kit-2.webp` | Action Cam Mount Kit Classic | camera accessory mount | by 2.0 | MostlyDross | [link](https://www.flickr.com/photos/73817227@N00/51337676120) |
-| `action-cam-mount-kit-3.webp` | Action Cam Mount Kit Lite | camera accessory mount | by 2.0 | Bernt Sønvisen | [link](https://www.flickr.com/photos/38144390@N04/51846307169) |
-| `action-cam-mount-kit-4.webp` | Action Cam Mount Kit Pro | camera accessory mount | by 2.0 | Bernt Sønvisen | [link](https://www.flickr.com/photos/38144390@N04/51806623317) |
+| `action-cam-mount-kit-3.webp` | Action Cam Mount Kit Lite | camera accessory mount | by 2.0 | Bernt SÃ¸nvisen | [link](https://www.flickr.com/photos/38144390@N04/51846307169) |
+| `action-cam-mount-kit-4.webp` | Action Cam Mount Kit Pro | camera accessory mount | by 2.0 | Bernt SÃ¸nvisen | [link](https://www.flickr.com/photos/38144390@N04/51806623317) |
 | `action-cam-mount-kit-5.webp` | Action Cam Mount Kit Ultra | camera accessory mount | by-sa 2.0 | unlambda | [link](https://www.flickr.com/photos/193039610@N06/51338064360) |
 | `action-cam-mount-kit-6.webp` | Action Cam Mount Kit Max | camera accessory mount | by-sa 2.0 | Eric A Smith | [link](https://www.flickr.com/photos/187633554@N06/54444923150) |
 | `hdmi-cable-2m-1.webp` | HDMI Cable 2m | hdmi cable | pdm 1.0 | videek | [link](https://www.flickr.com/photos/193845755@N03/52197392818) |
@@ -100,18 +100,6 @@ commercially.
 | `running-sneakers-4.webp` | Running Sneakers Pro | running sneakers | cc0 1.0 | Burst | [link](https://stocksnap.io/photo/sneakers-lights-T2K6CXYMQ4) |
 | `running-sneakers-5.webp` | Running Sneakers Ultra | running sneakers | by-sa 2.0 | PattayaPatrol | [link](https://www.flickr.com/photos/194424926@N05/54372988859) |
 | `running-sneakers-6.webp` | Running Sneakers Max | running sneakers | cc0 1.0 | Studio 7042 | [link](https://stocksnap.io/photo/woman-sneakers-G7BDK1ZE43) |
-| `denim-jacket-1.webp` | Denim Jacket | denim jacket | by 2.0 | JeepersMedia | [link](https://www.flickr.com/photos/39160147@N03/51552175474) |
-| `denim-jacket-2.webp` | Denim Jacket Classic | denim jacket | by 2.0 | JeepersMedia | [link](https://www.flickr.com/photos/39160147@N03/51560343720) |
-| `denim-jacket-3.webp` | Denim Jacket Lite | denim jacket | cc0 1.0 | ancientwma | [link](https://www.flickr.com/photos/193327022@N08/51971258364) |
-| `denim-jacket-4.webp` | Denim Jacket Pro | denim jacket | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/8849885/denim-jacket-designed-arthur-mcgee) |
-| `denim-jacket-5.webp` | Denim Jacket Ultra | denim jacket | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/3283472/free-photo-image-guitar-musician-rock-festival) |
-| `denim-jacket-6.webp` | Denim Jacket Max | denim jacket | cc0 1.0 | Leeroy | [link](https://stocksnap.io/photo/boy-child-R0C7A5M4WB) |
-| `a-line-dress-1.webp` | A-Line Dress | summer dress | by-sa 2.0 | Tigist Sapphire | [link](https://www.flickr.com/photos/73159597@N03/14562738444) |
-| `a-line-dress-2.webp` | A-Line Dress Classic | summer dress | by 2.0 | artam11 | [link](https://www.flickr.com/photos/189348836@N05/51902457316) |
-| `a-line-dress-3.webp` | A-Line Dress Lite | summer dress | by-sa 2.0 | Tigist Sapphire | [link](https://www.flickr.com/photos/73159597@N03/14562738904) |
-| `a-line-dress-4.webp` | A-Line Dress Pro | summer dress | by-sa 2.0 | Tigist Sapphire | [link](https://www.flickr.com/photos/73159597@N03/14377775928) |
-| `a-line-dress-5.webp` | A-Line Dress Ultra | summer dress | by 2.0 | Free Public Domain Illustrations by rawpixel | [link](https://www.flickr.com/photos/153584064@N07/28876929358) |
-| `a-line-dress-6.webp` | A-Line Dress Max | summer dress | by-sa 2.0 | Tigist Sapphire | [link](https://www.flickr.com/photos/73159597@N03/14541310576) |
 | `oversized-hoodie-1.webp` | Oversized Hoodie | hoodie sweatshirt | by-sa 2.0 | PattayaPatrol | [link](https://www.flickr.com/photos/194424926@N05/54263400803) |
 | `oversized-hoodie-2.webp` | Oversized Hoodie Classic | hoodie sweatshirt | cc0 1.0 | unknown | [link](https://stocksnap.io/photo/man-casual-UU0ROKGJW2) |
 | `oversized-hoodie-3.webp` | Oversized Hoodie Lite | hoodie sweatshirt | by-sa 2.0 | PattayaPatrol | [link](https://www.flickr.com/photos/194424926@N05/54593400774) |
@@ -124,12 +112,6 @@ commercially.
 | `leather-wallet-4.webp` | Leather Wallet Pro | leather wallet | cc0 1.0 | Snufkin | [link](https://stocksnap.io/photo/leather-purse-Y4IBN1USSQ) |
 | `leather-wallet-5.webp` | Leather Wallet Ultra | leather wallet | cc0 1.0 | Snufkin | [link](https://stocksnap.io/photo/leather-bag-4JYA4A4D64) |
 | `leather-wallet-6.webp` | Leather Wallet Max | leather wallet | by 2.0 | media.digest | [link](https://www.flickr.com/photos/21712103@N06/18606130414) |
-| `polarized-sunglasses-1.webp` | Polarized Sunglasses | sunglasses | by 2.0 | susanjanegolding | [link](https://www.flickr.com/photos/67936502@N00/48020118071) |
-| `polarized-sunglasses-2.webp` | Polarized Sunglasses Classic | sunglasses | by 2.0 | geishaboy500 | [link](https://www.flickr.com/photos/49503154413@N01/493685671) |
-| `polarized-sunglasses-3.webp` | Polarized Sunglasses Lite | sunglasses | by 2.0 | Ivan Radic | [link](https://www.flickr.com/photos/26344495@N05/51363949295) |
-| `polarized-sunglasses-4.webp` | Polarized Sunglasses Pro | sunglasses | by 2.0 | Alexbip | [link](https://www.flickr.com/photos/99014076@N00/493766546) |
-| `polarized-sunglasses-5.webp` | Polarized Sunglasses Ultra | sunglasses | by 2.0 | geishaboy500 | [link](https://www.flickr.com/photos/49503154413@N01/493685801) |
-| `polarized-sunglasses-6.webp` | Polarized Sunglasses Max | sunglasses | by 2.0 | Ivan Radic | [link](https://www.flickr.com/photos/26344495@N05/51271550601) |
 | `silk-scarf-1.webp` | Silk Scarf | silk scarf | pdm 1.0 | SilkScarf_Lover | [link](https://www.flickr.com/photos/190092733@N06/53408955427) |
 | `silk-scarf-2.webp` | Silk Scarf Classic | silk scarf | pdm 1.0 | SilkScarf_Lover | [link](https://www.flickr.com/photos/190092733@N06/53409119007) |
 | `silk-scarf-3.webp` | Silk Scarf Lite | silk scarf | pdm 1.0 | SilkScarf_Lover | [link](https://www.flickr.com/photos/190092733@N06/53410371284) |
@@ -142,12 +124,6 @@ commercially.
 | `canvas-tote-bag-4.webp` | Canvas Tote Bag Pro | tote bag | by 2.0 | Joe Crawford (artlung) | [link](https://www.flickr.com/photos/37996599088@N01/52208129471) |
 | `canvas-tote-bag-5.webp` | Canvas Tote Bag Ultra | tote bag | by 2.0 | Socialist Appeal | [link](https://www.flickr.com/photos/135433887@N02/52179181446) |
 | `canvas-tote-bag-6.webp` | Canvas Tote Bag Max | tote bag | by 2.0 | City Foodsters | [link](https://www.flickr.com/photos/89060048@N03/52751320106) |
-| `formal-shirt-1.webp` | Formal Shirt | dress shirt | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/3336818/free-photo-image-woman-adventure-adventurer) |
-| `formal-shirt-2.webp` | Formal Shirt Classic | dress shirt | cc0 1.0 | SissyTvinhose | [link](https://www.flickr.com/photos/166654743@N04/51793024984) |
-| `formal-shirt-3.webp` | Formal Shirt Lite | dress shirt | by 2.0 | flikr | [link](https://www.flickr.com/photos/77309394@N00/16146934081) |
-| `formal-shirt-4.webp` | Formal Shirt Pro | dress shirt | by 2.0 | phit2btyd | [link](https://www.flickr.com/photos/39038034@N03/52143199629) |
-| `formal-shirt-5.webp` | Formal Shirt Ultra | dress shirt | by 2.0 | flikr | [link](https://www.flickr.com/photos/77309394@N00/15963078807) |
-| `formal-shirt-6.webp` | Formal Shirt Max | dress shirt | by 2.0 | Mysteria Bloodbane-Ragnarok | [link](https://www.flickr.com/photos/149747287@N08/51406166041) |
 | `classic-ballerina-flats-1.webp` | Classic Ballerina Flats | ballet shoes | by-sa 2.0 | brooklyn-color | [link](https://www.flickr.com/photos/191084759@N08/51646592035) |
 | `classic-ballerina-flats-2.webp` | Classic Ballerina Flats Classic | ballet shoes | by 2.0 | quinet | [link](https://www.flickr.com/photos/91994044@N00/52163789275) |
 | `classic-ballerina-flats-3.webp` | Classic Ballerina Flats Lite | ballet shoes | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/5925125/photo-image-public-domain-fashion-free) |
@@ -210,7 +186,7 @@ commercially.
 | `lip-balm-trio-6.webp` | Lip Balm Trio Max | lip balm | cc0 1.0 | AnnSophieQ | [link](https://www.flickr.com/photos/141281588@N05/51432098537) |
 | `anti-dandruff-shampoo-1.webp` | Anti-Dandruff Shampoo | shampoo | by 2.0 | David Berkowitz | [link](https://www.flickr.com/photos/25897810@N00/33364162742) |
 | `anti-dandruff-shampoo-2.webp` | Anti-Dandruff Shampoo Classic | shampoo | by-sa 2.0 | Teresa Trimm | [link](https://www.flickr.com/photos/7714612@N04/13616582765) |
-| `anti-dandruff-shampoo-3.webp` | Anti-Dandruff Shampoo Lite | shampoo | by 2.0 | Henry Söderlund | [link](https://www.flickr.com/photos/46563758@N04/52301099754) |
+| `anti-dandruff-shampoo-3.webp` | Anti-Dandruff Shampoo Lite | shampoo | by 2.0 | Henry SÃ¶derlund | [link](https://www.flickr.com/photos/46563758@N04/52301099754) |
 | `anti-dandruff-shampoo-4.webp` | Anti-Dandruff Shampoo Pro | shampoo | by 2.0 | muffinn | [link](https://www.flickr.com/photos/26445715@N00/52997753143) |
 | `anti-dandruff-shampoo-5.webp` | Anti-Dandruff Shampoo Ultra | shampoo | by 2.0 | mededeler | [link](https://www.flickr.com/photos/132603569@N08/52997489874) |
 | `anti-dandruff-shampoo-6.webp` | Anti-Dandruff Shampoo Max | shampoo | by 2.0 | Nesster | [link](https://www.flickr.com/photos/80682954@N00/54063855775) |
@@ -246,9 +222,9 @@ commercially.
 | `ceramic-coffee-set-6.webp` | Ceramic Coffee Set Max | ceramic mug coffee | cc0 1.0 | Candace McDaniel | [link](https://stocksnap.io/photo/mug-cup-MVYHPT6H7C) |
 | `faux-fiddle-leaf-plant-1.webp` | Faux Fiddle-Leaf Plant | fiddle leaf fig plant | by 4.0 | Marc Riera | [link](https://www.inaturalist.org/photos/181047798) |
 | `faux-fiddle-leaf-plant-2.webp` | Faux Fiddle-Leaf Plant Classic | fiddle leaf fig plant | by 4.0 | Thalia M. Mite | [link](https://www.inaturalist.org/photos/200718744) |
-| `faux-fiddle-leaf-plant-3.webp` | Faux Fiddle-Leaf Plant Lite | fiddle leaf fig plant | by 4.0 | Juan Carlos Caicedo Hernández | [link](https://www.inaturalist.org/photos/265023228) |
+| `faux-fiddle-leaf-plant-3.webp` | Faux Fiddle-Leaf Plant Lite | fiddle leaf fig plant | by 4.0 | Juan Carlos Caicedo HernÃ¡ndez | [link](https://www.inaturalist.org/photos/265023228) |
 | `faux-fiddle-leaf-plant-4.webp` | Faux Fiddle-Leaf Plant Pro | fiddle leaf fig plant | by 4.0 | Stephen Thorpe | [link](https://www.inaturalist.org/photos/188394042) |
-| `faux-fiddle-leaf-plant-5.webp` | Faux Fiddle-Leaf Plant Ultra | fiddle leaf fig plant | by 4.0 | Анна Митрошенкова | [link](https://www.inaturalist.org/photos/345976357) |
+| `faux-fiddle-leaf-plant-5.webp` | Faux Fiddle-Leaf Plant Ultra | fiddle leaf fig plant | by 4.0 | ÐÐ½Ð½Ð° ÐœÐ¸Ñ‚Ñ€Ð¾ÑˆÐµÐ½ÐºÐ¾Ð²Ð° | [link](https://www.inaturalist.org/photos/345976357) |
 | `faux-fiddle-leaf-plant-6.webp` | Faux Fiddle-Leaf Plant Max | fiddle leaf fig plant | by 4.0 | Andrew Sebastian | [link](https://www.inaturalist.org/photos/177565376) |
 | `cotton-area-rug-1.webp` | Cotton Area Rug | area rug | by 2.0 | Calmuziclover | [link](https://www.flickr.com/photos/29787167@N02/52481516864) |
 | `cotton-area-rug-2.webp` | Cotton Area Rug Classic | area rug | by 2.0 | mypubliclands | [link](https://www.flickr.com/photos/91981596@N06/27803363236) |
@@ -258,7 +234,7 @@ commercially.
 | `cotton-area-rug-6.webp` | Cotton Area Rug Max | area rug | by 2.0 | RuggyBearLA | [link](https://www.flickr.com/photos/21874566@N07/51710488669) |
 | `sheer-curtains-pair-1.webp` | Sheer Curtains Pair | curtains window | cc0 1.0 | Catt Liu | [link](https://stocksnap.io/photo/curtains-window-B904140969) |
 | `sheer-curtains-pair-2.webp` | Sheer Curtains Pair Classic | curtains window | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/6076318/windowwindow) |
-| `sheer-curtains-pair-3.webp` | Sheer Curtains Pair Lite | curtains window | by 2.0 | Go-tea 郭天 | [link](https://www.flickr.com/photos/131814204@N04/51606020739) |
+| `sheer-curtains-pair-3.webp` | Sheer Curtains Pair Lite | curtains window | by 2.0 | Go-tea éƒ­å¤© | [link](https://www.flickr.com/photos/131814204@N04/51606020739) |
 | `sheer-curtains-pair-4.webp` | Sheer Curtains Pair Pro | curtains window | by 2.0 | Jean-Michel Priaux | [link](https://www.flickr.com/photos/22009742@N04/51683686403) |
 | `sheer-curtains-pair-5.webp` | Sheer Curtains Pair Ultra | curtains window | cc0 1.0 | JOHN K THORNE | [link](https://www.flickr.com/photos/89918055@N05/52222581053) |
 | `sheer-curtains-pair-6.webp` | Sheer Curtains Pair Max | curtains window | cc0 1.0 | JOHN K THORNE | [link](https://www.flickr.com/photos/89918055@N05/51381118294) |
@@ -298,7 +274,7 @@ commercially.
 | `storage-basket-trio-4.webp` | Storage Basket Trio Pro | wicker basket | by 2.0 | deepskyobject | [link](https://www.flickr.com/photos/80806509@N04/53054118357) |
 | `storage-basket-trio-5.webp` | Storage Basket Trio Ultra | wicker basket | pdm 1.0 | amanderson2 | [link](https://www.flickr.com/photos/49399018@N00/52685030030) |
 | `storage-basket-trio-6.webp` | Storage Basket Trio Max | wicker basket | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/5902530/photo-image-public-domain-free) |
-| `adjustable-dumbbells-1.webp` | Adjustable Dumbbells | dumbbell | cc0 1.0 | ₡ґǘșϯγ Ɗᶏ Ⱪᶅṏⱳդ | [link](https://www.flickr.com/photos/148598741@N02/51960984380) |
+| `adjustable-dumbbells-1.webp` | Adjustable Dumbbells | dumbbell | cc0 1.0 | â‚¡Ò‘Ç˜È™Ï¯Î³ ÆŠá¶ â±©á¶…á¹â±³Õ¤ | [link](https://www.flickr.com/photos/148598741@N02/51960984380) |
 | `adjustable-dumbbells-2.webp` | Adjustable Dumbbells Classic | dumbbell | cc0 1.0 | astrophotography_andy | [link](https://www.flickr.com/photos/160049573@N04/52212818537) |
 | `adjustable-dumbbells-3.webp` | Adjustable Dumbbells Lite | dumbbell | by 2.0 | Ivan Radic | [link](https://www.flickr.com/photos/26344495@N05/51271729098) |
 | `adjustable-dumbbells-4.webp` | Adjustable Dumbbells Pro | dumbbell | by 2.0 | Ivan Radic | [link](https://www.flickr.com/photos/26344495@N05/51292156151) |
@@ -539,7 +515,7 @@ commercially.
 | `buttery-croissants-5.webp` | Buttery Croissants Ultra | croissants | by 2.0 | sarahstierch | [link](https://www.flickr.com/photos/7633518@N08/51732500593) |
 | `buttery-croissants-6.webp` | Buttery Croissants Max | croissants | by 2.0 | Kzoo Cowboy | [link](https://www.flickr.com/photos/92871081@N03/51523001649) |
 | `multigrain-atta-5kg-1.webp` | Multigrain Atta 5kg | wheat flour | by 2.0 | 7C0 | [link](https://www.flickr.com/photos/39453974@N04/51928418028) |
-| `multigrain-atta-5kg-2.webp` | Multigrain Atta 5kg Classic | wheat flour | by 2.0 | Henry Söderlund | [link](https://www.flickr.com/photos/46563758@N04/52592297997) |
+| `multigrain-atta-5kg-2.webp` | Multigrain Atta 5kg Classic | wheat flour | by 2.0 | Henry SÃ¶derlund | [link](https://www.flickr.com/photos/46563758@N04/52592297997) |
 | `multigrain-atta-5kg-3.webp` | Multigrain Atta 5kg Lite | wheat flour | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/5927616/photo-image-background-public-domain-hand) |
 | `multigrain-atta-5kg-4.webp` | Multigrain Atta 5kg Pro | wheat flour | cc0 1.0 | The African Union Mission in Somalia | [link](https://www.rawpixel.com/image/3372788/free-photo-image-bed-cc0-coin) |
 | `multigrain-atta-5kg-5.webp` | Multigrain Atta 5kg Ultra | wheat flour | by 2.0 | Leng Cheng | [link](https://www.flickr.com/photos/48570982@N08/30927464403) |
@@ -593,7 +569,7 @@ commercially.
 | `cat-tower-scratcher-5.webp` | Cat Tower Scratcher Ultra | cat furniture | by 2.0 | Zanastardust | [link](https://www.flickr.com/photos/49503201503@N01/147579697) |
 | `cat-tower-scratcher-6.webp` | Cat Tower Scratcher Max | cat furniture | by 2.0 | Kzoo Cowboy | [link](https://www.flickr.com/photos/92871081@N03/51299788406) |
 | `pet-grooming-brush-1.webp` | Pet Grooming Brush | dog brush | pdm 1.0 | Bernard Spragg | [link](https://www.flickr.com/photos/88123769@N02/51822282992) |
-| `pet-grooming-brush-2.webp` | Pet Grooming Brush Classic | dog brush | by 2.0 | Go-tea 郭天 | [link](https://www.flickr.com/photos/131814204@N04/52037748060) |
+| `pet-grooming-brush-2.webp` | Pet Grooming Brush Classic | dog brush | by 2.0 | Go-tea éƒ­å¤© | [link](https://www.flickr.com/photos/131814204@N04/52037748060) |
 | `pet-grooming-brush-3.webp` | Pet Grooming Brush Lite | dog brush | cc0 1.0 | Ian Livesey | [link](https://www.flickr.com/photos/29488979@N06/51571186126) |
 | `pet-grooming-brush-4.webp` | Pet Grooming Brush Pro | dog brush | by-sa 2.0 | judy dean | [link](https://www.flickr.com/photos/12070225@N03/52607255589) |
 | `pet-grooming-brush-5.webp` | Pet Grooming Brush Ultra | dog brush | pdm 1.0 | USDAgov | [link](https://www.flickr.com/photos/41284017@N08/52115765716) |
@@ -616,3 +592,27 @@ commercially.
 | `cat-litter-scoop-box-4.webp` | Cat Litter Scoop Box Pro | cat litter | by 2.0 | James St. John | [link](https://www.flickr.com/photos/47445767@N05/52049942907) |
 | `cat-litter-scoop-box-5.webp` | Cat Litter Scoop Box Ultra | cat litter | by-sa 2.0 | mattbuck4950 | [link](https://www.flickr.com/photos/23136508@N00/51989311095) |
 | `cat-litter-scoop-box-6.webp` | Cat Litter Scoop Box Max | cat litter | by 2.0 | Rob Oo | [link](https://www.flickr.com/photos/105105658@N03/53477166116) |
+| `a-line-dress-1.webp` | A-Line Dress | summer dress | by-sa 2.0 | Debarshi Ray | [link](https://www.flickr.com/photos/39423133@N04/52431361429) |
+| `a-line-dress-2.webp` | A-Line Dress Classic | summer dress | pdm 1.0 | Onasill - Bill Badzo - 149 Million Views - Thank Y | [link](https://www.flickr.com/photos/7156765@N05/51567106823) |
+| `a-line-dress-3.webp` | A-Line Dress Lite | summer dress | by 2.0 | jurvetson | [link](https://www.flickr.com/photos/44124348109@N01/52251276997) |
+| `a-line-dress-4.webp` | A-Line Dress Pro | summer dress | cc0 1.0 | â‚¡Ò‘Ç˜È™Ï¯Î³ ÆŠá¶ â±©á¶…á¹â±³Õ¤ | [link](https://www.flickr.com/photos/148598741@N02/50064750963) |
+| `a-line-dress-5.webp` | A-Line Dress Ultra | summer dress | by-sa 2.0 | Kissra Lynnkay | [link](https://www.flickr.com/photos/80301692@N06/51993537474) |
+| `a-line-dress-6.webp` | A-Line Dress Max | summer dress | by-sa 2.0 | Kissra Lynnkay | [link](https://www.flickr.com/photos/80301692@N06/51993537624) |
+| `denim-jacket-1.webp` | Denim Jacket | denim jacket | cc0 1.0 | Lucas Sankey | [link](https://stocksnap.io/photo/guy-man-32ZVN7GBO4) |
+| `denim-jacket-2.webp` | Denim Jacket Classic | denim jacket | by-sa 2.0 | Debarshi Ray | [link](https://www.flickr.com/photos/39423133@N04/53139845523) |
+| `denim-jacket-3.webp` | Denim Jacket Lite | denim jacket | cc0 1.0 | Caleb George | [link](https://stocksnap.io/photo/young-woman-4AA84B1A5E) |
+| `denim-jacket-4.webp` | Denim Jacket Pro | denim jacket | cc0 1.0 | Lucas Sankey | [link](https://stocksnap.io/photo/guy-man-ZD0H1JN5LR) |
+| `denim-jacket-5.webp` | Denim Jacket Ultra | denim jacket | by-sa 2.0 | 90sfashionworld | [link](https://www.flickr.com/photos/193701061@N06/51842242356) |
+| `denim-jacket-6.webp` | Denim Jacket Max | denim jacket | cc0 1.0 | Benjamin Voros | [link](https://stocksnap.io/photo/blue-denim-UMLWILXWPK) |
+| `formal-shirt-1.webp` | Formal Shirt | dress shirt | by 2.0 | Mysteria Bloodbane-Ragnarok | [link](https://www.flickr.com/photos/149747287@N08/51406927679) |
+| `formal-shirt-2.webp` | Formal Shirt Classic | dress shirt | by-sa 2.0 | Debarshi Ray | [link](https://www.flickr.com/photos/39423133@N04/52432505658) |
+| `formal-shirt-3.webp` | Formal Shirt Lite | dress shirt | by 2.0 | Mysteria Bloodbane-Ragnarok | [link](https://www.flickr.com/photos/149747287@N08/51406442463) |
+| `formal-shirt-4.webp` | Formal Shirt Pro | dress shirt | by-sa 2.0 | Debarshi Ray | [link](https://www.flickr.com/photos/39423133@N04/52476333209) |
+| `formal-shirt-5.webp` | Formal Shirt Ultra | dress shirt | by-sa 2.0 | Debarshi Ray | [link](https://www.flickr.com/photos/39423133@N04/52476599663) |
+| `formal-shirt-6.webp` | Formal Shirt Max | dress shirt | by-sa 2.0 | Debarshi Ray | [link](https://www.flickr.com/photos/39423133@N04/52423012721) |
+| `polarized-sunglasses-1.webp` | Polarized Sunglasses | sunglasses | by 2.0 | geishaboy500 | [link](https://www.flickr.com/photos/49503154413@N01/493685443) |
+| `polarized-sunglasses-2.webp` | Polarized Sunglasses Classic | sunglasses | by 2.0 | Rmonty119 | [link](https://www.flickr.com/photos/54327644@N04/52319861967) |
+| `polarized-sunglasses-3.webp` | Polarized Sunglasses Lite | sunglasses | by 2.0 | artam11 | [link](https://www.flickr.com/photos/189348836@N05/51902514508) |
+| `polarized-sunglasses-4.webp` | Polarized Sunglasses Pro | sunglasses | cc0 1.0 | Jakub Rostkowski | [link](https://stocksnap.io/photo/sunglasses-summer-EVAARS1W4M) |
+| `polarized-sunglasses-5.webp` | Polarized Sunglasses Ultra | sunglasses | by-sa 2.0 | Czar Hey | [link](https://www.flickr.com/photos/161174688@N08/51519721976) |
+| `polarized-sunglasses-6.webp` | Polarized Sunglasses Max | sunglasses | by 2.0 | Glory Cycles | [link](https://www.flickr.com/photos/29558127@N06/51856986142) |
