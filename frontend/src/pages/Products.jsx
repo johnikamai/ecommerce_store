@@ -97,6 +97,7 @@ function Products() {
   // synonym expansion; the client only holds the resulting id order so the
   // already-loaded catalogue can still be filtered by the facets above.
   const [rankedIds, setRankedIds] = useState(null);
+  const [searchError, setSearchError] = useState('');
   const [searchMeta, setSearchMeta] = useState({ correctedQuery: '', suggestions: [], minPrice: null, maxPrice: null });
   const [searching, setSearching] = useState(false);
 
@@ -112,13 +113,17 @@ function Products() {
   const [imageUrl, setImageUrl] = useState('');
   const [formError, setFormError] = useState('');
 
+  // Errors hold translation *keys*, not rendered text. Storing the translated
+  // string would freeze it in whichever locale happened to be active when the
+  // request failed, so switching language later would leave stale English on
+  // screen. They are translated at render instead.
   const fetchProducts = async () => {
     try {
       const response = await axiosClient.get('/products/catalog');
       setProducts(response.data);
       setError('');
     } catch (err) {
-      setError(t('catalog.loadError'));
+      setError('catalog.loadError');
     } finally {
       setLoading(false);
     }
@@ -179,6 +184,7 @@ function Products() {
     const query = searchQuery.trim();
     if (!query) {
       setRankedIds(null);
+      setSearchError('');
       setSearchMeta({ correctedQuery: '', suggestions: [], minPrice: null, maxPrice: null });
       return undefined;
     }
@@ -191,6 +197,7 @@ function Products() {
         if (cancelled) return;
         const rows = res.data.results || [];
         setRankedIds(rows.map((r) => r.id));
+        setSearchError('');
         setSearchMeta({
           correctedQuery: res.data.correctedQuery || '',
           suggestions: res.data.suggestions || [],
@@ -202,7 +209,14 @@ function Products() {
         if (res.data.maxPrice != null) setMaxPrice(String(res.data.maxPrice));
         if (res.data.minPrice != null) setMinPrice(String(res.data.minPrice));
       } catch {
-        if (!cancelled) setRankedIds(null);
+        // Do NOT quietly fall back to the unfiltered catalogue. The shopper
+        // typed a query, and answering it with all 607 products looks like the
+        // search worked and simply ignored them. Say the search is unavailable
+        // and still show the catalogue underneath, clearly labelled.
+        if (!cancelled) {
+          setRankedIds(null);
+          setSearchError(query);
+        }
       } finally {
         if (!cancelled) setSearching(false);
       }
@@ -321,7 +335,7 @@ function Products() {
       fetchProducts();
       setSelectedCategory('All');
     } catch (err) {
-      setFormError(t('catalog.addProductFailed'));
+      setFormError('catalog.addProductFailed');
     }
   };
 
@@ -447,6 +461,20 @@ function Products() {
           </label>
         </div>
 
+        {/* Shown when the search endpoint itself failed. Without this the grid
+            below silently becomes the whole catalogue, which reads as "your
+            query matched everything" rather than "search is down". */}
+        {searchError && (
+          <div className="p-3 rounded-[var(--radius-md)] bg-[var(--color-warning-bg)] border-[1.5px] border-[var(--color-warning)]">
+            <p className="text-sm font-semibold text-[var(--color-text-primary)]">
+              Search is unavailable right now
+            </p>
+            <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+              Showing all products instead of results for “{searchError}”. Filters below still work.
+            </p>
+          </div>
+        )}
+
         {/* Search understanding: only shown when the engine actually changed
             something, so it never becomes noise the shopper learns to ignore. */}
         {searchMeta.correctedQuery && searchMeta.correctedQuery.toLowerCase() !== searchQuery.trim().toLowerCase() && (
@@ -524,7 +552,7 @@ function Products() {
                     sort === opt.key ? 'text-[var(--color-primary)] font-semibold' : 'text-[var(--color-text-secondary)]'
                   }`}
                 >
-                  {opt.label}
+                  {t(opt.labelKey)}
                 </button>
               ))}
             </div>
@@ -535,22 +563,22 @@ function Products() {
       {/* Admin form */}
       {role === 'ADMIN' && showForm && (
         <form onSubmit={handleAddProduct} className="mb-8 p-6 rounded-[var(--radius-xl)] bg-[var(--color-card-bg-tint)] max-w-md">
-          <h3 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-4">Add a new product</h3>
+          <h3 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-4">{t('catalog.addProductTitle')}</h3>
           <div className="space-y-3">
-            <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] bg-white focus:border-[var(--color-primary)] focus:shadow-[var(--shadow-glow-primary)] outline-none transition-shadow" />
-            <input placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="w-full px-4 py-3 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] bg-white focus:border-[var(--color-primary)] outline-none" />
-            <input placeholder="Category" value={category} onChange={(e) => setCategory(e.target.value)} className="w-full px-4 py-3 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] bg-white focus:border-[var(--color-primary)] outline-none" />
-            <input placeholder="Price" type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full px-4 py-3 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] bg-white focus:border-[var(--color-primary)] outline-none" />
-            <input placeholder="Stock Quantity" type="number" value={stockQuantity} onChange={(e) => setStockQuantity(e.target.value)} className="w-full px-4 py-3 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] bg-white focus:border-[var(--color-primary)] outline-none" />
-            <input placeholder="Image URL (optional — e.g. /images/1.png or any https://... photo)" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className="w-full px-4 py-3 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] bg-white focus:border-[var(--color-primary)] outline-none" />
+            <input placeholder={t('common.name')} value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] bg-white focus:border-[var(--color-primary)] focus:shadow-[var(--shadow-glow-primary)] outline-none transition-shadow" />
+            <input placeholder={t('common.description')} value={description} onChange={(e) => setDescription(e.target.value)} className="w-full px-4 py-3 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] bg-white focus:border-[var(--color-primary)] outline-none" />
+            <input placeholder={t('common.category')} value={category} onChange={(e) => setCategory(e.target.value)} className="w-full px-4 py-3 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] bg-white focus:border-[var(--color-primary)] outline-none" />
+            <input placeholder={t('catalog.price')} type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full px-4 py-3 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] bg-white focus:border-[var(--color-primary)] outline-none" />
+            <input placeholder={t('catalog.stockQuantity')} type="number" value={stockQuantity} onChange={(e) => setStockQuantity(e.target.value)} className="w-full px-4 py-3 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] bg-white focus:border-[var(--color-primary)] outline-none" />
+            <input placeholder={t('catalog.imageUrl')} value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className="w-full px-4 py-3 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] bg-white focus:border-[var(--color-primary)] outline-none" />
             <div>
-              <input placeholder="Sustainability Score (0-100)" type="number" min="0" max="100" value={sustainabilityScore} onChange={(e) => setSustainabilityScore(e.target.value)} className="w-full px-4 py-3 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] bg-white focus:border-[var(--color-primary)] outline-none" />
-              <p className="text-xs text-[var(--color-text-muted)] mt-1">Optional. ≥80 Eco-Friendly, ≥50 Moderate, &lt;50 High Impact.</p>
+              <input placeholder={t('catalog.sustainabilityScore')} type="number" min="0" max="100" value={sustainabilityScore} onChange={(e) => setSustainabilityScore(e.target.value)} className="w-full px-4 py-3 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] bg-white focus:border-[var(--color-primary)] outline-none" />
+              <p className="text-xs text-[var(--color-text-muted)] mt-1">{t('catalog.sustainabilityHint')}</p>
             </div>
           </div>
-          {formError && <p className="text-[var(--color-error)] text-sm mt-2">{formError}</p>}
+          {formError && <p className="text-[var(--color-error)] text-sm mt-2">{t(formError)}</p>}
           <button type="submit" className="mt-4 w-full rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white py-3 text-sm font-semibold hover:bg-[var(--color-primary-hover)] transition-colors">
-            Add Product
+            {t('catalog.addProduct')}
           </button>
         </form>
       )}
@@ -563,19 +591,19 @@ function Products() {
       ) : error ? (
         <div className="py-20 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[var(--color-error-bg)] mb-4 text-2xl">!</div>
-          <h4 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-1">Something went wrong.</h4>
-          <p className="text-[var(--color-text-muted)] mb-4">{error}</p>
+          <h4 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-1">{t('common.somethingWentWrong')}</h4>
+          <p className="text-[var(--color-text-muted)] mb-4">{t(error)}</p>
           <button onClick={() => { setLoading(true); fetchProducts(); }} className="rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white px-5 py-2.5 text-sm font-semibold hover:bg-[var(--color-primary-hover)] transition-colors">
-            Retry
+            {t('action.retry')}
           </button>
         </div>
       ) : sortedProducts.length === 0 ? (
         <div className="py-20 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[var(--color-card-bg-tint)] mb-4 text-2xl">⌕</div>
-          <h4 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-1">No results for "{searchQuery}"</h4>
-          <p className="text-[var(--color-text-muted)] mb-4">Try clearing the search or picking another category.</p>
+          <h4 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-1">{t('catalog.noResults', { query: searchQuery })}</h4>
+          <p className="text-[var(--color-text-muted)] mb-4">{t('catalog.noResultsHint')}</p>
           <button onClick={() => selectCategory('All')} className="rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white px-5 py-2.5 text-sm font-semibold hover:bg-[var(--color-primary-hover)] transition-colors">
-            Clear filters
+            {t('catalog.clearFilters')}
           </button>
         </div>
       ) : (
