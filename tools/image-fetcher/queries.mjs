@@ -28,7 +28,7 @@ export const QUERIES = {
   'Cotton T-Shirt': 'plain t-shirt',
   'Slim Fit Jeans': 'jeans denim',
   'Running Sneakers': 'running sneakers',
-  'Denim Jacket': 'denim jacket',
+  'Denim Jacket': 'jean jacket',
   'A-Line Dress': 'summer dress',
   'Oversized Hoodie': 'hoodie sweatshirt',
   'Leather Wallet': 'leather wallet',

@@ -39,6 +39,41 @@ const PER_BASE = 6;
 // would be unusable here even though it is commercially licensed.
 const LICENSES = 'cc0,pdm,by,by-sa';
 
+// Photos of people are unusable for this catalogue. A storefront shot of a model
+// wearing a jacket tells a customer nothing about the jacket, and a side view of a
+// person is the single most common complaint about the generated photography.
+// Openverse has no people-detection, so candidates are screened on the metadata
+// it does index - title, tags, alt text, caption and the source page URL - which
+// catches the usual offenders ("guy-man-...", "boy-child-...", "guitar-musician-
+// rock-festival-..."). Word boundaries matter: "shoes" and "the" must not match
+// "he", which is why these are whole words rather than substrings.
+//
+// Screen against metadata only. Over-rejecting is survivable because the map and
+// the photos are seeded from what is already committed, so a family that ends up
+// with no acceptable candidate simply keeps the photos it already has.
+const PEOPLE = new RegExp(
+  '\\b(?:' +
+    [
+      'man', 'men', 'woman', 'women', 'boy', 'boys', 'girl', 'girls',
+      'child', 'children', 'kid', 'kids', 'baby', 'toddler',
+      'person', 'persons', 'people', 'human', 'humanity',
+      'portrait', 'portraits', 'face', 'faces', 'selfie',
+      'wearing', 'worn', 'dressed', 'outfit',
+      'model', 'models', 'modeling', 'modelling', 'runway',
+      'crowd', 'family', 'couple', 'guy', 'guys', 'lady', 'ladies',
+      'musician', 'musicians', 'singer', 'singers', 'band', 'concert', 'festival',
+      'dancer', 'dancers', 'athlete', 'athletes', 'runner', 'runners',
+      'skier', 'skiers', 'surfer', 'celebrity', 'friends',
+    ].join('|') +
+    ')\\b',
+  'i'
+);
+
+const describe = (r) =>
+  [r.title, r.caption, r.alt_text, r.foreign_landing_url, (r.tags || []).map((t) => t.name)]
+    .filter(Boolean)
+    .join(' ');
+
 const REBUILD_CREDITS = process.argv.includes('--rebuild-credits');
 
 // Re-download a family even though its files are already on disk. Used to redo a
@@ -137,6 +172,7 @@ async function search(query, page = 1, ignoreUsed = false) {
   const seen = new Set();
   return body.results
     .filter((r) => (r.width ?? 0) >= 480 && (r.height ?? 0) >= 420)
+    .filter((r) => !PEOPLE.test(describe(r)))
     .filter((r) => !seen.has(r.url) && seen.add(r.url))
     .filter((r) => ignoreUsed || !usedUrls.has(r.url));
 }
@@ -306,14 +342,20 @@ async function main() {
     // --force replaces the photos a family already has, which means its own
     // current images are the candidates most likely to come back. usedUrls is
     // ignored for the search so a family can be redone, so the guard below is what
-    // actually prevents a duplicate: every photo that will still be on disk after
-    // this run is hashed up front, and a candidate whose converted bytes match one
-    // of them is thrown away in favour of the next one.
-    const replacing = new Set(files);
+    // actually prevents a duplicate: every photo currently on disk is hashed up
+    // front, and a candidate whose converted bytes match one of them is thrown
+    // away in favour of the next one.
+    //
+    // The family's own files are deliberately included. They were left out at
+    // first on the reasoning that they are about to be overwritten, but a family
+    // that runs out of candidates keeps some of them: vitamin C serum 6 stayed as
+    // it was, serum 4 was handed the photo serum 6 used to have, and the two
+    // ended up identical. Bytes still on disk are protected whether or not the
+    // file is about to be replaced.
     const takenHashes = new Set();
     if (FORCE) {
       for (const f of readdirSync(OUT_DIR)) {
-        if (!f.endsWith('.webp') || replacing.has(f)) continue;
+        if (!f.endsWith('.webp')) continue;
         takenHashes.add(hashOf(join(OUT_DIR, f)));
       }
     }
