@@ -1,0 +1,7 @@
+# Dependencies for the one-off image fetcher, not part of the storefront build.
+node_modules/
+
+# Intermediate fetch state. Credits are committed as CREDITS.md and the
+# productId -> URL map as product-images.json, so this is regenerable.
+state.json
+photo-credits.json

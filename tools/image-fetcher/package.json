@@ -1,0 +1,15 @@
+{
+  "name": "product-image-fetcher",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "One-off tool: pulls a real product photo per catalog entry from Openverse",
+  "scripts": {
+    "fetch": "node fetch-images.mjs",
+    "rebuild-credits": "node fetch-images.mjs --rebuild-credits",
+    "audit": "node audit.mjs"
+  },
+  "dependencies": {
+    "sharp": "^0.33.5"
+  }
+}
