@@ -164,21 +164,39 @@ public class OrderService {
             case "SILVER" -> java.math.BigDecimal.valueOf(0.02);
             default -> java.math.BigDecimal.ZERO;
         };
-        java.math.BigDecimal discount = total.multiply(discountPercent);
+java.math.BigDecimal discount = total.multiply(discountPercent);
         total = total.subtract(discount);
 
+        // Everything above is a discount on the goods. Freeze that figure here,
+        // because shipping and tax are charges rather than discounts and must not
+        // be fed back into loyalty points or the lifetime-spend tiers below.
+        BigDecimal merchandiseTotal = total;
+
+        // Delivery. Charged on the pre-discount subtotal, so stacking a coupon can
+        // never buy free shipping.
+        BigDecimal shipping = shippingCostFor(subtotal);
+        BigDecimal tax = taxFor(merchandiseTotal);
+
+        total = total.add(shipping).add(tax);
+
+        order.setMerchandiseTotal(merchandiseTotal);
+        order.setShippingAmount(shipping);
+        order.setTaxAmount(tax);
         order.setTotalAmount(total);
 
-        // Award loyalty points: 1 point per ₹100 spent
-        int pointsEarned = total.divide(java.math.BigDecimal.valueOf(100), 0, java.math.RoundingMode.DOWN).intValue();
+        // Award loyalty points: 1 point per 100 spent.
+        // Measured against the goods value only - points are a reward for buying
+        // merchandise, so counting the tax and delivery the customer paid in would
+        // inflate every balance and hand out tiers that were never earned.
+        int pointsEarned = merchandiseTotal.divide(java.math.BigDecimal.valueOf(100), 0, java.math.RoundingMode.DOWN).intValue();
         int currentPoints = customer.getLoyaltyPoints() != null ? customer.getLoyaltyPoints() : 0;
         customer.setLoyaltyPoints(currentPoints + pointsEarned);
 
         // Recalculate tier based on lifetime spend across all orders
         java.math.BigDecimal lifetimeSpend = orderRepository.findByCustomerId(customer.getId()).stream()
-                .map(Order::getTotalAmount)
+                .map(Order::getMerchandiseTotalForScoring)
                 .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add)
-                .add(total); // include this order too, since it isn't saved yet
+                .add(merchandiseTotal); // include this order too, since it isn't saved yet
 
         if (lifetimeSpend.compareTo(java.math.BigDecimal.valueOf(150000)) >= 0) {
             customer.setTier("GOLD");
@@ -549,6 +567,77 @@ public class OrderService {
             return new BigDecimal("0.05");
         }
         return BigDecimal.ZERO;
+    }
+
+    /** Flat delivery charge, in the same currency as the catalogue prices. */
+    public static final BigDecimal FLAT_SHIPPING = new BigDecimal("49.00");
+
+    /** Spend at or above which delivery is charged at nothing. */
+    public static final BigDecimal FREE_SHIPPING_THRESHOLD = new BigDecimal("999.00");
+
+    /**
+     * Default tax rate as a fraction of the discounted goods value.
+     *
+     * This is a single flat rate standing in for GST. A real deployment needs the
+     * CGST/SGST split for an intra-state delivery and IGST for an inter-state one,
+     * decided from the pair of state codes on the shipping address - see
+     * taxRate() for the runtime override.
+     */
+    public static final BigDecimal TAX_RATE = new BigDecimal("0.18");
+
+    /**
+     * Delivery charged for an order.
+     *
+     * Free once the basket crosses the threshold, and free for an empty basket:
+     * a zero-value order should not be charged shipping for sending nothing.
+     * Measured against the pre-discount subtotal so that stacking coupons cannot
+     * tip an order over the line and make delivery free, which would let a
+     * customer buy a large basket at no shipping cost purely by applying a code.
+     */
+    public static BigDecimal shippingCostFor(BigDecimal subtotal) {
+        if (subtotal == null || subtotal.compareTo(BigDecimal.ZERO) <= 0) {
+            return new BigDecimal("0.00");
+        }
+        if (subtotal.compareTo(FREE_SHIPPING_THRESHOLD) >= 0) {
+            return new BigDecimal("0.00");
+        }
+        return FLAT_SHIPPING;
+    }
+
+    /**
+     * Tax charged on the discounted value of the goods.
+     *
+     * The base is deliberately the post-discount goods value, never the grand
+     * total: folding shipping into the base would tax the delivery charge as
+     * though it were merchandise. Returns a zero scale so an unrounded rate can
+     * never leak a long decimal into the stored amount.
+     */
+    public static BigDecimal taxFor(BigDecimal merchandiseTotal) {
+        if (merchandiseTotal == null || merchandiseTotal.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO.setScale(2, java.math.RoundingMode.HALF_UP);
+        }
+        return merchandiseTotal
+                .multiply(taxRate())
+                .setScale(2, java.math.RoundingMode.HALF_UP);
+    }
+
+    /** Configurable so a deployment can change the rate without a code change. */
+    private static BigDecimal taxRate() {
+        String configured = System.getenv("TAX_RATE");
+        if (configured == null || configured.isBlank()) {
+            return TAX_RATE;
+        }
+        try {
+            BigDecimal parsed = new BigDecimal(configured.trim());
+            if (parsed.compareTo(BigDecimal.ZERO) < 0 || parsed.compareTo(BigDecimal.ONE) > 0) {
+                System.out.println("[TAX] TAX_RATE " + configured + " is not a 0-1 fraction, using default");
+                return TAX_RATE;
+            }
+            return parsed;
+        } catch (NumberFormatException ex) {
+            System.out.println("[TAX] TAX_RATE " + configured + " is not a number, using default");
+            return TAX_RATE;
+        }
     }
 
     /** The next tier up and how many more distinct products unlock it, or null at the top. */

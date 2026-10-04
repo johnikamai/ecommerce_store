@@ -12,6 +12,16 @@ export default function AdminProducts() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState('');
+
+  // Deleting a product is admin-only on the server, so hide the control too.
+  // Rendering it for staff produced a button that always failed with 403.
+  const [role, setRole] = useState(() => localStorage.getItem('role'));
+  useEffect(() => {
+    const sync = () => setRole(localStorage.getItem('role'));
+    window.addEventListener('storage', sync);
+    return () => window.removeEventListener('storage', sync);
+  }, []);
+  const isAdmin = role === 'ADMIN';
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null); // null | { product } for edit, {} for new
@@ -161,14 +171,16 @@ export default function AdminProducts() {
                   <td className="py-3 px-4 text-center text-xs">{p.sustainabilityScore ?? '—'}</td>
                   <td className="py-3 px-4">
                     <div className="flex justify-end gap-1.5">
-                      <button onClick={() => openModal(p)} aria-label="Edit"
-                        className="w-8 h-8 rounded-[var(--radius-md)] flex items-center justify-center text-[var(--color-text-secondary)] hover:bg-[var(--color-border)] transition-colors">
-                        <Pencil size={15} />
-                      </button>
-                      <button onClick={() => remove(p)} aria-label="Delete"
-                        className="w-8 h-8 rounded-[var(--radius-md)] flex items-center justify-center text-[var(--color-error)] hover:bg-[var(--color-error-bg)] transition-colors">
-                        <Trash2 size={15} />
-                      </button>
+<button onClick={() => openModal(p)} aria-label="Edit"
+                          className="w-8 h-8 rounded-[var(--radius-md)] flex items-center justify-center text-[var(--color-text-secondary)] hover:bg-[var(--color-border)] transition-colors">
+                          <Pencil size={15} />
+                        </button>
+                        {isAdmin && (
+                          <button onClick={() => remove(p)} aria-label="Delete"
+                            className="w-8 h-8 rounded-[var(--radius-md)] flex items-center justify-center text-[var(--color-error)] hover:bg-[var(--color-error-bg)] transition-colors">
+                            <Trash2 size={15} />
+                          </button>
+                        )}
                     </div>
                   </td>
                 </tr>

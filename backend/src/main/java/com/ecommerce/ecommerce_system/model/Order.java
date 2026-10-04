@@ -46,6 +46,25 @@ public class Order {
     // cheaper; the two are applied one after the other and both stack.
     private BigDecimal bundleDiscountAmount = BigDecimal.ZERO;
 
+    // Discounted value of the goods alone, captured before shipping and tax are
+    // added. Loyalty points and lifetime-spend tiers are measured against this,
+    // not against totalAmount, so a customer cannot climb tiers faster purely
+    // because the tax they paid went up.
+    //
+    // Deliberately left null rather than zero: rows written before this field
+    // existed read back as null, which is how getMerchandiseTotalForScoring()
+    // tells "an old order" apart from "a genuine zero-value order".
+    private BigDecimal merchandiseTotal;
+
+    // Delivery charged at checkout. Zero once the order crosses the free-shipping
+    // threshold; stored explicitly so the invoice can show the line even when it
+    // is nil, which is what makes a "FREE" row legible to a customer.
+    private BigDecimal shippingAmount = BigDecimal.ZERO;
+
+    // Tax charged on the discounted goods value. Kept separate from shipping
+    // because a zero-rated delivery charge should not inflate the tax base.
+    private BigDecimal taxAmount = BigDecimal.ZERO;
+
     // Delivery snapshot captured at checkout (address book entry or manual entry).
     private String shippingAddress;
 
@@ -106,5 +125,20 @@ public class Order {
     @Transient
     public List<String> getAllowedNextStatuses() {
         return status == null ? List.of() : status.allowedNextOrdered().stream().map(Enum::name).toList();
+    }
+
+    /**
+     * Discounted goods value, falling back to the grand total for orders placed
+     * before this breakdown existed.
+     *
+     * Those legacy rows have no merchandiseTotal stored at all, so they read back
+     * null. Falling back to totalAmount keeps them contributing their real spend
+     * toward a lifetime tier; treating them as zero would silently demote every
+     * long-standing customer the first time tiers were recomputed.
+     */
+    @JsonIgnore
+    public BigDecimal getMerchandiseTotalForScoring() {
+        if (merchandiseTotal != null) return merchandiseTotal;
+        return totalAmount != null ? totalAmount : BigDecimal.ZERO;
     }
 }
