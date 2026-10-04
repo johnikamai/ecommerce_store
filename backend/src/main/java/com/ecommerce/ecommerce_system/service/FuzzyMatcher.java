@@ -152,11 +152,20 @@ public class FuzzyMatcher {
         int max = maxDistanceFor(token.length());
         if (distance(token, vocabularyWord, max) <= max) return true;
 
-        // Same Soundex code means the letters sound alike even when the edit
-        // distance is too large to trust on its own.
+        // Soundex only ever *widens* what the edit distance already tolerates.
+        // It is never sufficient on its own, because it collapses unrelated
+        // words onto shared codes: "shoes" and "size" are both S200, so a
+        // standalone Soundex match turned a search for shoes into a search for
+        // size and returned bedsheets. Requiring one extra edit of drift as
+        // well keeps genuine transpositions ("shoees") while dropping the
+        // collisions.
         String a = soundex(token);
         String b = soundex(vocabularyWord);
-        return !a.isEmpty() && !b.isEmpty() && a.charAt(0) == b.charAt(0) && a.equals(b);
+        if (a.isEmpty() || b.isEmpty() || a.charAt(0) != b.charAt(0) || !a.equals(b)) {
+            return false;
+        }
+        int widened = max + 1;
+        return distance(token, vocabularyWord, widened) <= widened;
     }
 
     /** Tokens worth matching on: lowercased, punctuation stripped, stopwords removed. */

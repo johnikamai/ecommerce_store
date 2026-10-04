@@ -83,6 +83,32 @@ class SearchServiceTest {
         assertEquals("Wireless Earbuds", names("wireless erbudz").get(0));
     }
 
+    /**
+     * Regression: "shoes" and "size" share a Soundex code (both S200). When a
+     * Soundex match was accepted on its own, the engine "corrected" shoes to
+     * size and answered a footwear search with bedsheets - six products whose
+     * descriptions happen to mention size. Soundex may now only widen a match
+     * the edit distance already tolerates.
+     */
+    @Test
+    void doesNotCorrectToASoundexCollision() {
+        assertFalse(new FuzzyMatcher().isTypoOf("shoes", "size"),
+                "shoes/size share Soundex S200 but are not the same word");
+        assertFalse(new FuzzyMatcher().isTypoOf("shoes", "sheep"));
+        // Note: shirt/short is deliberately still accepted. It is one edit
+        // apart, so it clears the edit-distance rule on its own merits without
+        // Soundex being involved - a plausible typo, not a collision.
+    }
+
+    /** The widening must not have broken real typo tolerance. */
+    @Test
+    void stillAcceptsTranspositionsAndDroppedLetters() {
+        FuzzyMatcher matcher = new FuzzyMatcher();
+        assertTrue(matcher.isTypoOf("shoees", "shoes"), "transposed pair is still a typo");
+        assertTrue(matcher.isTypoOf("wireles", "wireless"), "dropped letter is still a typo");
+        assertTrue(matcher.isTypoOf("erbudz", "earbuds"));
+    }
+
     @Test
     void resolvesSynonymToCatalogueWord() {
         // "headphones" is not a catalogue word; it must resolve to earbuds.
