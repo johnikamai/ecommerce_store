@@ -22,6 +22,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -120,19 +121,47 @@ public class SecurityConfig {
      * Allowed browser origins.
      *
      * The deployed storefront is a separate origin from the API, so the browser
-     * sends a preflight before every JSON request. If this origin is missing the
+     * sends a preflight before every JSON request. If that origin is missing the
      * preflight is rejected and the browser reports a generic network error, which
-     * looks like "the backend is down" even though it is answering fine - the
-     * deployed frontend defaults to the same host as the API fallback below.
+     * looks like "the backend is down" even though it is answering fine.
+     *
+     * These are always allowed and cannot be switched off, because losing them
+     * takes the whole storefront down with no visible cause. Extra origins come
+     * from CORS_ALLOWED_ORIGINS.
      */
-    private static final String DEFAULT_ORIGINS =
-            "https://ecommerce-store-shopease.vercel.app,http://localhost:5173";
+    private static final List<String> REQUIRED_ORIGINS = List.of(
+            "https://ecommerce-store-shopease.vercel.app",
+            "http://localhost:5173");
+
+    /**
+     * Reads extra origins from a comma-separated env var.
+     *
+     * Entries are trimmed and unquoted because the value is usually typed by hand
+     * into a dashboard: a stray quote or a space after the comma otherwise becomes
+     * part of the origin, and since no browser ever sends that exact string every
+     * request is rejected while the log shows no clue why.
+     */
+    private static List<String> configuredOrigins() {
+        String raw = System.getenv("CORS_ALLOWED_ORIGINS");
+        if (raw == null || raw.isBlank()) {
+            return List.of();
+        }
+        List<String> origins = new ArrayList<>(REQUIRED_ORIGINS);
+        for (String part : raw.split(",")) {
+            String cleaned = part.trim().replaceAll("^[\"']|[\"']$", "");
+            if (!cleaned.isBlank() && !origins.contains(cleaned)) {
+                origins.add(cleaned);
+            }
+        }
+        return origins;
+    }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        List<String> origins = configuredOrigins();
+        System.out.println("[CORS] allowed origins: " + origins);
         CorsConfiguration cfg = new CorsConfiguration();
-        String origins = System.getenv().getOrDefault("CORS_ALLOWED_ORIGINS", DEFAULT_ORIGINS);
-        cfg.setAllowedOrigins(Arrays.asList(origins.split(",")));
+        cfg.setAllowedOrigins(origins);
         cfg.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         cfg.setAllowedHeaders(List.of("*"));
         cfg.setAllowCredentials(true);
