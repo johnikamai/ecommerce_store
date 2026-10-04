@@ -134,7 +134,12 @@ public class AuthController {
         body.put("otpRequired", true);
         body.put("emailSentTo", req.getEmail());
         body.put("emailDelivered", emailed);
-        body.put("devOtp", otp); // shown only for demo/troubleshooting
+        if (!emailed) {
+            // Only reveal the code when it was NOT actually emailed. Returning it
+            // unconditionally hands anyone who calls this endpoint the ability to
+            // activate any account they can name, which defeats the OTP entirely.
+            body.put("devOtp", otp);
+        }
         return ResponseEntity.ok(body);
     }
 
@@ -168,6 +173,19 @@ public class AuthController {
         customer.setTier("BRONZE");
         customer.setReferralCode(generateReferralCode(username));
         customer.setReferralRewarded(false);
+
+        // Optional referral link. An unknown or malformed code is ignored rather
+        // than rejected: someone signing up should not be blocked because a friend
+        // mistyped their code, and the bonus simply does not apply. The referrer
+        // is credited later, on the referred customer's first order.
+        String referralInput = req.get("referralCode");
+        if (referralInput != null && !referralInput.trim().isEmpty()) {
+            String wanted = referralInput.trim().toUpperCase();
+            customerRepository.findByReferralCode(wanted)
+                    .filter(referrer -> referrer.getId() != null)
+                    .ifPresent(customer::setReferredBy);
+        }
+
         customer = customerRepository.save(customer);
 
         user.setCustomerId(customer.getId());
@@ -185,10 +203,10 @@ public class AuthController {
         }
         String otp = sendOtp(username);
         boolean emailed = user.getEmail() != null && mailService.sendOtp(user.getEmail(), otp);
-        return ResponseEntity.ok(Map.of(
-                "message", emailed ? "New OTP emailed to you" : "New OTP generated (demo mode)",
-                "devOtp", otp
-        ));
+        // Same rule as register: never echo a code that was genuinely delivered.
+        return ResponseEntity.ok(emailed
+                ? Map.of("message", "New OTP emailed to you", "emailDelivered", true)
+                : Map.of("message", "New OTP generated (demo mode)", "emailDelivered", false, "devOtp", otp));
     }
 
     @PostMapping("/login")
@@ -286,7 +304,11 @@ public class AuthController {
         body.put("message", emailed ? "We emailed a reset code to " + user.getEmail() : "Reset code generated (demo mode)");
         body.put("emailSentTo", user.getEmail());
         body.put("emailDelivered", emailed);
-        body.put("devOtp", code);
+        if (!emailed) {
+            // Password reset is the most sensitive flow here - returning the code
+            // would let anyone take over any account by calling this endpoint.
+            body.put("devOtp", code);
+        }
         return ResponseEntity.ok(body);
     }
 

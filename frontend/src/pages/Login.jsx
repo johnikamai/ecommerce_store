@@ -219,6 +219,11 @@ function CustomerContent() {
   const [devOtp, setDevOtp] = useState('');
   const [emailSentTo, setEmailSentTo] = useState('');
   const [emailDelivered, setEmailDelivered] = useState(false);
+  // Pre-filled from ?ref=CODE so the invite link works, and still editable in
+  // case the code was passed on by word of mouth.
+  const [referralCode, setReferralCode] = useState(() =>
+    new URLSearchParams(window.location.search).get('ref') || ''
+  );
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [otpError, setOtpError] = useState('');
   const otpRefs = useRef([]);
@@ -303,7 +308,13 @@ function CustomerContent() {
     setBusy(true);
     setOtpError('');
     try {
-      const res = await axiosClient.post('/auth/verify-otp', { username, otp: code });
+      const res = await axiosClient.post('/auth/verify-otp', {
+        username,
+        otp: code,
+        // Optional. An unknown code is ignored server-side, so this is safe to
+        // send even if the friend mistyped it.
+        referralCode: referralCode.trim() || undefined,
+      });
       persist(res.data);
       navigate('/products');
     } catch (err) {
@@ -432,6 +443,26 @@ function CustomerContent() {
               showStrength={mode === 'register'}
             />
           </div>
+
+          {mode === 'register' && (
+            <div>
+              <label htmlFor="cust-ref" className="block text-[13px] font-semibold mb-2 text-[var(--color-text-secondary)]">
+                Referral code <span className="font-normal text-[var(--color-text-muted)]">(optional)</span>
+              </label>
+              <input
+                id="cust-ref"
+                type="text"
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                placeholder="e.g. JOHN-A1B2C3"
+                autoComplete="off"
+                className="w-full min-h-[48px] rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-sm focus:outline-none focus:border-[var(--color-primary)]"
+              />
+              <p className="mt-1.5 text-xs text-[var(--color-text-muted)]">
+                Got a code from a friend? They earn 500 points when your first order ships.
+              </p>
+            </div>
+          )}
 
           {error && (
             <p ref={errorRef} className="text-sm text-[var(--color-error)] bg-[var(--color-error-bg)] rounded-[var(--radius-md)] px-4 py-2.5" role="alert">{error}</p>

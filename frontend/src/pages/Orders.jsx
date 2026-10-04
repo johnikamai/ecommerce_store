@@ -187,7 +187,10 @@ function Orders() {
   const copyCode = async () => {
     if (!customer?.referralCode) return;
     try {
-      await navigator.clipboard.writeText(customer.referralCode);
+      // Share a link, not a bare code. The signup form reads ?ref= and pre-fills
+      // the field, so a friend who taps the link does not have to type anything.
+      const link = `${window.location.origin}/login?mode=register&ref=${encodeURIComponent(customer.referralCode)}`;
+      await navigator.clipboard.writeText(link);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch (err) {
