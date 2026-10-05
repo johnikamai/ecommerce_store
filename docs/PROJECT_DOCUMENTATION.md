@@ -17,7 +17,7 @@ discounts stack.
 
 | Capability | Summary |
 |---|---|
-| Natural-language search | Typo tolerance, phonetic matching, synonyms, budget extraction, self-explaining corrections |
+| Natural-language search | Typo tolerance, phonetic matching, synonyms, self-explaining corrections. Budget phrases are parsed and echoed back but are **not yet applied as a filter** — see §8 |
 | Shopping assistant | Deterministic intent parsing with an optional grounded LLM pass; cannot offer a product that is not in the catalogue |
 | Product comparison | Up to three products side by side, cheapest highlighted, add to cart |
 | Bundle tiers | 5% / 10% / 15% automatic discount by distinct product count |
@@ -28,7 +28,7 @@ discounts stack.
 | Roles | Customer, staff, admin — enforced server-side |
 | Localisation | English, Hindi, Spanish, with a check that every key resolves in all three |
 | Themes | Light and dark, applied before first paint to avoid a flash |
-| Self-hosted media | 606 optimised product photographs, served from the app and fully attributed |
+| Self-hosted media | 606 curated, fully attributed photographs, plus 46 displayed photos whose source is recorded as unconfirmed |
 
 ## 2. Architecture
 
@@ -61,14 +61,17 @@ backend/src/main/java/com/ecommerce/ecommerce_system/
 
 `GET /api/products/search?q=...`
 
-Understands intent rather than matching strings:
+Understands intent rather than matching strings. Every row below was run against
+the deployed API; the counts are what it actually returned.
 
 | Query | Behaviour |
 |---|---|
-| `wireless headphnes` | Typo tolerated, ranking preserved |
-| `earbuds under 3000` | Budget extracted from the phrasing |
-| `gift for a beach wedding` | Stop words dropped, intent matched |
-| `tshirts` | Plural and colloquial forms resolved |
+| `wireless earbudz` | Typo tolerated, 6 results, corrected to `wireless earbuds` |
+| `keybord` | Single-token typo corrected to `keyboard`, 6 results |
+| `blutooth speeker` | Two typos tolerated, corrected to `speaker bluetooth` |
+| `tshirts` | 111 results, corrected to `shirt` |
+| `earbuds under 3000` | Budget parsed and returned as `maxPrice: 3000.0` (not filtered — §8) |
+| `shoes` | 6 real results, **never** corrected to `size` (see below) |
 | `zzzzqqq` | Explicit "no matches" message, not the whole catalogue |
 
 Matching layers, in order: exact → prefix → Levenshtein (threshold scaled by
@@ -76,6 +79,21 @@ token length) → phonetic → synonym map → category fallback.
 
 **Every correction is returned to the UI** as `correctedQuery`, so results can
 explain themselves rather than silently changing the question.
+
+### Where it still fails
+
+Fuzzy matching runs before the synonym map, so a typo in a token that has no
+counterpart in the catalogue matches nothing and the synonym is never reached:
+
+| Query | Result |
+|---|---|
+| `headphnes` | 0 results — nothing is named "headphones" to correct towards |
+| `mathematicl keyboard` | 0 results — two unmatched tokens, and no product is "mathematicl" |
+| `wireless headphnes` | 0 results, for the same reason |
+
+`headphones` itself works and returns the 6 Wireless Earbuds variants through the
+synonym map. It is specifically the *misspelling* of a word absent from the
+catalogue that finds nothing.
 
 ### A bug worth knowing about
 
@@ -151,10 +169,11 @@ Without a key it runs entirely on rules and needs no external service.
 ## 7. Testing
 
 ```
-.\mvnw.cmd clean test      74 passing
+.\mvnw.cmd clean test      88 passing
+npm test                   16 passing
 npm run build              production bundle
-npm run check:i18n         468 keys across 3 locales, all resolve
-npm run lint               0 errors
+npm run check:i18n         702 keys across 3 locales, all resolve
+npm run lint               0 errors, 55 warnings
 ```
 
 Coverage is concentrated where the risk is: pricing arithmetic and discount
@@ -167,15 +186,26 @@ Stated plainly, because a demo that hides these is worth less:
 
 1. **Payments are simulated.** No payment gateway is connected and no card
    details are handled. Nothing takes money.
-2. **No browser test coverage.** Verification is via build output and live HTTP
-   probes. Nothing has been exercised in a real browser — GPS permission, theme
-   contrast and how the mega menu feels are all unverified.
-3. **Test data in production.** A few cancelled orders, payments and one test
+2. **A parsed budget is not applied.** `cotton t-shirt under 10` returns
+   `maxPrice: 10.0` and then returns the same 6 results as `under 100000`,
+   priced 424 and 499. The budget is extracted and reported but never filters
+   the result set. Confirmed against the deployed API.
+3. **Only `under` is recognised as a budget word.** `below` and `less than` both
+   set `maxPrice` correctly, but the leftover words stay in the query and match
+   nothing — `earbuds below 3000` returns 0 results.
+4. **No automated browser tests.** Guest browsing, checkout totals, the photo map
+   and the admin refresh were verified by hand in a browser. There is still no
+   test runner driving a real browser, so GPS permission, theme contrast and how
+   the mega menu feels remain unverified.
+5. **Test data in production.** A few cancelled orders, payments and one test
    account remain in the live database.
-4. **The catalogue is synthetic.** Products are generic variants
-   (`Cotton Bedsheet Set Lite / Pro / Ultra / Max`), which caps search quality.
-   Searching `headphones` returns nothing because no product by that name
-   exists — a data gap, not a matcher bug.
+6. **The catalogue is synthetic.** Products are generic variants
+   (`Cotton Bedsheet Set Lite / Pro / Ultra / Max`), which caps search quality
+   and is why `headphones` only resolves through the synonym map rather than
+   matching a product of that name.
+7. **46 displayed photos have no recorded licence.** They are listed in the
+   "Unconfirmed sources" table in [`CREDITS.md`](../CREDITS.md) and were
+   reviewed by eye, but their origin is still unknown.
 
 ## 9. Running it locally
 
@@ -194,11 +224,19 @@ Optional environment variables:
 
 | Variable | Purpose |
 |---|---|
+| `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | MySQL connection. No password is supplied by the source. |
+| `JWT_SECRET` | **Set this in any deployed environment.** At least 32 random bytes: `node -e "console.log(require('crypto').randomBytes(48).toString('base64'))"`. If it is absent the app generates a random signing key at startup, so every restart and every wake from sleep invalidates all outstanding tokens and signs everybody out. |
+| `BREVO_API_KEY`, `BREVO_SENDER_EMAIL` | Transactional email, used for OTP and password reset. Email failure returns HTTP 503 rather than leaking a code. |
 | `OPENAI_API_KEY` | Enables the LLM rewrite pass. Unset means rules only. |
 | `TAX_RATE` | Overrides the default 0.18. Must be a fraction between 0 and 1. |
 | `CORS_ALLOWED_ORIGINS` | Extra allowed origins, comma-separated. Added to a hard-coded baseline, never replacing it. |
+| `DEMO_PAYMENTS_ENABLED` | Defaults to `false`. Leave it off; setting it exposes simulated UPI/card options that move no money. |
+| `RECONCILE_REWARDS` | Defaults to `false`. Enable for one startup against a legacy database, then unset it. It rewrites points and tiers for every customer. |
 
 ## 10. Attribution
 
-Product photography is self-hosted and every asset is credited in
-[`CREDITS.md`](../CREDITS.md), sourced through `tools/image-fetcher/`.
+Product photography is self-hosted. The 606 curated files in
+`frontend/public/products/` match [`CREDITS.md`](../CREDITS.md) one to one — no
+file is displayed without a credit, and no credit points at a missing file. A
+further 46 photos displayed by the storefront are listed in the "Unconfirmed
+sources" table in that file, pending confirmation of their licence.
