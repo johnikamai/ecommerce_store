@@ -187,7 +187,7 @@ public class SearchService {
         // "wireless earbuds under 500".
         Double[] priceHint = parsePriceHint(query);
 
-        Set<String> queryTokens = fuzzy.tokenize(query);
+        Set<String> queryTokens = fuzzy.tokenize(stripBudget(query));
         queryTokens.removeIf(SearchService::isNumeric);
 
         if (queryTokens.isEmpty() && anyOf.isEmpty()) {
@@ -240,6 +240,32 @@ public class SearchService {
 
     private static boolean isNumeric(String token) {
         return !token.isEmpty() && token.chars().allMatch(Character::isDigit);
+    }
+
+    /**
+     * Every budget phrasing {@link #parsePriceHint} understands, as one pattern.
+     *
+     * These words have to leave the searchable token set. Matching is AND, so a
+     * leftover "below" matches no product and the shopper gets nothing back at
+     * all - which is exactly why "under 500" worked (it happens to be a stop
+     * word) while "below 500" and "less than 500" silently returned zero.
+     *
+     * Deliberately matches the whole phrase including its number rather than the
+     * bare word: "max" is also the size variant on 101 real product names
+     * ("Cotton T-Shirt Max"), so stripping it unconditionally would break those.
+     */
+    private static final java.util.regex.Pattern BUDGET_PHRASE = java.util.regex.Pattern.compile(
+            "\\b(?:under|below|less than|cheaper than|up ?to|within|max|above|over|more than|"
+                    + "at least|min|between)\\s*\\d+(?:\\s*(?:and|to|-)\\s*\\d+)?",
+            java.util.regex.Pattern.CASE_INSENSITIVE);
+
+    /**
+     * The query with every recognised budget phrase removed, leaving only the
+     * words that should be matched against the catalogue.
+     */
+    static String stripBudget(String query) {
+        String normalised = query.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9\\s]", " ");
+        return BUDGET_PHRASE.matcher(normalised).replaceAll(" ");
     }
 
     /**

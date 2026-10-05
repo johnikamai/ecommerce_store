@@ -17,7 +17,7 @@ discounts stack.
 
 | Capability | Summary |
 |---|---|
-| Natural-language search | Typo tolerance, phonetic matching, synonyms, self-explaining corrections. Budget phrases are parsed and echoed back but are **not yet applied as a filter** — see §8 |
+| Natural-language search | Typo tolerance, phonetic matching, synonyms, self-explaining corrections. Budget phrases are parsed server-side and applied by the storefront as a real price filter — see §3 |
 | Shopping assistant | Deterministic intent parsing with an optional grounded LLM pass; cannot offer a product that is not in the catalogue |
 | Product comparison | Up to three products side by side, cheapest highlighted, add to cart |
 | Bundle tiers | 5% / 10% / 15% automatic discount by distinct product count |
@@ -70,7 +70,7 @@ the deployed API; the counts are what it actually returned.
 | `keybord` | Single-token typo corrected to `keyboard`, 6 results |
 | `blutooth speeker` | Two typos tolerated, corrected to `speaker bluetooth` |
 | `tshirts` | 111 results, corrected to `shirt` |
-| `earbuds under 3000` | Budget parsed and returned as `maxPrice: 3000.0` (not filtered — §8) |
+| `earbuds under 3000` | Budget parsed, returned as `maxPrice: 3000.0`, and applied by the storefront as a visible price filter |
 | `shoes` | 6 real results, **never** corrected to `size` (see below) |
 | `zzzzqqq` | Explicit "no matches" message, not the whole catalogue |
 
@@ -79,6 +79,25 @@ token length) → phonetic → synonym map → category fallback.
 
 **Every correction is returned to the UI** as `correctedQuery`, so results can
 explain themselves rather than silently changing the question.
+
+### Where the budget is applied
+
+Deliberately split across the two tiers, and worth knowing before reading the
+response body:
+
+- The **server** owns relevance. It returns the matching products ranked, plus
+  the budget it understood as separate `minPrice` / `maxPrice` fields.
+- The **storefront** applies the budget, intersecting the price filter with the
+  server's ranked ids in a single pass over the catalogue
+  (`frontend/src/pages/Products.jsx`). It also writes the value back into the
+  price controls and renders it as a removable chip, so the shopper can see what
+  was understood and widen it.
+
+So `GET /api/products/search?q=cotton+t-shirt+under+10` returns
+`maxPrice: 10.0` alongside unfiltered results — that is the contract, not a
+filtering failure. Calling the API directly and judging the budget by the
+response body alone will make it look broken when the storefront is behaving
+correctly.
 
 ### Where it still fails
 
@@ -169,8 +188,8 @@ Without a key it runs entirely on rules and needs no external service.
 ## 7. Testing
 
 ```
-.\mvnw.cmd clean test      88 passing
-npm test                   16 passing
+.\mvnw.cmd clean test      92 passing
+npm test                   18 passing
 npm run build              production bundle
 npm run check:i18n         702 keys across 3 locales, all resolve
 npm run lint               0 errors, 55 warnings
@@ -186,26 +205,36 @@ Stated plainly, because a demo that hides these is worth less:
 
 1. **Payments are simulated.** No payment gateway is connected and no card
    details are handled. Nothing takes money.
-2. **A parsed budget is not applied.** `cotton t-shirt under 10` returns
-   `maxPrice: 10.0` and then returns the same 6 results as `under 100000`,
-   priced 424 and 499. The budget is extracted and reported but never filters
-   the result set. Confirmed against the deployed API.
-3. **Only `under` is recognised as a budget word.** `below` and `less than` both
-   set `maxPrice` correctly, but the leftover words stay in the query and match
-   nothing — `earbuds below 3000` returns 0 results.
-4. **No automated browser tests.** Guest browsing, checkout totals, the photo map
+2. **No automated browser tests.** Guest browsing, checkout totals, the photo map
    and the admin refresh were verified by hand in a browser. There is still no
    test runner driving a real browser, so GPS permission, theme contrast and how
    the mega menu feels remain unverified.
-5. **Test data in production.** A few cancelled orders, payments and one test
+3. **Test data in production.** A few cancelled orders, payments and one test
    account remain in the live database.
-6. **The catalogue is synthetic.** Products are generic variants
+4. **The catalogue is synthetic.** Products are generic variants
    (`Cotton Bedsheet Set Lite / Pro / Ultra / Max`), which caps search quality
    and is why `headphones` only resolves through the synonym map rather than
    matching a product of that name.
-7. **46 displayed photos have no recorded licence.** They are listed in the
+5. **46 displayed photos have no recorded licence.** They are listed in the
    "Unconfirmed sources" table in [`CREDITS.md`](../CREDITS.md) and were
    reviewed by eye, but their origin is still unknown.
+
+### Fixed in this branch, not yet deployed
+
+`earbuds below 3000` and `earbuds less than 3000` returned **0 results** on the
+deployed backend. Both set `maxPrice` correctly, but only `under` happened to be
+a stop word, so the leftover keyword stayed in the AND token set and matched no
+product. This also silently broke `cheaper than`, `within`, `up to`, `max`,
+`above`, `over`, `more than`, `at least` and `min`.
+
+Fixed in `SearchService` by stripping the whole matched budget phrase — word and
+number — before tokenizing. Matching the phrase rather than the bare word is the
+point: `max` is also the size variant on 101 real product names
+(`Cotton T-Shirt Max`), so dropping it unconditionally would have broken those
+searches. Four tests pin it, including one asserting a bare `max` stays
+searchable and one guarding the strip list against drifting away from the
+parser. See §7 for the counts.
+
 
 ## 9. Running it locally
 

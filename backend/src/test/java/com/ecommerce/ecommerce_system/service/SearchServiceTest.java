@@ -58,7 +58,10 @@ class SearchServiceTest {
             product(21, "3D Wooden Puzzle", "Toys & Kids", "Challenging 3D wooden brain teaser puzzle", "999"),
             product(22, "Plush Teddy Bear", "Toys & Kids", "Soft plush teddy bear for kids", "699"),
             product(23, "Ceramic Coffee Set", "Home & Living", "Ceramic coffee mug set", "1499"),
-            product(24, "Sheer Curtains Pair", "Home & Living", "Light filtering sheer curtains, two panels", "2199")
+            product(24, "Sheer Curtains Pair", "Home & Living", "Light filtering sheer curtains, two panels", "2199"),
+            // Size variants are named "Max", which collides with "max 500" as a
+            // budget phrasing. Kept here so that collision stays covered.
+            product(25, "Cotton T-Shirt Max", "Fashion", "Oversized cotton t-shirt, extra large", "999")
     );
 
     private List<String> names(String query) {
@@ -154,6 +157,61 @@ class SearchServiceTest {
         SearchService.Result r = service.search("under 500", catalogue);
         assertTrue(r.hits().isEmpty());
         assertEquals(500.0, r.maxPrice());
+    }
+
+    /**
+     * Regression: only "under" was a stop word, so every other budget phrasing
+     * left its keyword in the AND token set and matched nothing at all.
+     * "earbuds below 3000" returned zero results on production.
+     */
+    @Test
+    void everyBudgetPhrasingStillMatchesTheTextTerms() {
+        List<String> expected = names("wireless earbuds");
+        assertFalse(expected.isEmpty(), "baseline query must match something");
+
+        for (String phrasing : List.of("under 3000", "below 3000", "less than 3000",
+                "cheaper than 3000", "within 3000", "up to 3000", "max 3000")) {
+            assertEquals(expected, names("wireless earbuds " + phrasing),
+                    "budget phrasing '" + phrasing + "' should not affect text matching");
+        }
+
+        for (String phrasing : List.of("above 1000", "over 1000", "more than 1000", "at least 1000")) {
+            assertEquals(expected, names("wireless earbuds " + phrasing),
+                    "minimum phrasing '" + phrasing + "' should not affect text matching");
+        }
+
+        assertEquals(expected, names("wireless earbuds between 1000 and 3000"));
+    }
+
+    /** The stripped phrasing must also leave the echoed corrected query clean. */
+    @Test
+    void budgetPhraseDoesNotSurviveIntoTheCorrectedQuery() {
+        SearchService.Result r = service.search("wireless earbuds below 3000", catalogue);
+        assertFalse(r.correctedQuery().contains("below"), "got: " + r.correctedQuery());
+        assertFalse(r.correctedQuery().contains("3000"), "got: " + r.correctedQuery());
+        assertEquals(3000.0, r.maxPrice(), "budget itself must survive");
+    }
+
+    /**
+     * "max" is a size variant on 101 real product names, so the budget strip has
+     * to require a number after the word instead of dropping "max" outright.
+     */
+    @Test
+    void maxStaysSearchableWhenItIsNotFollowedByABudget() {
+        SearchService.Result r = service.search("cotton t-shirt max", catalogue);
+        assertEquals("Cotton T-Shirt Max", r.hits().get(0).product().getName());
+        assertFalse(r.hasPriceHint(), "a bare 'max' is not a budget");
+    }
+
+    /** Guards the two lists against drifting apart. */
+    @Test
+    void stripBudgetAgreesWithTheParser() {
+        for (String word : List.of("under", "below", "less than", "cheaper than", "up to", "within",
+                "max", "above", "over", "more than", "at least", "min", "between")) {
+            String stripped = SearchService.stripBudget("earbuds " + word + " 3000");
+            assertFalse(stripped.contains(word),
+                    "'" + word + "' is understood by the parser but survives stripping: '" + stripped + "'");
+        }
     }
 
     @Test
