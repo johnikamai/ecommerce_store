@@ -28,8 +28,13 @@ function formatAddress(a) {
 /**
  * Nudges the shopper toward the next bundle tier. Kept inline rather than in
  * components/ because it is only ever used here and reads off cart state.
+ *
+ * The server's bundle figure is passed in rather than read from the quote:
+ * this component has its own scope and cannot see `currentQuote`, which lives
+ * inside Cart. Referring to it here was a ReferenceError that blanked the whole
+ * page as soon as the cart held two or more distinct products.
  */
-function BundleProgress() {
+function BundleProgress({ serverBundleDiscount }) {
   const { distinctProductCount, bundlePercent, bundleDiscount, nextBundleAt } = useCart();
   const { t, formatCurrency } = useLanguage();
 
@@ -44,7 +49,7 @@ function BundleProgress() {
     return (
       <div className="p-4 rounded-[var(--radius-lg)] bg-[var(--color-card-bg)] border-[1.5px] border-[var(--color-primary)] shadow-[var(--shadow-sm)]">
         <p className="text-sm font-semibold text-[var(--color-primary)]">
-          {t('cart.bundle.unlocked', { percent: Math.round(bundlePercent * 100), amount: formatCurrency(currentQuote?.bundleDiscount ?? bundleDiscount) })}
+          {t('cart.bundle.unlocked', { percent: Math.round(bundlePercent * 100), amount: formatCurrency(serverBundleDiscount ?? bundleDiscount) })}
         </p>
         <p className="text-xs text-[var(--color-text-muted)] mt-1">
           {nextBundleAt > 0
@@ -397,7 +402,7 @@ function Cart() {
 
       {quote?.demoPaymentsEnabled && <p className="text-sm mb-4">{t('fix.demoPayments')}</p>}
       {!quote?.demoPaymentsEnabled && <p className="text-sm mb-4">{t('fix.cashOnly')}</p>}
-      <BundleProgress />
+      <BundleProgress serverBundleDiscount={currentQuote?.bundleDiscount} />
 
       <div className="flex items-center justify-between gap-6 flex-wrap p-6 rounded-[var(--radius-xl)] bg-[var(--color-card-bg-tint)]">
         <div className="space-y-1.5">
