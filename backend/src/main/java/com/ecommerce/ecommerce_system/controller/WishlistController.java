@@ -7,7 +7,6 @@ import com.ecommerce.ecommerce_system.repository.CustomerRepository;
 import com.ecommerce.ecommerce_system.repository.ProductRepository;
 import com.ecommerce.ecommerce_system.repository.WishlistRepository;
 import com.ecommerce.ecommerce_system.security.CustomerGuard;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -19,17 +18,20 @@ import java.util.Map;
 @RequestMapping("/api/wishlist")
 public class WishlistController {
 
-    @Autowired
-    private WishlistRepository wishlistRepository;
+    private final WishlistRepository wishlistRepository;
+    private final CustomerRepository customerRepository;
+    private final ProductRepository productRepository;
+    private final CustomerGuard customerGuard;
 
-    @Autowired
-    private CustomerRepository customerRepository;
-
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
-    private CustomerGuard customerGuard;
+    public WishlistController(WishlistRepository wishlistRepository,
+                              CustomerRepository customerRepository,
+                              ProductRepository productRepository,
+                              CustomerGuard customerGuard) {
+        this.wishlistRepository = wishlistRepository;
+        this.customerRepository = customerRepository;
+        this.productRepository = productRepository;
+        this.customerGuard = customerGuard;
+    }
 
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<?> getForCustomer(@PathVariable Long customerId, Authentication auth) {

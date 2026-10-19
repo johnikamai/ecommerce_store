@@ -4,8 +4,9 @@
  *
  * Run with: node scripts/check-i18n.mjs
  *
- * A missing key renders as the raw key name at runtime, which is easy to miss
- * in a screenshot but obvious here, so this fails loudly instead.
+ * English is the source of truth. Other locales may intentionally fall back to
+ * English for an untranslated key, matching LanguageContext's runtime behavior.
+ * A key missing from English still fails loudly instead of rendering raw text.
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, extname, sep } from 'node:path';
@@ -83,7 +84,7 @@ const problems = [];
 for (const { code } of LANGUAGES) {
   const dict = DICTIONARIES[code];
   for (const key of used) {
-    if (!(key in dict)) problems.push(`[${code}] missing: ${key}`);
+    if (!(key in dict) && !(key in DICTIONARIES.en)) problems.push(`[${code}] missing: ${key}`);
   }
 }
 

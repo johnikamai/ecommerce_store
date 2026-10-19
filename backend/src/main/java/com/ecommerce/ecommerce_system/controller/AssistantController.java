@@ -1,7 +1,6 @@
 package com.ecommerce.ecommerce_system.controller;
 
 import com.ecommerce.ecommerce_system.service.AssistantService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,19 +17,14 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequestMapping("/api/assistant")
 public class AssistantController {
 
-    /**
-     * Per-client request budget.
-     *
-     * The endpoint is public and, once an LLM key is configured, every call can
-     * cost money - so an unauthenticated caller must not be able to loop it.
-     * A fixed window per client is enough here: the goal is to stop a script, not
-     * to meter billing precisely.
-     */
     private static final int MAX_CALLS_PER_MINUTE = 20;
     private final Map<String, List<Long>> hits = new ConcurrentHashMap<>();
 
-    @Autowired
-    private AssistantService assistantService;
+    private final AssistantService assistantService;
+
+    public AssistantController(AssistantService assistantService) {
+        this.assistantService = assistantService;
+    }
 
     private boolean rateLimited(String client) {
         long now = System.currentTimeMillis();

@@ -1,11 +1,9 @@
 package com.ecommerce.ecommerce_system.controller;
 
 import com.ecommerce.ecommerce_system.model.Coupon;
-import com.ecommerce.ecommerce_system.model.Customer;
 import com.ecommerce.ecommerce_system.repository.CouponRepository;
 import com.ecommerce.ecommerce_system.repository.CustomerRepository;
 import com.ecommerce.ecommerce_system.service.NotificationService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,14 +16,17 @@ import java.util.Map;
 @RequestMapping("/api/coupons")
 public class CouponController {
 
-    @Autowired
-    private CouponRepository couponRepository;
+    private final CouponRepository couponRepository;
+    private final CustomerRepository customerRepository;
+    private final NotificationService notificationService;
 
-    @Autowired
-    private CustomerRepository customerRepository;
-
-    @Autowired
-    private NotificationService notificationService;
+    public CouponController(CouponRepository couponRepository,
+                            CustomerRepository customerRepository,
+                            NotificationService notificationService) {
+        this.couponRepository = couponRepository;
+        this.customerRepository = customerRepository;
+        this.notificationService = notificationService;
+    }
 
     @GetMapping
     public List<Coupon> getAll() {

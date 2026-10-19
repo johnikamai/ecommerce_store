@@ -2,7 +2,6 @@ package com.ecommerce.ecommerce_system.controller;
 
 import com.ecommerce.ecommerce_system.model.*;
 import com.ecommerce.ecommerce_system.repository.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,38 +15,41 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/admin")
 public class AdminController {
 
-    @Autowired
-    private OrderRepository orderRepository;
+    private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
+    private final CustomerRepository customerRepository;
+    private final AddressRepository addressRepository;
+    private final AdminAlertRepository adminAlertRepository;
+    private final UserRepository userRepository;
+    private final ReviewRepository reviewRepository;
+    private final NotificationRepository notificationRepository;
+    private final WishlistRepository wishlistRepository;
+    private final RestockRequestRepository restockRequestRepository;
+    private final ReturnRequestRepository returnRequestRepository;
 
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
-    private CustomerRepository customerRepository;
-
-    @Autowired
-    private AddressRepository addressRepository;
-
-    @Autowired
-    private AdminAlertRepository adminAlertRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-@Autowired
-    private ReviewRepository reviewRepository;
-
-    @Autowired
-    private NotificationRepository notificationRepository;
-
-    @Autowired
-    private WishlistRepository wishlistRepository;
-
-    @Autowired
-    private RestockRequestRepository restockRequestRepository;
-
-    @Autowired
-    private ReturnRequestRepository returnRequestRepository;
+    public AdminController(OrderRepository orderRepository,
+                           ProductRepository productRepository,
+                           CustomerRepository customerRepository,
+                           AddressRepository addressRepository,
+                           AdminAlertRepository adminAlertRepository,
+                           UserRepository userRepository,
+                           ReviewRepository reviewRepository,
+                           NotificationRepository notificationRepository,
+                           WishlistRepository wishlistRepository,
+                           RestockRequestRepository restockRequestRepository,
+                           ReturnRequestRepository returnRequestRepository) {
+        this.orderRepository = orderRepository;
+        this.productRepository = productRepository;
+        this.customerRepository = customerRepository;
+        this.addressRepository = addressRepository;
+        this.adminAlertRepository = adminAlertRepository;
+        this.userRepository = userRepository;
+        this.reviewRepository = reviewRepository;
+        this.notificationRepository = notificationRepository;
+        this.wishlistRepository = wishlistRepository;
+        this.restockRequestRepository = restockRequestRepository;
+        this.returnRequestRepository = returnRequestRepository;
+    }
 
     @GetMapping("/dashboard")
     public Map<String, Object> dashboard() {
@@ -168,7 +170,7 @@ public class AdminController {
         Role role;
         try {
             role = Role.valueOf(requested.trim().toUpperCase());
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException ignored) {
             return ResponseEntity.badRequest().body("Unknown role: " + requested);
         }
 

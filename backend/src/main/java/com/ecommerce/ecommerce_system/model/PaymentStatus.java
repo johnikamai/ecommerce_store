@@ -7,7 +7,8 @@ public enum PaymentStatus {
     PENDING,
     PAID,
     FAILED,
-    REFUNDED;
+    REFUNDED,
+    CANCELLED;
 
     /**
      * Legal moves for a payment record.
@@ -20,7 +21,8 @@ public enum PaymentStatus {
             PENDING, Set.of(PAID, FAILED),
             PAID, Set.of(REFUNDED),
             FAILED, Set.of(PENDING, PAID),
-            REFUNDED, Set.of()
+            REFUNDED, Set.of(),
+            CANCELLED, Set.of()
     );
 
     public boolean canTransitionTo(PaymentStatus next) {

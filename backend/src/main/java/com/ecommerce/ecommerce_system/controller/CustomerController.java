@@ -3,7 +3,6 @@ package com.ecommerce.ecommerce_system.controller;
 import com.ecommerce.ecommerce_system.model.Customer;
 import com.ecommerce.ecommerce_system.repository.CustomerRepository;
 import com.ecommerce.ecommerce_system.security.CustomerGuard;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -15,11 +14,13 @@ import java.util.List;
 @RequestMapping("/api/customers")
 public class CustomerController {
 
-    @Autowired
-    private CustomerRepository customerRepository;
+    private final CustomerRepository customerRepository;
+    private final CustomerGuard customerGuard;
 
-    @Autowired
-    private CustomerGuard customerGuard;
+    public CustomerController(CustomerRepository customerRepository, CustomerGuard customerGuard) {
+        this.customerRepository = customerRepository;
+        this.customerGuard = customerGuard;
+    }
 
     @GetMapping
     public List<Customer> getAll() {

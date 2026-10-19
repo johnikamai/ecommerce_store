@@ -6,7 +6,6 @@ import com.ecommerce.ecommerce_system.model.OrderStatus;
 import com.ecommerce.ecommerce_system.repository.OrderRepository;
 import com.ecommerce.ecommerce_system.security.CustomerGuard;
 import com.ecommerce.ecommerce_system.service.OrderService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -21,14 +20,17 @@ import java.util.Map;
 @RequestMapping("/api/orders")
 public class OrderController {
 
-    @Autowired
-    private OrderRepository orderRepository;
+    private final OrderRepository orderRepository;
+    private final OrderService orderService;
+    private final CustomerGuard customerGuard;
 
-    @Autowired
-    private OrderService orderService;
-
-    @Autowired
-    private CustomerGuard customerGuard;
+    public OrderController(OrderRepository orderRepository,
+                           OrderService orderService,
+                           CustomerGuard customerGuard) {
+        this.orderRepository = orderRepository;
+        this.orderService = orderService;
+        this.customerGuard = customerGuard;
+    }
 
     @GetMapping
     public List<Order> getAll() {

@@ -2,7 +2,6 @@ package com.ecommerce.ecommerce_system.service;
 
 import com.ecommerce.ecommerce_system.model.*;
 import com.ecommerce.ecommerce_system.repository.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,26 +23,29 @@ public class OrderService {
     /** Working-day estimate shown as the promised delivery date. */
     private static final int TRANSIT_DAYS = 4;
 
-    @Autowired
-    private OrderRepository orderRepository;
+    private final OrderRepository orderRepository;
+    private final CustomerRepository customerRepository;
+    private final ProductRepository productRepository;
+    private final CouponRepository couponRepository;
+    private final PaymentRepository paymentRepository;
+    private final NotificationService notificationService;
+    private final StockAlertService stockAlertService;
 
-    @Autowired
-    private CustomerRepository customerRepository;
-
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
-    private CouponRepository couponRepository;
-
-    @Autowired
-    private PaymentRepository paymentRepository;
-
-    @Autowired
-    private NotificationService notificationService;
-
-    @Autowired
-    private StockAlertService stockAlertService;
+    public OrderService(OrderRepository orderRepository,
+                        CustomerRepository customerRepository,
+                        ProductRepository productRepository,
+                        CouponRepository couponRepository,
+                        PaymentRepository paymentRepository,
+                        NotificationService notificationService,
+                        StockAlertService stockAlertService) {
+        this.orderRepository = orderRepository;
+        this.customerRepository = customerRepository;
+        this.productRepository = productRepository;
+        this.couponRepository = couponRepository;
+        this.paymentRepository = paymentRepository;
+        this.notificationService = notificationService;
+        this.stockAlertService = stockAlertService;
+    }
 
     private Order prepareOrder(OrderRequest request, boolean redeem) {
         validateRequest(request);
@@ -186,6 +188,10 @@ java.math.BigDecimal discount = total.multiply(discountPercent).setScale(2, java
     @org.springframework.beans.factory.annotation.Value("${app.payments.demo-enabled:false}")
     private boolean demoPaymentsEnabled;
 
+    public boolean isDemoPaymentsEnabled() {
+        return demoPaymentsEnabled;
+    }
+
     @Transactional
     public Order placeOrder(OrderRequest request) {
         Order order = prepareOrder(request, true);
@@ -210,7 +216,7 @@ java.math.BigDecimal discount = total.multiply(discountPercent).setScale(2, java
             payment.setOrder(saved);
             try {
                 payment.setPaymentMode(PaymentMode.valueOf(order.getPaymentMethod()));
-            } catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException ignored) {
                 payment.setPaymentMode(PaymentMode.CASH);
             }
             payment.setAmount(saved.getTotalAmount());
@@ -353,14 +359,23 @@ java.math.BigDecimal discount = total.multiply(discountPercent).setScale(2, java
 
     /** When a paid (UPI/CARD) order is cancelled, flip payment to REFUNDED and notify via email. */
     private boolean refundIfPaid(Order order) {
-        if (order.getPaymentStatus() == PaymentStatus.PAID) {
+        Payment payment = paymentRepository.findByOrderId(order.getId()).orElse(null);
+        PaymentStatus current = payment != null && payment.getPaymentStatus() != null
+                ? payment.getPaymentStatus() : order.getPaymentStatus();
+        if (current == PaymentStatus.PAID) {
             order.setPaymentStatus(PaymentStatus.REFUNDED);
-            Payment payment = paymentRepository.findByOrderId(order.getId()).orElse(null);
             if (payment != null) {
                 payment.setPaymentStatus(PaymentStatus.REFUNDED);
                 paymentRepository.save(payment);
             }
             return true;
+        }
+        if (current == PaymentStatus.PENDING || current == PaymentStatus.FAILED) {
+            order.setPaymentStatus(PaymentStatus.CANCELLED);
+            if (payment != null) {
+                payment.setPaymentStatus(PaymentStatus.CANCELLED);
+                paymentRepository.save(payment);
+            }
         }
         return false;
     }
@@ -541,7 +556,6 @@ java.math.BigDecimal discount = total.multiply(discountPercent).setScale(2, java
 
         // PLACED is always recorded at checkout, but fall back to the order date
         // so an order placed before this feature shipped still has a start.
-        boolean reachedAnything = !events.isEmpty();
         List<Map<String, Object>> steps = new ArrayList<>();
         for (OrderStatus milestone : OrderStatus.fulfilmentPath()) {
             OrderStatusEvent scan = scanByStatus.get(milestone);
@@ -684,7 +698,7 @@ java.math.BigDecimal discount = total.multiply(discountPercent).setScale(2, java
                 return TAX_RATE;
             }
             return parsed;
-        } catch (NumberFormatException ex) {
+        } catch (NumberFormatException ignored) {
             System.out.println("[TAX] TAX_RATE " + configured + " is not a number, using default");
             return TAX_RATE;
         }

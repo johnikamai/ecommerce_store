@@ -4,7 +4,6 @@ import com.ecommerce.ecommerce_system.model.Category;
 import com.ecommerce.ecommerce_system.model.Product;
 import com.ecommerce.ecommerce_system.repository.CategoryRepository;
 import com.ecommerce.ecommerce_system.repository.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,11 +18,13 @@ import java.util.Map;
 @RequestMapping("/api/categories")
 public class CategoryController {
 
-    @Autowired
-    private CategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
 
-    @Autowired
-    private ProductRepository productRepository;
+    public CategoryController(CategoryRepository categoryRepository, ProductRepository productRepository) {
+        this.categoryRepository = categoryRepository;
+        this.productRepository = productRepository;
+    }
 
     // GET /api/categories -> list with product counts, parents first.
     @GetMapping

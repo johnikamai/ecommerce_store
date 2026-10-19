@@ -1,9 +1,5 @@
 package com.ecommerce.ecommerce_system.security;
 
-import com.ecommerce.ecommerce_system.repository.UserRepository;
-import com.ecommerce.ecommerce_system.repository.CustomerRepository;
-import com.ecommerce.ecommerce_system.security.CustomUserDetailsService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -11,6 +7,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -28,19 +25,20 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private JwtAuthFilter jwtAuthFilter;
+    private final JwtAuthFilter jwtAuthFilter;
+    private final CustomUserDetailsService customUserDetailsService;
+    private final RateLimitFilter rateLimitFilter;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private CustomerRepository customerRepository;
-
-    @Autowired
-    private CustomUserDetailsService customUserDetailsService;
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter,
+                          CustomUserDetailsService customUserDetailsService,
+                          RateLimitFilter rateLimitFilter) {
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.customUserDetailsService = customUserDetailsService;
+        this.rateLimitFilter = rateLimitFilter;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -50,6 +48,7 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/health", "/api/health").permitAll()
+                        .requestMatchers("/index.html", "/favicon.svg", "/icons.svg", "/assets/**", "/images/**", "/product-photos/**", "/products/**").permitAll()
                         .requestMatchers("/api/auth/change-password", "/api/auth/email/**").authenticated()
                         .requestMatchers("/api/auth/**").permitAll()
                         // Error dispatch must not 403 to anonymous users
@@ -78,6 +77,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/reviews/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/reviews/**").authenticated()
                         .requestMatchers("/api/addresses/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/restock-requests").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/restock-requests/customer/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/restock-requests/**").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers(HttpMethod.GET, "/api/customers/*").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/customers/*").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/customers/*").authenticated()
@@ -88,8 +90,16 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/payments/*/receipt").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/payments/order/*").authenticated()
                         .requestMatchers("/api/notifications/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/returns").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/returns/customer/**").authenticated()
+                        // Staff management. The public application endpoint is the
+                        // only unauthenticated staff route (it is rate limited by
+                        // RateLimitFilter); everything else needs a signed-in staff
+                        // or admin account, and admin management is admin-only.
+                        // Fine-grained PERM_* checks are applied per-endpoint with
+                        // @PreAuthorize inside the controllers.
+                        .requestMatchers(HttpMethod.POST, "/api/staff/apply").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/staff/application-status").permitAll()
+                        .requestMatchers("/api/admin/staff/**").hasRole("ADMIN")
+                        .requestMatchers("/api/staff/**").hasAnyRole("ADMIN", "STAFF")
                         // Staff: catalog work. Creating and editing products is a
                         // catalog task, but deletion is not - a staff account should
                         // never be able to remove the whole catalog.
@@ -107,6 +117,9 @@ public class SecurityConfig {
                         // ever reaches their own orders.
                         .requestMatchers(HttpMethod.GET, "/api/orders").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers(HttpMethod.GET, "/api/orders/**").hasAnyRole("ADMIN", "STAFF")
+                        // Customer returns - must be before admin blanket rules
+                        .requestMatchers(HttpMethod.GET, "/api/returns/customer/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/returns").authenticated()
                         // Admin only
                         .requestMatchers("/api/coupons/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -120,7 +133,8 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .exceptionHandling(e -> e.authenticationEntryPoint((request, response, ex) -> response.sendError(401, "Sign in required")))
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(rateLimitFilter, JwtAuthFilter.class);
 
         return http.build();
     }
@@ -192,6 +206,7 @@ public class SecurityConfig {
         System.out.println("[CORS] allowed origins: " + origins);
         CorsConfiguration cfg = new CorsConfiguration();
         cfg.setAllowedOrigins(origins);
+        cfg.setAllowedOriginPatterns(List.of("http://localhost:[*]"));
         cfg.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         cfg.setAllowedHeaders(List.of("*"));
         cfg.setAllowCredentials(true);

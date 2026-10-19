@@ -5,7 +5,6 @@ import com.ecommerce.ecommerce_system.model.Notification;
 import com.ecommerce.ecommerce_system.repository.CustomerRepository;
 import com.ecommerce.ecommerce_system.repository.NotificationRepository;
 import com.ecommerce.ecommerce_system.security.CustomerGuard;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -19,14 +18,17 @@ import java.util.Map;
 @RequestMapping("/api/notifications")
 public class NotificationController {
 
-    @Autowired
-    private NotificationRepository notificationRepository;
+    private final NotificationRepository notificationRepository;
+    private final CustomerRepository customerRepository;
+    private final CustomerGuard customerGuard;
 
-    @Autowired
-    private CustomerRepository customerRepository;
-
-    @Autowired
-    private CustomerGuard customerGuard;
+    public NotificationController(NotificationRepository notificationRepository,
+                                  CustomerRepository customerRepository,
+                                  CustomerGuard customerGuard) {
+        this.notificationRepository = notificationRepository;
+        this.customerRepository = customerRepository;
+        this.customerGuard = customerGuard;
+    }
 
     // GET /api/notifications/customer/{customerId}
     // Returns the newest 50 plus an unread count, so the bell panel does not pull a

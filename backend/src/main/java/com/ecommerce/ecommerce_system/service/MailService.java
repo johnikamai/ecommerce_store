@@ -39,6 +39,15 @@ public class MailService {
     private String senderName;
 
     /**
+     * True when a real email gateway is configured. When false the app is in
+     * demo mode and OTP codes may be surfaced on screen; once a provider is
+     * configured the codes are never echoed back to the caller.
+     */
+    public boolean isConfigured() {
+        return apiKey != null && !apiKey.isBlank();
+    }
+
+    /**
      * Emails the OTP via the Brevo API. Returns true when Brevo accepted the
      * message. Returns false when delivery is unavailable; authentication endpoints fail closed.
      */

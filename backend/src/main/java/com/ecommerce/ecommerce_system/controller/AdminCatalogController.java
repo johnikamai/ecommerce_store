@@ -3,7 +3,6 @@ package com.ecommerce.ecommerce_system.controller;
 import com.ecommerce.ecommerce_system.config.ProductSeeder;
 import com.ecommerce.ecommerce_system.model.Product;
 import com.ecommerce.ecommerce_system.repository.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,11 +39,13 @@ public class AdminCatalogController {
      */
     private static final int IMAGE_BATCH = 100;
 
-    @Autowired
-    private ProductSeeder productSeeder;
+    private final ProductSeeder productSeeder;
+    private final ProductRepository productRepository;
 
-    @Autowired
-    private ProductRepository productRepository;
+    public AdminCatalogController(ProductSeeder productSeeder, ProductRepository productRepository) {
+        this.productSeeder = productSeeder;
+        this.productRepository = productRepository;
+    }
 
     /** Read-only: is the catalog fully seeded? Safe to call on every page load. */
     @GetMapping("/status")

@@ -76,7 +76,9 @@ class OrderSerializationTest {
         Order order = shippedOrder();
         order.setDeliveredAt(LocalDateTime.now());
 
-        Map<String, Object> view = new OrderService().trackingFor(order);
+        // trackingFor touches none of the injected collaborators, so the
+        // constructor args are deliberately left null here.
+        Map<String, Object> view = new OrderService(null, null, null, null, null, null, null).trackingFor(order);
 
         assertEquals("SEABC1234567890", view.get("trackingNumber"));
         assertEquals("ShopEase Logistics", view.get("carrier"));
@@ -98,7 +100,7 @@ class OrderSerializationTest {
         order.addStatusEvent(new OrderStatusEvent(
                 null, order, OrderStatus.SHIPPED, "Handed to courier", "Bengaluru", LocalDateTime.now()));
 
-        Map<String, Object> view = new OrderService().trackingFor(order);
+        Map<String, Object> view = new OrderService(null, null, null, null, null, null, null).trackingFor(order);
 
         @SuppressWarnings("unchecked")
         java.util.List<Map<String, Object>> steps = (java.util.List<Map<String, Object>>) view.get("steps");

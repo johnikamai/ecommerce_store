@@ -2,7 +2,6 @@ package com.ecommerce.ecommerce_system.controller;
 
 import com.ecommerce.ecommerce_system.security.CustomerGuard;
 import com.ecommerce.ecommerce_system.service.RecommendationService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -25,11 +24,13 @@ import java.util.Map;
 @RestController
 public class RecommendationController {
 
-    @Autowired
-    private RecommendationService recommendationService;
+    private final RecommendationService recommendationService;
+    private final CustomerGuard customerGuard;
 
-    @Autowired
-    private CustomerGuard customerGuard;
+    public RecommendationController(RecommendationService recommendationService, CustomerGuard customerGuard) {
+        this.recommendationService = recommendationService;
+        this.customerGuard = customerGuard;
+    }
 
     // GET /api/products/1/recommendations?limit=4
     @GetMapping("/api/products/{productId}/recommendations")

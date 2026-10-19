@@ -2,7 +2,6 @@ package com.ecommerce.ecommerce_system.service;
 
 import com.ecommerce.ecommerce_system.model.Product;
 import com.ecommerce.ecommerce_system.repository.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -38,7 +37,6 @@ public class AssistantService {
     private final SearchService search;
     private final ProductRepository productRepository;
 
-    @Autowired
     public AssistantService(SearchService search, ProductRepository productRepository) {
         this.search = search;
         this.productRepository = productRepository;

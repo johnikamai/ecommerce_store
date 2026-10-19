@@ -2,7 +2,8 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Package, ShoppingBag, Users, Tags, TicketPercent,
-  CreditCard, Star, BarChart3, ArrowLeft,
+  CreditCard, Star, BarChart3, ArrowLeft, UsersRound,
+  UserCog, ListChecks, BadgeCheck, ScrollText,
 } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -16,7 +17,12 @@ const NAV = [
   { to: '/admin', labelKey: 'admin.nav.dashboard', icon: LayoutDashboard, end: true },
   { to: '/admin/products', labelKey: 'admin.nav.products', icon: Package },
   { to: '/admin/orders', labelKey: 'admin.nav.orders', icon: ShoppingBag },
+  { to: '/admin/group-orders', labelKey: 'admin.nav.groupOrders', icon: UsersRound },
   { to: '/admin/customers', labelKey: 'admin.nav.customers', icon: Users },
+  { to: '/admin/staff', labelKey: 'admin.staff.nav', icon: UserCog, adminOnly: true },
+  { to: '/admin/staff/tasks', labelKey: 'admin.staff.navTasks', icon: ListChecks, adminOnly: true },
+  { to: '/admin/staff/approvals', labelKey: 'admin.staff.navApprovals', icon: BadgeCheck, adminOnly: true },
+  { to: '/admin/staff/logs', labelKey: 'admin.staff.navLogs', icon: ScrollText, adminOnly: true },
   { to: '/admin/categories', labelKey: 'admin.nav.categories', icon: Tags },
   { to: '/admin/coupons', labelKey: 'admin.nav.coupons', icon: TicketPercent, adminOnly: true },
   { to: '/admin/payments', labelKey: 'admin.nav.payments', icon: CreditCard, adminOnly: true },

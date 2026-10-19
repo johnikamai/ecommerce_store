@@ -6,14 +6,12 @@ import com.ecommerce.ecommerce_system.repository.PaymentRepository;
 import com.ecommerce.ecommerce_system.security.CustomerGuard;
 import com.ecommerce.ecommerce_system.service.NotificationService;
 import com.ecommerce.ecommerce_system.service.ReceiptService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -31,22 +29,26 @@ import java.util.*;
 @RequestMapping("/api/payments")
 public class PaymentController {
 
-    @Autowired private com.ecommerce.ecommerce_system.service.OrderService orderService;
+    private final com.ecommerce.ecommerce_system.service.OrderService orderService;
+    private final PaymentRepository paymentRepository;
+    private final OrderRepository orderRepository;
+    private final NotificationService notificationService;
+    private final ReceiptService receiptService;
+    private final CustomerGuard customerGuard;
 
-    @Autowired
-    private PaymentRepository paymentRepository;
-
-    @Autowired
-    private OrderRepository orderRepository;
-
-    @Autowired
-    private NotificationService notificationService;
-
-    @Autowired
-    private ReceiptService receiptService;
-
-    @Autowired
-    private CustomerGuard customerGuard;
+    public PaymentController(com.ecommerce.ecommerce_system.service.OrderService orderService,
+                             PaymentRepository paymentRepository,
+                             OrderRepository orderRepository,
+                             NotificationService notificationService,
+                             ReceiptService receiptService,
+                             CustomerGuard customerGuard) {
+        this.orderService = orderService;
+        this.paymentRepository = paymentRepository;
+        this.orderRepository = orderRepository;
+        this.notificationService = notificationService;
+        this.receiptService = receiptService;
+        this.customerGuard = customerGuard;
+    }
 
     // GET /api/payments  ->  admin, flattened for the payments table
     @GetMapping

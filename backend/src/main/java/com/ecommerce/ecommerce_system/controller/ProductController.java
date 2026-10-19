@@ -6,7 +6,6 @@ import com.ecommerce.ecommerce_system.repository.ProductRepository;
 import com.ecommerce.ecommerce_system.repository.ReviewRepository;
 import com.ecommerce.ecommerce_system.service.SearchService;
 import com.ecommerce.ecommerce_system.service.StockAlertService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,20 +19,23 @@ import java.util.Map;
 @RequestMapping("/api/products")
 public class ProductController {
 
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
+    private final StockAlertService stockAlertService;
+    private final ReviewRepository reviewRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final SearchService searchService;
 
-    @Autowired
-    private StockAlertService stockAlertService;
-
-    @Autowired
-    private ReviewRepository reviewRepository;
-
-    @Autowired
-    private OrderItemRepository orderItemRepository;
-
-    @Autowired
-    private SearchService searchService;
+    public ProductController(ProductRepository productRepository,
+                             StockAlertService stockAlertService,
+                             ReviewRepository reviewRepository,
+                             OrderItemRepository orderItemRepository,
+                             SearchService searchService) {
+        this.productRepository = productRepository;
+        this.stockAlertService = stockAlertService;
+        this.reviewRepository = reviewRepository;
+        this.orderItemRepository = orderItemRepository;
+        this.searchService = searchService;
+    }
 
     @GetMapping
     public List<Product> getAll() {

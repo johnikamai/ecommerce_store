@@ -2,7 +2,6 @@ package com.ecommerce.ecommerce_system.controller;
 
 import com.ecommerce.ecommerce_system.model.AdminAlert;
 import com.ecommerce.ecommerce_system.repository.AdminAlertRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,8 +17,11 @@ import java.util.Map;
 @RequestMapping("/api/admin/alerts")
 public class AdminAlertController {
 
-    @Autowired
-    private AdminAlertRepository adminAlertRepository;
+    private final AdminAlertRepository adminAlertRepository;
+
+    public AdminAlertController(AdminAlertRepository adminAlertRepository) {
+        this.adminAlertRepository = adminAlertRepository;
+    }
 
     @GetMapping
     public Map<String, Object> list() {

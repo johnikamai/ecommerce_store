@@ -4,7 +4,6 @@ import com.ecommerce.ecommerce_system.model.ReturnRequest;
 import com.ecommerce.ecommerce_system.repository.ReturnRequestRepository;
 import com.ecommerce.ecommerce_system.service.ReturnService;
 import com.ecommerce.ecommerce_system.security.CustomerGuard;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -17,14 +16,17 @@ import java.util.Map;
 @RequestMapping("/api/returns")
 public class ReturnController {
 
-    @Autowired
-    private ReturnService returnService;
+    private final ReturnService returnService;
+    private final ReturnRequestRepository returnRequestRepository;
+    private final CustomerGuard customerGuard;
 
-    @Autowired
-    private ReturnRequestRepository returnRequestRepository;
-
-    @Autowired
-    private CustomerGuard customerGuard;
+    public ReturnController(ReturnService returnService,
+                            ReturnRequestRepository returnRequestRepository,
+                            CustomerGuard customerGuard) {
+        this.returnService = returnService;
+        this.returnRequestRepository = returnRequestRepository;
+        this.customerGuard = customerGuard;
+    }
 
     // Customer submits a return request.
     // Body: { "orderItemId": 3, "customerId": 1, "reason": "defective" }

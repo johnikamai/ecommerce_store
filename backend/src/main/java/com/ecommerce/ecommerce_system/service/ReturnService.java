@@ -7,42 +7,43 @@ import com.ecommerce.ecommerce_system.repository.OrderRepository;
 import com.ecommerce.ecommerce_system.repository.PaymentRepository;
 import com.ecommerce.ecommerce_system.repository.ProductRepository;
 import com.ecommerce.ecommerce_system.repository.ReturnRequestRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
 
 import java.time.LocalDateTime;
 
 @Service
 public class ReturnService {
 
-    @Autowired private OrderService orderService;
+    private final OrderService orderService;
+    private final ReturnRequestRepository returnRequestRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final CustomerRepository customerRepository;
+    private final ProductRepository productRepository;
+    private final OrderRepository orderRepository;
+    private final PaymentRepository paymentRepository;
+    private final StockAlertService stockAlertService;
+    private final NotificationService notificationService;
 
-    @Autowired
-    private ReturnRequestRepository returnRequestRepository;
-
-    @Autowired
-    private OrderItemRepository orderItemRepository;
-
-    @Autowired
-    private CustomerRepository customerRepository;
-
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
-    private OrderRepository orderRepository;
-
-    @Autowired
-    private PaymentRepository paymentRepository;
-
-    @Autowired
-    private StockAlertService stockAlertService;
-
-    @Autowired
-    private NotificationService notificationService;
+    public ReturnService(OrderService orderService,
+                         ReturnRequestRepository returnRequestRepository,
+                         OrderItemRepository orderItemRepository,
+                         CustomerRepository customerRepository,
+                         ProductRepository productRepository,
+                         OrderRepository orderRepository,
+                         PaymentRepository paymentRepository,
+                         StockAlertService stockAlertService,
+                         NotificationService notificationService) {
+        this.orderService = orderService;
+        this.returnRequestRepository = returnRequestRepository;
+        this.orderItemRepository = orderItemRepository;
+        this.customerRepository = customerRepository;
+        this.productRepository = productRepository;
+        this.orderRepository = orderRepository;
+        this.paymentRepository = paymentRepository;
+        this.stockAlertService = stockAlertService;
+        this.notificationService = notificationService;
+    }
 
     /**
      * Customer requests a return on one line item.

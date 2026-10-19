@@ -3,24 +3,24 @@ package com.ecommerce.ecommerce_system.controller;
 import com.ecommerce.ecommerce_system.model.Address;
 import com.ecommerce.ecommerce_system.repository.AddressRepository;
 import com.ecommerce.ecommerce_system.security.CustomerGuard;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/addresses")
 public class AddressController {
 
-    @Autowired
-    private AddressRepository addressRepository;
+    private final AddressRepository addressRepository;
+    private final CustomerGuard customerGuard;
 
-    @Autowired
-    private CustomerGuard customerGuard;
+    public AddressController(AddressRepository addressRepository, CustomerGuard customerGuard) {
+        this.addressRepository = addressRepository;
+        this.customerGuard = customerGuard;
+    }
 
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<?> getForCustomer(@PathVariable Long customerId, Authentication auth) {

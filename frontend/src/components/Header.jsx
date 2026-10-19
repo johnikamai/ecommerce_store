@@ -22,6 +22,7 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const isLoginPage = location.pathname === '/' || location.pathname === '/login';
+  const isAdmin = role === 'ADMIN' || role === 'STAFF';
   const [searchParams] = useSearchParams();
   const [q, setQ] = useState(searchParams.get('q') || '');
   const [menuOpen, setMenuOpen] = useState(false);
@@ -97,22 +98,128 @@ export default function Header() {
   };
 
   // "Shop" is deliberately not in this list: on desktop it is the mega menu
-  // trigger instead, and the mobile panel renders it separately.
+  // trigger instead, and the mobile panel renders it separately. In the admin
+  // area only the dashboard link is needed - the customer Account/Orders links
+  // are elsewhere (admin sidebar) and the shopping links are removed entirely.
   const navLinks = (
     <>
-      {(role === 'ADMIN' || role === 'STAFF') && (
+      {isAdmin && (
         <Link to="/admin" className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors">{t('nav.dashboard')}</Link>
       )}
-      <Link to="/account" className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors">{t('nav.account')}</Link>
-      <Link to="/orders" className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors">{t('nav.orders')}</Link>
+      {!isAdmin && (
+        <>
+          <Link to="/account" className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors">{t('nav.account')}</Link>
+          <Link to="/orders" className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors">{t('nav.orders')}</Link>
+          <Link to="/group-orders" className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors">{t('nav.groupOrders')}</Link>
+        </>
+      )}
     </>
+  );
+
+  // The shop mega-menu trigger with its category dropdown. Rendered for a
+  // signed-in shopper and omitted for admins/staff, who have no need for the
+  // storefront browsing/cart links.
+  const shopMenu = (
+    <div
+      className="relative"
+      onMouseEnter={openMega}
+      onMouseLeave={closeMegaSoon}
+    >
+      <button
+        onClick={() => setMegaOpen((v) => !v)}
+        aria-expanded={megaOpen}
+        className="flex items-center gap-1 text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors"
+      >
+        {t('nav.shop')}
+        <ChevronDown
+          size={15}
+          className={'transition-transform ' + (megaOpen ? 'rotate-180' : '')}
+        />
+      </button>
+
+      {megaOpen && (
+        <div className="absolute left-0 top-full pt-3 w-[min(92vw,1000px)] z-50">
+          <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] border-[var(--color-border)] border p-6">
+            {megaGroups === null ? (
+              <p className="text-sm text-[var(--color-text-muted)] py-8 text-center">
+                Loading categories…
+              </p>
+            ) : megaGroups.length === 0 ? (
+              <p className="text-sm text-[var(--color-text-muted)] py-8 text-center">
+                Categories are unavailable right now.
+              </p>
+            ) : (
+              <div className="grid grid-cols-4 gap-x-6 gap-y-5">
+                {megaGroups.map((group) => (
+                  <div key={group.category}>
+                    <Link
+                      to={`/products?category=${encodeURIComponent(group.category)}`}
+                      onClick={() => setMegaOpen(false)}
+                      className="font-[family-name:var(--font-heading)] font-semibold text-sm text-[var(--color-text-primary)] hover:text-[var(--color-primary)] transition-colors"
+                    >
+                      {group.category}
+                    </Link>
+                    <div className="mt-2 space-y-1.5">
+                      {group.items.map((p) => (
+                        <Link
+                          key={p.id}
+                          to={`/product/${p.id}`}
+                          onClick={() => setMegaOpen(false)}
+                          className="flex items-center gap-2 group/item"
+                        >
+                          <ProductImage
+                            product={p}
+                            className="w-9 h-9 rounded-[var(--radius-sm)] object-cover shrink-0 group-hover/item:scale-105 transition-transform"
+                          />
+                          <span className="text-xs text-[var(--color-text-secondary)] group-hover/item:text-[var(--color-primary)] line-clamp-2 transition-colors">
+                            {p.name}
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Promo strip */}
+            <div className="mt-6 pt-5 border-t-[var(--color-border)] grid grid-cols-3 gap-4">
+              <Link
+                to="/products?sort=unitsSold"
+                onClick={() => setMegaOpen(false)}
+                className="p-3 rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] hover:bg-[var(--color-primary)] hover:text-white transition-colors group"
+              >
+                <p className="text-xs font-semibold">Best sellers</p>
+                <p className="text-[11px] opacity-70 mt-0.5">What everyone is buying</p>
+              </Link>
+              <Link
+                to="/products?minRating=4"
+                onClick={() => setMegaOpen(false)}
+                className="p-3 rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] hover:bg-[var(--color-primary)] hover:text-white transition-colors"
+              >
+                <p className="text-xs font-semibold">Top rated</p>
+                <p className="text-[11px] opacity-70 mt-0.5">4 stars and up</p>
+              </Link>
+              <Link
+                to="/products?sustainable=true"
+                onClick={() => setMegaOpen(false)}
+                className="p-3 rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] hover:bg-[var(--color-primary)] hover:text-white transition-colors"
+              >
+                <p className="text-xs font-semibold">Eco picks</p>
+                <p className="text-[11px] opacity-70 mt-0.5">Highest sustainability scores</p>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 
   return (
     <header className="sticky top-0 z-[var(--z-sticky-header)] bg-[var(--color-surface)] shadow-[var(--shadow-xs)]">
       <div className="container-x flex items-center gap-6 h-[76px]">
         {/* Logo */}
-        <Link to="/products" className="flex items-center gap-2 shrink-0">
+        <Link to={isAdmin ? '/admin' : '/products'} className="flex items-center gap-2 shrink-0">
           <span className="w-9 h-9 rounded-[var(--radius-lg)] bg-gradient-premium flex items-center justify-center text-white font-[family-name:var(--font-heading)] font-bold">
             S
           </span>
@@ -121,103 +228,15 @@ export default function Header() {
           </span>
         </Link>
 
-        {/* Desktop nav. "Shop" opens the mega menu. */}
+        {/* Desktop nav. Admins/staff only ever get the dashboard link; the shop
+            menu and customer links are removed for them. Guests see the login
+            link. */}
         <nav className="hidden lg:flex items-center gap-6">
-          {token ? (
+          {token && isAdmin ? (
+            navLinks
+          ) : token ? (
             <>
-              <div
-                className="relative"
-                onMouseEnter={openMega}
-                onMouseLeave={closeMegaSoon}
-              >
-                <button
-                  onClick={() => setMegaOpen((v) => !v)}
-                  aria-expanded={megaOpen}
-                  className="flex items-center gap-1 text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors"
-                >
-                  {t('nav.shop')}
-                  <ChevronDown
-                    size={15}
-                    className={'transition-transform ' + (megaOpen ? 'rotate-180' : '')}
-                  />
-                </button>
-
-                {megaOpen && (
-                  <div className="absolute left-0 top-full pt-3 w-[min(92vw,1000px)] z-50">
-                    <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] border-[var(--color-border)] border p-6">
-                      {megaGroups === null ? (
-                        <p className="text-sm text-[var(--color-text-muted)] py-8 text-center">
-                          Loading categories…
-                        </p>
-                      ) : megaGroups.length === 0 ? (
-                        <p className="text-sm text-[var(--color-text-muted)] py-8 text-center">
-                          Categories are unavailable right now.
-                        </p>
-                      ) : (
-                        <div className="grid grid-cols-4 gap-x-6 gap-y-5">
-                          {megaGroups.map((group) => (
-                            <div key={group.category}>
-                              <Link
-                                to={`/products?category=${encodeURIComponent(group.category)}`}
-                                onClick={() => setMegaOpen(false)}
-                                className="font-[family-name:var(--font-heading)] font-semibold text-sm text-[var(--color-text-primary)] hover:text-[var(--color-primary)] transition-colors"
-                              >
-                                {group.category}
-                              </Link>
-                              <div className="mt-2 space-y-1.5">
-                                {group.items.map((p) => (
-                                  <Link
-                                    key={p.id}
-                                    to={`/product/${p.id}`}
-                                    onClick={() => setMegaOpen(false)}
-                                    className="flex items-center gap-2 group/item"
-                                  >
-                                    <ProductImage
-                                      product={p}
-                                      className="w-9 h-9 rounded-[var(--radius-sm)] object-cover shrink-0 group-hover/item:scale-105 transition-transform"
-                                    />
-                                    <span className="text-xs text-[var(--color-text-secondary)] group-hover/item:text-[var(--color-primary)] line-clamp-2 transition-colors">
-                                      {p.name}
-                                    </span>
-                                  </Link>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Promo strip */}
-                      <div className="mt-6 pt-5 border-t-[var(--color-border)] grid grid-cols-3 gap-4">
-                        <Link
-                          to="/products?sort=unitsSold"
-                          onClick={() => setMegaOpen(false)}
-                          className="p-3 rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] hover:bg-[var(--color-primary)] hover:text-white transition-colors group"
-                        >
-                          <p className="text-xs font-semibold">Best sellers</p>
-                          <p className="text-[11px] opacity-70 mt-0.5">What everyone is buying</p>
-                        </Link>
-                        <Link
-                          to="/products?minRating=4"
-                          onClick={() => setMegaOpen(false)}
-                          className="p-3 rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] hover:bg-[var(--color-primary)] hover:text-white transition-colors"
-                        >
-                          <p className="text-xs font-semibold">Top rated</p>
-                          <p className="text-[11px] opacity-70 mt-0.5">4 stars and up</p>
-                        </Link>
-                        <Link
-                          to="/products?sustainable=true"
-                          onClick={() => setMegaOpen(false)}
-                          className="p-3 rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] hover:bg-[var(--color-primary)] hover:text-white transition-colors"
-                        >
-                          <p className="text-xs font-semibold">Eco picks</p>
-                          <p className="text-[11px] opacity-70 mt-0.5">Highest sustainability scores</p>
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+              {shopMenu}
               {navLinks}
             </>
           ) : (
@@ -227,8 +246,8 @@ export default function Header() {
           )}
         </nav>
 
-        {/* Search */}
-        {token && (
+        {/* Search - admins/staff have no product search, so it is hidden for them */}
+        {token && !isAdmin && (
           <form onSubmit={submitSearch} className="hidden md:flex flex-1 max-w-[480px] ml-auto">
             <div className="flex-1 flex items-center gap-2 px-4 h-11 rounded-[var(--radius-full)] bg-[var(--color-card-bg-tint)] focus-within:bg-[var(--color-surface)] focus-within:shadow-[var(--shadow-sm)] focus-within:border-[1.5px] focus-within:border-[var(--color-primary)] transition-all">
               <Search size={18} className="text-[var(--color-text-muted)] shrink-0" />
@@ -247,50 +266,55 @@ export default function Header() {
           </form>
         )}
 
-        {/* Actions */}
+        {/* Actions - shop icons (wishlist/compare/cart/account) are unnecessary
+            for admins/staff, so only logout stays */}
         {token && (
           <div className="flex items-center gap-2 ml-auto md:ml-0">
-            <Link
-              to="/wishlist"
-              aria-label={t('nav.wishlist')}
-              className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--color-text-secondary)] hover:bg-[var(--color-card-bg-tint)] hover:text-[var(--color-secondary)] transition-colors"
-            >
-              <Heart size={20} />
-            </Link>
-            <Link
-              to="/compare"
-              aria-label={`Compare products${compareCount ? ` (${compareCount} selected)` : ''}`}
-              title="Compare products"
-              className="relative w-10 h-10 rounded-full flex items-center justify-center text-[var(--color-text-secondary)] hover:bg-[var(--color-card-bg-tint)] hover:text-[var(--color-primary)] transition-colors"
-            >
-              <Scale size={20} />
-              {compareCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-[var(--color-primary)] text-white text-xs font-bold rounded-full min-w-5 h-5 px-1 flex items-center justify-center">
-                  {compareCount}
-                </span>
-              )}
-            </Link>
-            <Link
-              to="/cart"
-              aria-label={t('nav.cart')}
-              className="relative w-10 h-10 rounded-full flex items-center justify-center text-[var(--color-text-secondary)] hover:bg-[var(--color-card-bg-tint)] hover:text-[var(--color-primary)] transition-colors"
-            >
-              <ShoppingCart size={20} />
-              {totalItems > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-[var(--color-error)] text-white text-xs font-bold rounded-full min-w-5 h-5 px-1 flex items-center justify-center">
-                  {totalItems}
-                </span>
-              )}
-            </Link>
-            <div className="hidden sm:flex items-center gap-2 pl-2">
-              <Link
-                to="/account"
-                title={t('nav.account')}
-                className="w-10 h-10 rounded-full bg-[var(--color-card-bg-tint)] flex items-center justify-center text-[var(--color-primary)] font-[family-name:var(--font-heading)] font-bold hover:ring-2 hover:ring-[var(--color-primary)] transition-all"
-              >
-                {(localStorage.getItem('customerName') || localStorage.getItem('username') || 'U').charAt(0).toUpperCase()}
-              </Link>
-            </div>
+            {!isAdmin && (
+              <>
+                <Link
+                  to="/wishlist"
+                  aria-label={t('nav.wishlist')}
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--color-text-secondary)] hover:bg-[var(--color-card-bg-tint)] hover:text-[var(--color-secondary)] transition-colors"
+                >
+                  <Heart size={20} />
+                </Link>
+                <Link
+                  to="/compare"
+                  aria-label={`Compare products${compareCount ? ` (${compareCount} selected)` : ''}`}
+                  title="Compare products"
+                  className="relative w-10 h-10 rounded-full flex items-center justify-center text-[var(--color-text-secondary)] hover:bg-[var(--color-card-bg-tint)] hover:text-[var(--color-primary)] transition-colors"
+                >
+                  <Scale size={20} />
+                  {compareCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 bg-[var(--color-primary)] text-white text-xs font-bold rounded-full min-w-5 h-5 px-1 flex items-center justify-center">
+                      {compareCount}
+                    </span>
+                  )}
+                </Link>
+                <Link
+                  to="/cart"
+                  aria-label={t('nav.cart')}
+                  className="relative w-10 h-10 rounded-full flex items-center justify-center text-[var(--color-text-secondary)] hover:bg-[var(--color-card-bg-tint)] hover:text-[var(--color-primary)] transition-colors"
+                >
+                  <ShoppingCart size={20} />
+                  {totalItems > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 bg-[var(--color-error)] text-white text-xs font-bold rounded-full min-w-5 h-5 px-1 flex items-center justify-center">
+                      {totalItems}
+                    </span>
+                  )}
+                </Link>
+                <div className="hidden sm:flex items-center gap-2 pl-2">
+                  <Link
+                    to="/account"
+                    title={t('nav.account')}
+                    className="w-10 h-10 rounded-full bg-[var(--color-card-bg-tint)] flex items-center justify-center text-[var(--color-primary)] font-[family-name:var(--font-heading)] font-bold hover:ring-2 hover:ring-[var(--color-primary)] transition-all"
+                  >
+                    {(localStorage.getItem('customerName') || localStorage.getItem('username') || 'U').charAt(0).toUpperCase()}
+                  </Link>
+                </div>
+              </>
+            )}
             <button
               onClick={handleLogout}
               aria-label={t('nav.logout')}
@@ -324,27 +348,33 @@ export default function Header() {
       {/* Mobile panel */}
       {token && menuOpen && (
         <div className="lg:hidden border-t border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-4 flex flex-col gap-4 shadow-[var(--shadow-lg)]">
-          <form onSubmit={submitSearch} className="flex items-center gap-2 px-4 h-11 rounded-[var(--radius-full)] bg-[var(--color-card-bg-tint)]">
-            <Search size={18} className="text-[var(--color-text-muted)]" />
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder={t('nav.searchPlaceholder')}
-              className="w-full bg-transparent outline-none text-[15px]"
-            />
-          </form>
+          {!isAdmin && (
+            <form onSubmit={submitSearch} className="flex items-center gap-2 px-4 h-11 rounded-[var(--radius-full)] bg-[var(--color-card-bg-tint)]">
+              <Search size={18} className="text-[var(--color-text-muted)]" />
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder={t('nav.searchPlaceholder')}
+                className="w-full bg-transparent outline-none text-[15px]"
+              />
+            </form>
+          )}
           {navLinks}
-          <Link to="/products" className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors">{t('nav.shop')}</Link>
-          {megaGroups?.map((group) => (
-            <Link
-              key={group.category}
-              to={`/products?category=${encodeURIComponent(group.category)}`}
-              onClick={() => setMenuOpen(false)}
-              className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors pl-3"
-            >
-              {group.category}
-            </Link>
-          ))}
+          {!isAdmin && (
+            <>
+              <Link to="/products" className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors">{t('nav.shop')}</Link>
+              {megaGroups?.map((group) => (
+                <Link
+                  key={group.category}
+                  to={`/products?category=${encodeURIComponent(group.category)}`}
+                  onClick={() => setMenuOpen(false)}
+                  className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors pl-3"
+                >
+                  {group.category}
+                </Link>
+              ))}
+            </>
+          )}
         </div>
       )}
     </header>

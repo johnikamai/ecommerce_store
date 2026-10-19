@@ -9,7 +9,6 @@ import com.ecommerce.ecommerce_system.repository.OrderItemRepository;
 import com.ecommerce.ecommerce_system.repository.ProductRepository;
 import com.ecommerce.ecommerce_system.repository.ReviewRepository;
 import com.ecommerce.ecommerce_system.security.CustomerGuard;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -22,20 +21,23 @@ import java.util.Map;
 @RequestMapping("/api/reviews")
 public class ReviewController {
 
-    @Autowired
-    private ReviewRepository reviewRepository;
+    private final ReviewRepository reviewRepository;
+    private final ProductRepository productRepository;
+    private final CustomerRepository customerRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final CustomerGuard customerGuard;
 
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
-    private CustomerRepository customerRepository;
-
-    @Autowired
-    private OrderItemRepository orderItemRepository;
-
-    @Autowired
-    private CustomerGuard customerGuard;
+    public ReviewController(ReviewRepository reviewRepository,
+                            ProductRepository productRepository,
+                            CustomerRepository customerRepository,
+                            OrderItemRepository orderItemRepository,
+                            CustomerGuard customerGuard) {
+        this.reviewRepository = reviewRepository;
+        this.productRepository = productRepository;
+        this.customerRepository = customerRepository;
+        this.orderItemRepository = orderItemRepository;
+        this.customerGuard = customerGuard;
+    }
 
     @GetMapping("/product/{productId}")
     public List<Review> getForProduct(@PathVariable Long productId) {

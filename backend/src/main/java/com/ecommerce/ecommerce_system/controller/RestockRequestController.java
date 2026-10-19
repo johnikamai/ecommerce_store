@@ -7,7 +7,6 @@ import com.ecommerce.ecommerce_system.repository.CustomerRepository;
 import com.ecommerce.ecommerce_system.repository.ProductRepository;
 import com.ecommerce.ecommerce_system.repository.RestockRequestRepository;
 import com.ecommerce.ecommerce_system.security.CustomerGuard;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -17,17 +16,20 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/restock-requests")
 public class RestockRequestController {
 
-    @Autowired
-    private RestockRequestRepository restockRequestRepository;
+    private final RestockRequestRepository restockRequestRepository;
+    private final CustomerRepository customerRepository;
+    private final ProductRepository productRepository;
+    private final CustomerGuard customerGuard;
 
-    @Autowired
-    private CustomerRepository customerRepository;
-
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
-    private CustomerGuard customerGuard;
+    public RestockRequestController(RestockRequestRepository restockRequestRepository,
+                                    CustomerRepository customerRepository,
+                                    ProductRepository productRepository,
+                                    CustomerGuard customerGuard) {
+        this.restockRequestRepository = restockRequestRepository;
+        this.customerRepository = customerRepository;
+        this.productRepository = productRepository;
+        this.customerGuard = customerGuard;
+    }
 
     // Subscribe: "notify me when this product is back in stock"
     @PostMapping

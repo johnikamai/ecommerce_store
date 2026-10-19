@@ -8,7 +8,6 @@ import com.ecommerce.ecommerce_system.repository.OrderItemRepository;
 import com.ecommerce.ecommerce_system.repository.OrderRepository;
 import com.ecommerce.ecommerce_system.repository.ProductRepository;
 import com.ecommerce.ecommerce_system.repository.ReviewRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,17 +18,20 @@ import java.util.stream.Collectors;
 @Service
 public class RecommendationService {
 
-    @Autowired
-    private OrderRepository orderRepository;
+    private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
+    private final ReviewRepository reviewRepository;
+    private final OrderItemRepository orderItemRepository;
 
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
-    private ReviewRepository reviewRepository;
-
-    @Autowired
-    private OrderItemRepository orderItemRepository;
+    public RecommendationService(OrderRepository orderRepository,
+                                 ProductRepository productRepository,
+                                 ReviewRepository reviewRepository,
+                                 OrderItemRepository orderItemRepository) {
+        this.orderRepository = orderRepository;
+        this.productRepository = productRepository;
+        this.reviewRepository = reviewRepository;
+        this.orderItemRepository = orderItemRepository;
+    }
 
     /**
      * Rating counts/averages per product. Reviews are a separate table, so the

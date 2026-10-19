@@ -8,7 +8,6 @@ import com.ecommerce.ecommerce_system.repository.CustomerRepository;
 import com.ecommerce.ecommerce_system.repository.UserRepository;
 import com.ecommerce.ecommerce_system.security.JwtUtil;
 import com.ecommerce.ecommerce_system.service.MailService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -34,25 +33,31 @@ public class AuthController {
     private static final java.util.regex.Pattern PASSWORD_PATTERN =
             java.util.regex.Pattern.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}$");
 
-    @Autowired private com.ecommerce.ecommerce_system.service.OtpService otpService;
+    private final com.ecommerce.ecommerce_system.service.OtpService otpService;
+    private final UserRepository userRepository;
+    private final CustomerRepository customerRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
+    private final MailService mailService;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private CustomerRepository customerRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    @Autowired
-    private MailService mailService;
+    public AuthController(com.ecommerce.ecommerce_system.service.OtpService otpService,
+                          UserRepository userRepository,
+                          CustomerRepository customerRepository,
+                          PasswordEncoder passwordEncoder,
+                          AuthenticationManager authenticationManager,
+                          JwtUtil jwtUtil,
+                          MailService mailService,
+                          com.ecommerce.ecommerce_system.repository.EmailChangeRepository emailChangeRepository) {
+        this.otpService = otpService;
+        this.userRepository = userRepository;
+        this.customerRepository = customerRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
+        this.mailService = mailService;
+        this.emailChangeRepository = emailChangeRepository;
+    }
 
     // Shared response shape for both register and login so the frontend
     // always knows the signed-in customer's profile id.
@@ -109,6 +114,12 @@ public class AuthController {
         String otp = sendOtp(req.getUsername());
         boolean emailed = mailService.sendOtp(req.getEmail(), otp);
 
+        if (!mailService.isConfigured()) {
+            // Demo mode: no real email gateway, so the code is meant to be shown
+            // on screen (the UI renders it for exactly this case).
+            return ResponseEntity.ok(Map.of("message", "Verification code generated (demo)", "otpRequired", true,
+                    "emailSentTo", req.getEmail(), "emailDelivered", false, "devOtp", otp));
+        }
         if (!emailed) return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Verification email could not be sent. Please use Resend code shortly.");
         return ResponseEntity.ok(Map.of("message", "Verification code emailed", "otpRequired", true,
                 "emailSentTo", req.getEmail(), "emailDelivered", true));
@@ -170,6 +181,10 @@ public class AuthController {
         if (user.isEnabled()) return ResponseEntity.badRequest().body("Account is already verified");
         String otp = sendOtp(username);
         boolean emailed = user.getEmail() != null && mailService.sendOtp(user.getEmail(), otp);
+        if (!mailService.isConfigured()) {
+            return ResponseEntity.ok(Map.of("message", "New code generated (demo)", "otpRequired", true,
+                    "emailSentTo", user.getEmail(), "emailDelivered", false, "devOtp", otp));
+        }
         if (!emailed) return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Verification email could not be sent. Try again shortly.");
         return ResponseEntity.ok(Map.of("message", "New code emailed", "emailDelivered", true));
     }
@@ -192,6 +207,12 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(user.getUsername(), req.getPassword())
             );
         } catch (DisabledException e) {
+            // Staff accounts are disabled until an admin approves them, so the
+            // OTP wording would be confusing here.
+            if (user.getRole() == Role.STAFF) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("Your staff account is not active — an administrator must approve it before you can sign in");
+            }
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Account not verified yet — enter the OTP you received during registration");
         } catch (BadCredentialsException e) {
@@ -262,6 +283,10 @@ public class AuthController {
 
         String code = sendOtp("RESET:" + user.getUsername());
         boolean emailed = user.getEmail() != null && mailService.sendOtp(user.getEmail(), code);
+        if (!mailService.isConfigured()) {
+            return ResponseEntity.ok(Map.of("message", "Reset code generated (demo)", "otpRequired", true,
+                    "emailSentTo", user.getEmail(), "emailDelivered", false, "devOtp", code));
+        }
         if (!emailed) return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Reset email could not be sent. Try again shortly.");
         return ResponseEntity.ok(Map.of("message", "Reset code emailed", "emailDelivered", true));
     }
@@ -304,7 +329,7 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "Code sent to your new email"));
     }
 
-    @Autowired private com.ecommerce.ecommerce_system.repository.EmailChangeRepository emailChangeRepository;
+    private final com.ecommerce.ecommerce_system.repository.EmailChangeRepository emailChangeRepository;
 
     @org.springframework.transaction.annotation.Transactional
     @PostMapping("/email/confirm")

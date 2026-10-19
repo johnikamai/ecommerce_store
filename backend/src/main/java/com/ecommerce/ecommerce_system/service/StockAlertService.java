@@ -6,10 +6,8 @@ import com.ecommerce.ecommerce_system.model.Product;
 import com.ecommerce.ecommerce_system.model.RestockRequest;
 import com.ecommerce.ecommerce_system.model.Wishlist;
 import com.ecommerce.ecommerce_system.repository.AdminAlertRepository;
-import com.ecommerce.ecommerce_system.repository.CustomerRepository;
 import com.ecommerce.ecommerce_system.repository.RestockRequestRepository;
 import com.ecommerce.ecommerce_system.repository.WishlistRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,20 +27,20 @@ import java.util.Set;
 @Service
 public class StockAlertService {
 
-    @Autowired
-    private AdminAlertRepository adminAlertRepository;
+    private final AdminAlertRepository adminAlertRepository;
+    private final WishlistRepository wishlistRepository;
+    private final NotificationService notificationService;
+    private final RestockRequestRepository restockRequestRepository;
 
-    @Autowired
-    private WishlistRepository wishlistRepository;
-
-    @Autowired
-    private CustomerRepository customerRepository;
-
-    @Autowired
-    private NotificationService notificationService;
-
-    @Autowired
-    private RestockRequestRepository restockRequestRepository;
+    public StockAlertService(AdminAlertRepository adminAlertRepository,
+                             WishlistRepository wishlistRepository,
+                             NotificationService notificationService,
+                             RestockRequestRepository restockRequestRepository) {
+        this.adminAlertRepository = adminAlertRepository;
+        this.wishlistRepository = wishlistRepository;
+        this.notificationService = notificationService;
+        this.restockRequestRepository = restockRequestRepository;
+    }
 
     /**
      * Fires after a product's stock has been persisted.

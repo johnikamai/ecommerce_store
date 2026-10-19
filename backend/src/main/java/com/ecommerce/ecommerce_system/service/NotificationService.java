@@ -5,7 +5,6 @@ import com.ecommerce.ecommerce_system.model.Notification;
 import com.ecommerce.ecommerce_system.repository.NotificationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -30,8 +29,17 @@ public class NotificationService {
 
     private static final String BRAND = "ShopEase";
 
-    @Autowired
-    private NotificationRepository notificationRepository;
+    private final NotificationRepository notificationRepository;
+    private final MailService mailService;
+    private final SmsService smsService;
+
+    public NotificationService(NotificationRepository notificationRepository,
+                               MailService mailService,
+                               SmsService smsService) {
+        this.notificationRepository = notificationRepository;
+        this.mailService = mailService;
+        this.smsService = smsService;
+    }
 
     /**
      * Transactional notification types. SMS is reserved for these because they
@@ -40,12 +48,6 @@ public class NotificationService {
      * bill stays predictable.
      */
     private static final Set<String> SMS_TYPES = Set.of("ORDER", "PAYMENT", "SHIPPING", "DELIVERY");
-
-    @Autowired
-    private MailService mailService;
-
-    @Autowired
-    private SmsService smsService;
 
     /** Where stock alerts are emailed. Optional - blank disables admin email. */
     @Value("${admin.alert.email:}")

@@ -1,8 +1,6 @@
 package com.ecommerce.ecommerce_system.service;
 
 import com.ecommerce.ecommerce_system.model.*;
-import com.ecommerce.ecommerce_system.repository.PaymentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -19,9 +17,6 @@ import java.util.*;
 public class ReceiptService {
 
     private static final DateTimeFormatter STAMP = DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a");
-
-    @Autowired
-    private PaymentRepository paymentRepository;
 
     /**
      * @param receiptNumber stable public identifier, e.g. RCP-2026-000042
@@ -57,6 +52,7 @@ public class ReceiptService {
 
         BigDecimal total = payment.getAmount() != null ? payment.getAmount()
                 : (order != null ? order.getTotalAmount() : BigDecimal.ZERO);
+        PaymentStatus paymentStatus = payment.getPaymentStatus();
 
         Map<String, Object> customer = new LinkedHashMap<>();
         Customer c = order != null ? order.getCustomer() : null;
@@ -75,8 +71,9 @@ public class ReceiptService {
         receipt.put("discount", discount);
         receipt.put("couponCode", order != null ? order.getCouponCode() : null);
         receipt.put("total", total);
-        receipt.put("amountPaid", payment.getPaymentStatus() == PaymentStatus.PAID ? payment.getAmount() : BigDecimal.ZERO);
-        receipt.put("balanceDue", payment.getPaymentStatus() == PaymentStatus.PAID ? BigDecimal.ZERO : total);
+        receipt.put("amountPaid", paymentStatus == PaymentStatus.PAID ? payment.getAmount() : BigDecimal.ZERO);
+        receipt.put("balanceDue", paymentStatus == PaymentStatus.PENDING || paymentStatus == PaymentStatus.FAILED
+            ? total : BigDecimal.ZERO);
         receipt.put("paymentMode", payment.getPaymentMode());
         receipt.put("paymentStatus", payment.getPaymentStatus());
         receipt.put("transactionRef", payment.getTransactionRef());

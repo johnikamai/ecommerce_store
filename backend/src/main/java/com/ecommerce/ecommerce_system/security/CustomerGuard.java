@@ -2,7 +2,6 @@ package com.ecommerce.ecommerce_system.security;
 
 import com.ecommerce.ecommerce_system.model.User;
 import com.ecommerce.ecommerce_system.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
@@ -16,8 +15,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class CustomerGuard {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    public CustomerGuard(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     public boolean isAdmin(Authentication auth) {
         return auth != null && auth.getAuthorities().stream()
