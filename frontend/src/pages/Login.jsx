@@ -1,6 +1,6 @@
 import { clearSession } from '../utils/session';
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   LogIn, UserPlus, Sparkles, ShieldCheck, KeyRound, Eye, EyeOff,
   ShoppingBag, Heart, Award, Mail, Check,
@@ -167,9 +167,8 @@ function AdminContent() {
         return;
       }
       persist(res.data);
-      navigate('/admin');
+      navigate(res.data.role === 'STAFF' ? '/staff/dashboard' : '/admin');
     } catch (err) {
-      if (mode === 'register' && err.response?.status === 503) setStep('otp');
       setError(authError(err));
     } finally {
       setBusy(false);
@@ -225,6 +224,10 @@ function AdminContent() {
           {busy ? t('auth.pleaseWait') : t('auth.admin.signIn')}
         </span>
       </button>
+
+      <p className="text-center text-[13px] text-[var(--color-text-secondary)]">
+        <Link to="/staff/apply" className="font-semibold text-[var(--color-primary)]">{t('staff.apply.title')}</Link>
+      </p>
     </form>
   );
 }
@@ -614,7 +617,6 @@ function ForgotPasswordForm({ onBack }) {
       setEmailDelivered(!!res.data.emailDelivered);
       setStep('reset');
     } catch (err) {
-      if (mode === 'register' && err.response?.status === 503) setStep('otp');
       setError(authError(err));
     } finally {
       setBusy(false);
@@ -633,7 +635,6 @@ function ForgotPasswordForm({ onBack }) {
       await axiosClient.post('/auth/reset-password', { username: identifier, otp, newPassword });
       setStep('done');
     } catch (err) {
-      if (mode === 'register' && err.response?.status === 503) setStep('otp');
       setError(authError(err));
     } finally {
       setBusy(false);

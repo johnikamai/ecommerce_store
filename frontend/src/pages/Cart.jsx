@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Banknote, CreditCard, Smartphone, MapPin, Plus, LocateFixed, Loader2 } from 'lucide-react';
+import { Banknote, CreditCard, Smartphone, MapPin, Plus, LocateFixed, Loader2, Split } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
 import axiosClient from '../api/axiosClient';
 import { getCustomerId } from '../utils/customer';
+import ProductImage from '../components/ProductImage';
+import BillSplitModal from '../components/BillSplitModal';
 
 // labelKey/descKey rather than literal copy so the same list renders in every
 // locale. `key` is what handleCheckout actually sends as paymentMethod.
@@ -87,6 +89,7 @@ function Cart() {
   const [error, setError] = useState('');
   const [placing, setPlacing] = useState(false);
   const [couponCode, setCouponCode] = useState('');
+  const [splitOpen, setSplitOpen] = useState(false);
   const customerId = getCustomerId();
   const navigate = useNavigate();
 
@@ -249,8 +252,8 @@ function Cart() {
             key={item.product.id}
             className="flex items-center gap-4 p-4 rounded-[var(--radius-lg)] bg-[var(--color-card-bg)] shadow-[var(--shadow-sm)]"
           >
-            <div className="w-16 h-16 rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] flex items-center justify-center font-[family-name:var(--font-heading)] font-bold text-[var(--color-primary)] opacity-40 text-xl">
-              {item.product.name.charAt(0)}
+            <div className="w-16 h-16 rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] flex items-center justify-center overflow-hidden">
+              <ProductImage product={item.product} className="w-full h-full object-cover" />
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-[var(--color-text-primary)]">{item.product.name}</h3>
@@ -424,8 +427,18 @@ function Cart() {
             <span>{t('cart.tax')}</span>
             <span>{formatCurrency(currentQuote?.tax ?? taxAmount)}</span>
           </div>
-          {currentQuote?.couponDiscount > 0 && <p className="text-sm">{t('fix.couponDiscount')}: −{formatCurrency(currentQuote.couponDiscount)}</p>}
-          {currentQuote?.tierDiscount > 0 && <p className="text-sm">{t('fix.loyaltyDiscount')}: −{formatCurrency(currentQuote.tierDiscount)}</p>}
+          {currentQuote?.couponDiscount > 0 && (
+            <div className="flex items-center justify-between gap-8 text-sm text-[var(--color-success)]">
+              <span>{t('fix.couponDiscount')}</span>
+              <span>−{formatCurrency(currentQuote.couponDiscount)}</span>
+            </div>
+          )}
+          {currentQuote?.tierDiscount > 0 && (
+            <div className="flex items-center justify-between gap-8 text-sm text-[var(--color-success)]">
+              <span>{t('fix.loyaltyDiscount')}</span>
+              <span>−{formatCurrency(currentQuote.tierDiscount)}</span>
+            </div>
+          )}
           <div className="flex items-center justify-between gap-8 pt-2 mt-1 border-t border-[var(--color-border)]">
             <p className="text-sm text-[var(--color-text-muted)]">{t('cart.total')}</p>
             <p className="font-[family-name:var(--font-heading)] text-2xl font-bold">
@@ -434,17 +447,29 @@ function Cart() {
           </div>
           <p className="text-xs text-[var(--color-text-muted)] max-w-xs">{t('cart.taxNote')}</p>
         </div>
-        <button
-          onClick={handleCheckout}
-          disabled={placing || !currentQuote}
-          className="rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white px-8 py-3 text-sm font-semibold hover:bg-[var(--color-primary-hover)] transition-colors disabled:opacity-50"
-        >
-          {placing
-            ? t('cart.placing')
-            : t('cart.placeOrder', {
-                method: t(PAYMENT_METHODS.find((m) => m.key === paymentMethod)?.labelKey),
-              })}
-        </button>
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* ── Split Bill ── */}
+          <button
+            id="cart-split-bill-btn"
+            onClick={() => setSplitOpen(true)}
+            className="inline-flex items-center gap-2 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-primary)] text-[var(--color-primary)] px-5 py-3 text-sm font-semibold hover:bg-[var(--color-card-bg-tint)] transition-colors"
+          >
+            <Split size={15} /> Split Bill
+          </button>
+
+          {/* ── Place Order ── */}
+          <button
+            onClick={handleCheckout}
+            disabled={placing || !currentQuote}
+            className="rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white px-8 py-3 text-sm font-semibold hover:bg-[var(--color-primary-hover)] transition-colors disabled:opacity-50"
+          >
+            {placing
+              ? t('cart.placing')
+              : t('cart.placeOrder', {
+                  method: t(PAYMENT_METHODS.find((m) => m.key === paymentMethod)?.labelKey),
+                })}
+          </button>
+        </div>
       </div>
 
       <div className="flex items-center justify-between gap-4 mt-4 p-4 rounded-[var(--radius-lg)] bg-[var(--color-card-bg)] shadow-[var(--shadow-sm)]">
@@ -460,6 +485,13 @@ function Cart() {
       {!currentQuote && !quoteError && <p className="text-sm mt-3">{t('fix.addressQuote')}</p>}
       {quoteError && <p className="text-[var(--color-error)] text-sm mt-3">{quoteError}</p>}
       {error && <p className="text-[var(--color-error)] text-sm mt-3">{t(error)}</p>}
+
+      {/* ── Bill Split Modal ── */}
+      <BillSplitModal
+        open={splitOpen}
+        onClose={() => setSplitOpen(false)}
+        total={currentQuote?.total ?? grandTotal}
+      />
     </div>
   );
 }

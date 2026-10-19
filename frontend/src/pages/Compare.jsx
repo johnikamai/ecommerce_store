@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { X, ShoppingCart, Scale, Trash2 } from 'lucide-react';
+import { X, ShoppingCart, Scale, Trash2, Search, Plus } from 'lucide-react';
 import axiosClient from '../api/axiosClient';
 import { useCompare } from '../context/CompareContext';
 import { useCart } from '../context/CartContext';
+import { useLanguage } from '../context/LanguageContext';
 import ProductImage from '../components/ProductImage';
 
 /**
@@ -25,6 +26,7 @@ const ROWS = [
   { key: 'averageRating', label: 'Rating', best: 'highest', format: (p) => (p.averageRating ? `${Number(p.averageRating).toFixed(1)} / 5` : 'No reviews yet'), raw: (p) => Number(p.averageRating || 0) },
   { key: 'reviewCount', label: 'Reviews', format: (p) => p.reviewCount ?? 0, raw: (p) => Number(p.reviewCount || 0) },
   { key: 'unitsSold', label: 'Units sold', format: (p) => p.unitsSold ?? 0, raw: (p) => Number(p.unitsSold || 0) },
+  { key: 'description', labelKey: 'compare.description', format: (p) => p.description || '—' },
   {
     key: 'sustainabilityScore',
     label: 'Sustainability',
@@ -34,7 +36,7 @@ const ROWS = [
   {
     key: 'stockQuantity',
     label: 'Availability',
-    format: (p) => (p.stockQuantity > 0 ? `${p.stockQuantity} in stock` : 'Out of stock'),
+    format: (p, t) => (p.stockQuantity > 0 ? `${p.stockQuantity} ${t('compare.inStock')}` : t('compare.outOfStock')),
     raw: (p) => Number(p.stockQuantity || 0),
   },
 ];
@@ -53,19 +55,19 @@ function winners(row, products) {
 }
 
 export default function Compare() {
-  const { ids, remove, clear, count } = useCompare();
+  const { ids, remove, clear, add, count, isFull } = useCompare();
   const { addToCart } = useCart();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
+  const [catalog, setCatalog] = useState([]);
+  const [search, setSearch] = useState('');
+  const [highlightDiffs, setHighlightDiffs] = useState(false);
+  const [diffsOnly, setDiffsOnly] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (count === 0) {
-      setProducts([]);
-      setLoading(false);
-      return;
-    }
     let cancelled = false;
     setLoading(true);
     setError('');
@@ -77,6 +79,7 @@ export default function Compare() {
       .then((res) => {
         if (cancelled) return;
         const all = res.data?.products || res.data || [];
+        setCatalog(all);
         setProducts(ids.map((id) => all.find((p) => p.id === id)).filter(Boolean));
       })
       .catch(() => {
@@ -88,14 +91,56 @@ export default function Compare() {
     };
   }, [ids.join(','), count]);
 
+  const matches = search.trim()
+    ? catalog.filter((product) => product.name?.toLowerCase().includes(search.trim().toLowerCase())).slice(0, 6)
+    : [];
+  const visibleRows = ROWS.filter((row) => !diffsOnly || new Set(products.map((product) => row.format(product, t))).size > 1);
+  const productPicker = (
+    <div className="mb-5">
+      <label className="block text-sm font-semibold mb-2" htmlFor="compare-product-search">{t('compare.selectProduct')}</label>
+      <div className="flex items-center gap-2 px-3 h-11 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-card-bg)]">
+        <Search size={16} className="text-[var(--color-text-muted)] shrink-0" />
+        <input
+          id="compare-product-search"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder={t('compare.searchPlaceholder')}
+          className="w-full bg-transparent outline-none text-sm"
+        />
+      </div>
+      {search.trim() && (
+        <div className="mt-2 divide-y divide-[var(--color-border)] rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-card-bg)]">
+          {matches.length === 0 ? (
+            <p className="p-3 text-sm text-[var(--color-text-muted)]">{t('compare.noMatches')}</p>
+          ) : matches.map((product) => {
+            const selected = ids.includes(product.id);
+            return (
+              <div key={product.id} className="flex items-center justify-between gap-3 p-2.5">
+                <span className="min-w-0 truncate text-sm">{product.name}</span>
+                <button
+                  type="button"
+                  onClick={() => { if (add(product.id)) setSearch(''); }}
+                  disabled={selected || isFull}
+                  title={isFull && !selected ? t('product.compareLimit') : undefined}
+                  className="inline-flex shrink-0 items-center gap-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] px-2.5 py-1.5 text-xs font-semibold text-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Plus size={13} /> {selected ? t('compare.alreadyComparing') : t('compare.addSlot')}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+
   if (count === 0) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-16 text-center">
         <Scale className="w-12 h-12 mx-auto text-[var(--color-border)]" />
-        <h1 className="font-[family-name:var(--font-heading)] text-2xl font-bold mt-4">Nothing to compare yet</h1>
-        <p className="text-[var(--color-text-muted)] mt-2">
-          Tick <strong>Compare</strong> on up to three products and they will line up here.
-        </p>
+        <h1 className="font-[family-name:var(--font-heading)] text-2xl font-bold mt-4">{t('compare.title')}</h1>
+        <p className="text-[var(--color-text-muted)] mt-2 mb-6">{t('compare.emptyNotice')}</p>
+        {productPicker}
         <Link
           to="/products"
           className="inline-block mt-6 px-6 py-3 rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white text-sm font-semibold hover:bg-[var(--color-primary-hover)]"
@@ -109,7 +154,7 @@ export default function Compare() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="font-[family-name:var(--font-heading)] text-2xl font-bold">Compare products</h1>
+        <h1 className="font-[family-name:var(--font-heading)] text-2xl font-bold">{t('compare.title')}</h1>
         <button
           onClick={clear}
           className="flex items-center gap-1.5 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-error)]"
@@ -120,6 +165,20 @@ export default function Compare() {
 
       {loading && <p className="text-[var(--color-text-muted)] text-sm">Loading…</p>}
       {error && <p className="text-[var(--color-error)] text-sm">{error}</p>}
+      {productPicker}
+
+      {!loading && !error && products.length > 1 && (
+        <div className="flex flex-wrap gap-x-5 gap-y-2 mb-4 text-sm">
+          <label className="inline-flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={highlightDiffs} onChange={(event) => setHighlightDiffs(event.target.checked)} />
+            {t('compare.highlightDiffs')}
+          </label>
+          <label className="inline-flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={diffsOnly} onChange={(event) => setDiffsOnly(event.target.checked)} />
+            {t('compare.diffsOnly')}
+          </label>
+        </div>
+      )}
 
       {!loading && !error && products.length > 0 && (
         <>
@@ -152,12 +211,14 @@ export default function Compare() {
                 </tr>
               </thead>
               <tbody>
-                {ROWS.map((row) => {
+                {visibleRows.map((row) => {
                   const best = winners(row, products);
+                  const values = products.map((product) => row.format(product, t));
+                  const differs = new Set(values).size > 1;
                   return (
                     <tr key={row.key} className="border-t-[var(--color-border)]">
                       <th scope="row" className="p-4 text-left font-medium text-[var(--color-text-muted)] align-top">
-                        {row.label}
+                        {row.labelKey ? t(row.labelKey) : row.label}
                       </th>
                       {products.map((p) => {
                         const isBest = best.has(p.id);
@@ -166,15 +227,15 @@ export default function Compare() {
                             key={p.id}
                             className={
                               'p-4 align-top ' +
-                              (isBest
+                              isBest
                                 ? 'font-semibold text-[var(--color-success)] bg-[var(--color-success-bg)]'
-                                : '')
+                                : highlightDiffs && differs ? 'bg-[var(--color-warning-bg)]' : ''
                             }
                           >
-                            {row.format(p)}
+                            {values[products.indexOf(p)]}
                             {isBest && row.best && (
                               <span className="block text-[10px] font-normal uppercase tracking-wide opacity-80">
-                                best {row.best === 'lowest' ? 'price' : row.label.toLowerCase()}
+                                {t(row.best === 'lowest' ? 'compare.bestPrice' : 'compare.bestValue')}
                               </span>
                             )}
                           </td>
@@ -204,6 +265,10 @@ export default function Compare() {
               </tbody>
             </table>
           </div>
+
+          {diffsOnly && visibleRows.length === 0 && (
+            <p className="py-4 text-sm text-[var(--color-text-muted)]">{t('compare.noDifferences')}</p>
+          )}
 
           <p className="text-xs text-[var(--color-text-muted)] mt-4">
             Prices and stock are read live from the catalogue. Adding two or more of these to your cart

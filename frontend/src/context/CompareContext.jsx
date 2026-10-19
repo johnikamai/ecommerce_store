@@ -12,8 +12,8 @@ const CompareContext = createContext();
 
 const STORAGE_KEY = 'shopease_compare';
 
-/** Three columns is the most a table stays readable on a laptop. */
-export const COMPARE_LIMIT = 3;
+/** Four columns is standard across modern e-commerce and fits responsive layouts. */
+export const COMPARE_LIMIT = 4;
 
 function loadIds() {
   try {
@@ -38,16 +38,22 @@ export function CompareProvider({ children }) {
   }, [ids]);
 
   const toggle = (productId) => {
-    let rejected = false;
-    setIds((prev) => {
-      if (prev.includes(productId)) return prev.filter((id) => id !== productId);
-      if (prev.length >= COMPARE_LIMIT) {
-        rejected = true;
-        return prev;
-      }
-      return [...prev, productId];
-    });
-    return !rejected;
+    if (ids.includes(productId)) {
+      setIds((prev) => prev.filter((id) => id !== productId));
+      return true;
+    }
+    if (ids.length >= COMPARE_LIMIT) {
+      return false;
+    }
+    setIds((prev) => [...prev, productId]);
+    return true;
+  };
+
+  const add = (productId) => {
+    if (ids.includes(productId)) return true;
+    if (ids.length >= COMPARE_LIMIT) return false;
+    setIds((prev) => [...prev, productId]);
+    return true;
   };
 
   const remove = (productId) => setIds((prev) => prev.filter((id) => id !== productId));
@@ -57,7 +63,17 @@ export function CompareProvider({ children }) {
 
   return (
     <CompareContext.Provider
-      value={{ ids, toggle, remove, clear, isSelected, isFull, count: ids.length }}
+      value={{
+        ids,
+        toggle,
+        add,
+        remove,
+        clear,
+        isSelected,
+        isFull,
+        count: ids.length,
+        limit: COMPARE_LIMIT,
+      }}
     >
       {children}
     </CompareContext.Provider>

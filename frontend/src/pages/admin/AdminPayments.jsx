@@ -3,13 +3,13 @@ import axiosClient from '../../api/axiosClient';
 import ReceiptModal, { MODE_LABEL_KEYS } from '../../components/ReceiptModal';
 import { useLanguage } from '../../context/LanguageContext';
 
-// Keys must match the PaymentStatus enum on the backend:
-// PENDING | PAID | FAILED | REFUNDED
+// Keys must match the PaymentStatus enum on the backend.
 const STATUS_STYLES = {
   PAID: 'bg-[var(--color-success-bg)] text-[var(--color-success)]',
   PENDING: 'bg-[var(--color-warning-bg)] text-[var(--color-warning)]',
   FAILED: 'bg-[var(--color-error-bg)] text-[var(--color-error)]',
   REFUNDED: 'bg-[var(--color-card-bg-tint)] text-[var(--color-text-secondary)]',
+  CANCELLED: 'bg-[var(--color-card-bg-tint)] text-[var(--color-text-secondary)]',
 };
 
 const STATUS_KEYS = {
@@ -17,6 +17,7 @@ const STATUS_KEYS = {
   PENDING: 'receipt.status.PENDING',
   FAILED: 'receipt.status.FAILED',
   REFUNDED: 'receipt.status.REFUNDED',
+  CANCELLED: 'receipt.status.CANCELLED',
   UNKNOWN: 'receipt.status.UNKNOWN',
 };
 

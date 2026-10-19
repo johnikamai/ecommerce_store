@@ -87,3 +87,19 @@ export function adminGuard(token, cachedRole) {
   const role = tokenRole(token) || cachedRole || null;
   return role === 'ADMIN' || role === 'STAFF' ? null : '/products';
 }
+
+/**
+ * Decides whether the staff portal may be rendered.
+ *
+ * Returns null when access is allowed, or the path to send the visitor to:
+ *   '/'         signed out, or holding a token we cannot read or that has expired
+ *   '/products' signed in, but not as staff or admin
+ *
+ * Admins may also open the staff area (they can do everything); everyone else is
+ * sent to the catalogue. The server still enforces every staff permission.
+ */
+export function staffGuard(token, cachedRole) {
+  if (!tokenIsCurrent(token)) return '/';
+  const role = tokenRole(token) || cachedRole || null;
+  return role === 'STAFF' || role === 'ADMIN' ? null : '/products';
+}

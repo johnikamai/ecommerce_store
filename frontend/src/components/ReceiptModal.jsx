@@ -7,6 +7,7 @@ const STATUS_STYLES = {
   PENDING: 'bg-[var(--color-warning-bg)] text-[var(--color-warning)]',
   FAILED: 'bg-[var(--color-error-bg)] text-[var(--color-error)]',
   REFUNDED: 'bg-[var(--color-card-bg-tint)] text-[var(--color-text-secondary)]',
+  CANCELLED: 'bg-[var(--color-card-bg-tint)] text-[var(--color-text-secondary)]',
 };
 
 // Same set of statuses as STATUS_STYLES, so the pill colour and its label stay
@@ -17,6 +18,7 @@ const STATUS_KEYS = {
   PENDING: 'receipt.status.PENDING',
   FAILED: 'receipt.status.FAILED',
   REFUNDED: 'receipt.status.REFUNDED',
+  CANCELLED: 'receipt.status.CANCELLED',
   UNKNOWN: 'receipt.status.UNKNOWN',
 };
 
@@ -112,7 +114,7 @@ export default function ReceiptModal({ paymentId, onClose }) {
                 <span>{t('receipt.total')}</span>
                 <span>{formatCurrency(receipt.total)}</span>
               </div>
-              {receipt.paymentStatus !== 'PAID' && (
+              {['PENDING', 'FAILED'].includes(receipt.paymentStatus) && (
                 <div className="flex justify-between text-[var(--color-warning)]">
                   <span>{t('receipt.balanceDue')}</span>
                   <span>{formatCurrency(receipt.balanceDue)}</span>

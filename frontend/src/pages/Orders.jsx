@@ -27,6 +27,7 @@ const PAYMENT_STATUS_STYLES = {
   PENDING: 'bg-[var(--color-warning-bg)] text-[var(--color-warning)]',
   FAILED: 'bg-[var(--color-error-bg)] text-[var(--color-error)]',
   REFUNDED: 'bg-[var(--color-card-bg-tint)] text-[var(--color-text-muted)]',
+  CANCELLED: 'bg-[var(--color-card-bg-tint)] text-[var(--color-text-muted)]',
 };
 
 const RETURN_STATUS_KEYS = {
@@ -41,6 +42,7 @@ const PAYMENT_STATUS_KEYS = {
   PENDING: 'receipt.status.PENDING',
   FAILED: 'receipt.status.FAILED',
   REFUNDED: 'receipt.status.REFUNDED',
+  CANCELLED: 'receipt.status.CANCELLED',
 };
 
 const TIER_KEYS = {

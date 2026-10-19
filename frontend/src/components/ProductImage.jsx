@@ -12,6 +12,21 @@ import { productPhoto } from '../utils/productPhoto.mjs';
 const LEGACY_PLACEHOLDER = 'https://placehold.co/';
 
 /**
+ * The local /images/<n>.jpg files are the same kind of artifact. Only the first
+ * ~106 were real photos (and those are already covered by the curated map);
+ * everything the seeder wrote after that is a flat, near-blank tile, which is
+ * why the catalog looked like it ran out of images partway through. Treat them
+ * as unusable so the product falls through to the curated photo or, failing
+ * that, the generated SVG tile - never a blank box.
+ */
+const LEGACY_SEED_IMAGE = /^\/?images\/\d+\.(jpe?g|png|webp)$/i;
+
+/** Whether a URL stored on the product is a legacy seeder artifact, not a real photo. */
+export function isPlaceholderImage(url) {
+  return !!url && (url.startsWith(LEGACY_PLACEHOLDER) || LEGACY_SEED_IMAGE.test(url));
+}
+
+/**
  * Product image with a guaranteed visual.
  *
  * Order of preference:
@@ -31,7 +46,7 @@ export default function ProductImage({ product, className = '', alt }) {
   const [failedSource, setFailedSource] = useState(null);
 
   const stored = product?.imageUrl;
-  const usable = stored && !stored.startsWith(LEGACY_PLACEHOLDER) ? stored : null;
+  const usable = stored && !isPlaceholderImage(stored) ? stored : null;
   const photo = productPhoto(product) || usable;
 
   // A source that has already failed must not be retried on the next render,

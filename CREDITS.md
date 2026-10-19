@@ -64,7 +64,7 @@ commercially.
 | `slim-fit-jeans-4.webp` | Slim Fit Jeans Pro | jeans denim | by-sa 2.0 | Debarshi Ray | [link](https://www.flickr.com/photos/39423133@N04/52082435365) |
 | `slim-fit-jeans-5.webp` | Slim Fit Jeans Ultra | jeans denim | by-sa 2.0 | Debarshi Ray | [link](https://www.flickr.com/photos/39423133@N04/51439920824) |
 | `slim-fit-jeans-6.webp` | Slim Fit Jeans Max | jeans denim | by-sa 2.0 | Debarshi Ray | [link](https://www.flickr.com/photos/39423133@N04/38991938480) |
-| `running-sneakers-1.webp` | Running Sneakers | running sneakers | by-sa 2.0 | RainbowHugz | [link](https://www.flickr.com/photos/55896258@N04/51625410637) |
+| `running-sneakers-1.webp` | Running Sneakers | running sneakers | cc0 1.0 | JESHOOTS.com | [link](https://stocksnap.io/photo/running-shoes-645GI8G1W4) |
 | `running-sneakers-2.webp` | Running Sneakers Classic | running sneakers | by 2.0 | ccnull.de Bilddatenbank | [link](https://www.flickr.com/photos/115225894@N07/54396937588) |
 | `running-sneakers-3.webp` | Running Sneakers Lite | running sneakers | cc0 1.0 | unknown | [link](https://www.rawpixel.com/image/6113275/photo-image-public-domain-free-sport) |
 | `running-sneakers-4.webp` | Running Sneakers Pro | running sneakers | cc0 1.0 | Jon Breitenbucher | [link](https://wordpress.org/photos/photo/29462b2449/) |
@@ -637,7 +637,8 @@ from `productPhotos.json` to fall back to the placeholder.
 | `images/50.jpg` | Aroma Diffuser | legacy seed | unknown | unconfirmed |
 | `images/57.jpg` | Cricket Bat | legacy seed | unknown | unconfirmed |
 | `images/61.jpg` | Cycling Helmet | legacy seed | unknown | unconfirmed |
-| `images/63.jpg` | Adjustable Ankle Weights | legacy seed | unknown | unconfirmed |
+| `product-photos/adjustable-ankle-weights.webp` | Adjustable Ankle Weights | studio shoot | cc0 | curated |
+| `product-photos/swim-goggles.webp` | Swim Goggles | studio shoot | cc0 | curated |
 | `images/71.jpg` | Laptop Backpack | legacy seed | unknown | unconfirmed |
 | `images/69.jpg` | Linen Hardcover Journal | legacy seed | unknown | unconfirmed |
 | `images/77.jpg` | English Grammar Book | legacy seed | unknown | unconfirmed |

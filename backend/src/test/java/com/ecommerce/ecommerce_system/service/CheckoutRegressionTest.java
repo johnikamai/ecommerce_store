@@ -73,6 +73,23 @@ class CheckoutRegressionTest {
         assertThrows(IllegalArgumentException.class, () -> service.quote(request));
         verifyNoInteractions(payments);
     }
+    @Test void cancellingPendingPaymentClosesItWithoutCreatingARefund() {
+        Order order = new Order(); order.setId(12L); order.setCustomer(customer);
+        order.setStatus(OrderStatus.PLACED); order.setPaymentStatus(PaymentStatus.PENDING);
+        Payment payment = new Payment(); payment.setOrder(order); payment.setPaymentStatus(PaymentStatus.PENDING);
+        when(orders.findById(12L)).thenReturn(Optional.of(order));
+        when(payments.findByOrderId(12L)).thenReturn(Optional.of(payment));
+        when(orders.findByCustomerId(1L)).thenReturn(List.of(order));
+        when(orders.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Order cancelled = service.cancelOrder(12L, 1L);
+
+        assertEquals(OrderStatus.CANCELLED, cancelled.getStatus());
+        assertEquals(PaymentStatus.CANCELLED, cancelled.getPaymentStatus());
+        assertEquals(PaymentStatus.CANCELLED, payment.getPaymentStatus());
+        verify(payments).save(payment);
+        verify(notifications, never()).refundProcessed(any(), any(), any());
+    }
     @Test void refundReversesPointsOnlyOnceAndDropsCancelledSpend() {
         customer.setLoyaltyPoints(20); customer.setTier("GOLD");
         Order order = new Order(); order.setId(1L); order.setCustomer(customer);

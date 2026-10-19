@@ -81,6 +81,7 @@ export default function ThemeSwitcher() {
         aria-label="Change colour theme"
         aria-expanded={open}
         aria-haspopup="listbox"
+        data-testid="theme-switcher"
         className="inline-flex items-center gap-2 px-2.5 py-2 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] bg-[var(--color-card-bg)] hover:bg-[var(--color-card-bg-tint)] transition-colors"
       >
         <span
@@ -105,6 +106,7 @@ export default function ThemeSwitcher() {
               type="button"
               role="option"
               aria-selected={theme === t.id}
+              data-testid={`theme-option-${t.id}`}
               onClick={() => choose(t.id)}
               className="w-full flex items-center gap-3 px-2.5 py-2 rounded-[var(--radius-md)] hover:bg-[var(--color-card-bg-tint)] transition-colors text-left"
             >
