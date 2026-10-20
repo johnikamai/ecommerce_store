@@ -5,7 +5,10 @@ import com.ecommerce.ecommerce_system.repository.*;
 import com.ecommerce.ecommerce_system.security.CustomerGuard;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -49,6 +52,8 @@ public class GroupOrderService {
     private final OrderService orderService;
     private final NotificationService notificationService;
     private final CustomerGuard customerGuard;
+    /** Runs a correction in its own transaction so it survives a later rollback (see refreshPriceSnapshots). */
+    private final TransactionTemplate requireNewTx;
 
     private final Map<String, Long> lastItemNotifyAt = new ConcurrentHashMap<>();
 
@@ -63,7 +68,8 @@ public class GroupOrderService {
                              ProductRepository productRepository,
                              OrderService orderService,
                              NotificationService notificationService,
-                             CustomerGuard customerGuard) {
+                             CustomerGuard customerGuard,
+                             PlatformTransactionManager transactionManager) {
         this.groupOrderRepository = groupOrderRepository;
         this.memberRepository = memberRepository;
         this.cartItemRepository = cartItemRepository;
@@ -76,6 +82,8 @@ public class GroupOrderService {
         this.orderService = orderService;
         this.notificationService = notificationService;
         this.customerGuard = customerGuard;
+        this.requireNewTx = new TransactionTemplate(transactionManager);
+        this.requireNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     }
 
     // =====================================================================
@@ -426,8 +434,7 @@ public class GroupOrderService {
             throw new IllegalStateException("The group cart is empty");
         }
 
-        // Revalidate prices & stock against live product data; refresh snapshots.
-        boolean pricesChanged = false;
+        // Stock and availability are read-only checks against live product data.
         for (GroupCartItem item : group.getCartItems()) {
             Product product = productRepository.findById(item.getProduct().getId()).orElse(null);
             if (product == null) {
@@ -437,16 +444,13 @@ public class GroupOrderService {
                 throw new IllegalStateException("Not enough stock for " + product.getName()
                         + " — the host should edit the cart and try again");
             }
-            if (product.getPrice().compareTo(item.getUnitPrice()) != 0) {
-                item.setUnitPrice(product.getPrice());
-                pricesChanged = true;
-            }
         }
 
         // Confirmations are pinned to a split version: a price change makes the
         // old approvals meaningless, so everyone must reconfirm before we place.
-        if (pricesChanged) {
-            recomputeSplit(group); // bumps splitVersion, resets confirmations
+        // The snapshot rewrite happens in its own transaction - see
+        // refreshPriceSnapshots() for why it cannot happen inside this one.
+        if (refreshPriceSnapshots(group.getId())) {
             throw new IllegalStateException(
                     "Prices changed while you were checking out — everyone must review and confirm their shares again");
         }
@@ -511,8 +515,13 @@ public class GroupOrderService {
         recordActivity(group, null, GroupActivityType.ORDER_PLACED,
                 "Combined order #" + order.getId() + " placed (host pays ₹" + order.getTotalAmount().toPlainString() + ")");
         for (GroupOrderMember member : group.getMembers()) {
+            // Cash on delivery is not money received — only claim "paid" once the
+            // order's payment status actually says so.
             String roleLine = member.isHost()
-                    ? "You paid ₹" + member.getShareAmount().toPlainString() + " for order #" + order.getId() + "."
+                    ? (orderPaid
+                            ? "You paid ₹" + member.getShareAmount().toPlainString() + " for order #" + order.getId() + "."
+                            : "Order #" + order.getId() + " was placed on cash on delivery — you'll pay ₹"
+                                    + member.getShareAmount().toPlainString() + " when it arrives.")
                     : "Order #" + order.getId() + " was placed. You owe the host ₹"
                             + member.getShareAmount().toPlainString() + " — settle up directly.";
             notificationService.notify(member.getCustomer(), "GROUP",
@@ -526,6 +535,44 @@ public class GroupOrderService {
         }
         groupOrderRepository.save(group);
         return detail(auth, groupId);
+    }
+
+    /**
+     * Rewrites every cart line to its product's live price and recomputes the split,
+     * committing in its own transaction.
+     *
+     * {@link #checkout} calls this and then throws when a price moved, so the caller
+     * is told to collect fresh confirmations. That throw rolls back the checkout
+     * transaction — and this method runs inside it — which would also undo the
+     * correction. Every later attempt would re-see the same price gap, recompute,
+     * throw again, and the group could never be placed. Doing the rewrite in a
+     * REQUIRES_NEW transaction commits the new snapshots and the bumped split version
+     * before the refusal, so the next attempt starts from an accurate cart.
+     *
+     * @return true when at least one price moved and members must reconfirm
+     */
+    private boolean refreshPriceSnapshots(Long groupId) {
+        Boolean pricesChanged = requireNewTx.execute(status -> {
+            GroupOrder fresh = groupOrderRepository.findById(groupId)
+                    .orElseThrow(() -> new IllegalArgumentException("Group order not found"));
+            boolean changed = false;
+            for (GroupCartItem item : fresh.getCartItems()) {
+                Product product = productRepository.findById(item.getProduct().getId()).orElse(null);
+                if (product == null) {
+                    throw new IllegalStateException("A product in the cart is no longer available");
+                }
+                if (product.getPrice().compareTo(item.getUnitPrice()) != 0) {
+                    item.setUnitPrice(product.getPrice());
+                    changed = true;
+                }
+            }
+            if (changed) {
+                recomputeSplit(fresh); // bumps splitVersion, resets confirmations
+                groupOrderRepository.save(fresh);
+            }
+            return changed;
+        });
+        return Boolean.TRUE.equals(pricesChanged);
     }
 
     /** A member records that they paid the host offline. Never marks anything PAID. */
