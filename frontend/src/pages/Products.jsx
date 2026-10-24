@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Plus, ChevronDown, Sparkles, ArrowRight, Star, X, Loader2 } from 'lucide-react';
+import { Search, Plus, ChevronDown, Sparkles, ArrowRight, Star, X, Loader2, Camera, Tag, Check, Award } from 'lucide-react';
+import VisualSearchModal from '../components/VisualSearchModal';
+import PersonalizedRecommendations from '../components/PersonalizedRecommendations';
 import axiosClient from '../api/axiosClient';
 import ProductCard from '../components/ProductCard';
 import { useLanguage } from '../context/LanguageContext';
@@ -91,6 +93,14 @@ function Products() {
   // filtering is deliberately absent rather than guessed from the product name.
   const [minRating, setMinRating] = useState(0);
   const [inStockOnly, setInStockOnly] = useState(false);
+  const [selectedBrands, setSelectedBrands] = useState(() => {
+    const raw = searchParams.get('brands') || searchParams.get('brand');
+    if (!raw || raw === 'All') return [];
+    return raw.split(',').map((b) => b.trim()).filter(Boolean);
+  });
+  const [brandDropdownOpen, setBrandDropdownOpen] = useState(false);
+  const [brandSearch, setBrandSearch] = useState('');
+  const [browseBrandsModalOpen, setBrowseBrandsModalOpen] = useState(false);
   const [minSustainability, setMinSustainability] = useState(0);
 
   // Natural-language search. The server owns ranking, typo correction and
@@ -100,6 +110,7 @@ function Products() {
   const [searchError, setSearchError] = useState('');
   const [searchMeta, setSearchMeta] = useState({ correctedQuery: '', suggestions: [], minPrice: null, maxPrice: null });
   const [searching, setSearching] = useState(false);
+  const [visualModalOpen, setVisualModalOpen] = useState(false);
 
   // Admin add form
   const role = localStorage.getItem('role');
@@ -143,6 +154,8 @@ function Products() {
     const rating = Number(searchParams.get('minRating') || 0);
     setMinRating(Number.isFinite(rating) ? rating : 0);
     setInStockOnly(searchParams.get('inStock') === 'true');
+    const rawB = searchParams.get('brands') || searchParams.get('brand');
+    setSelectedBrands(!rawB || rawB === 'All' ? [] : rawB.split(',').map((b) => b.trim()).filter(Boolean));
     const sustain = Number(searchParams.get('sustainable') || 0);
     setMinSustainability(Number.isFinite(sustain) ? sustain : 0);
   }, [searchParams]);
@@ -159,6 +172,7 @@ function Products() {
       sort: sort !== 'default' ? sort : '',
       minRating: minRating > 0 ? String(minRating) : '',
       inStock: inStockOnly ? 'true' : '',
+    brands: selectedBrands.length > 0 ? selectedBrands.join(',') : '',
       sustainable: minSustainability > 0 ? String(minSustainability) : '',
       minPrice,
       maxPrice,
@@ -228,7 +242,40 @@ function Products() {
     };
   }, [searchQuery]);
 
-  const categories = ['All', ...new Set(products.map((p) => p.category))];
+  const MAIN_CATEGORIES = ['All', 'Electronics', 'Fashion', 'Beauty', 'Home & Living', 'Sports', 'Books & Stationery', 'Toys & Kids', 'Groceries & Food', 'Automotive'];
+  const FASHION_SUBCATEGORIES = ["Men's Clothing", "Women's Clothing", "Kids' Clothing", 'Shoes & Footwear', 'Bags & Backpacks', 'Watches', 'Fashion Accessories', 'Ethnic Wear', 'Sportswear'];
+  const SUBCATEGORIES = ['Mobiles', 'Laptops', 'Headphones', 'Shoes', 'Watches', ...FASHION_SUBCATEGORIES];
+  const CATEGORY_MAP = {
+    Electronics: ['Electronics', 'Mobiles', 'Laptops', 'Headphones', 'Shoes', 'Watches'],
+    Fashion: ['Fashion', ...FASHION_SUBCATEGORIES],
+    Beauty: ['Beauty'],
+    'Home & Living': ['Home & Living'],
+    Sports: ['Sports'],
+    'Books & Stationery': ['Books & Stationery'],
+    'Toys & Kids': ['Toys & Kids'],
+    'Groceries & Food': ['Groceries & Food'],
+    Automotive: ['Automotive'],
+  };
+  const [activeMainCategory, setActiveMainCategory] = useState('All');
+  const availableCategories = activeMainCategory === 'All'
+    ? ['All']
+    : [activeMainCategory, ...(CATEGORY_MAP[activeMainCategory] || []).filter((c) => c !== activeMainCategory && SUBCATEGORIES.includes(c))];
+  // Dynamic Brands computed with product counts, normalized against duplicate casing
+  const brandCounts = useMemo(() => {
+    const counts = new Map();
+    products.forEach((p) => {
+      const b = (p.brand || '').trim();
+      if (!b || b.toLowerCase() === 'unbranded') return;
+      // Normalization key
+      const key = b;
+      counts.set(key, (counts.get(key) || 0) + 1);
+    });
+    // Sort by count descending, then alphabetically
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .map(([name, count]) => ({ name, count }));
+  }, [products]);
+  const categories = ['All', ...new Set(products.map((p) => p.category))].filter((c) => c === 'All' || MAIN_CATEGORIES.includes(c) || SUBCATEGORIES.includes(c));
 
   // id -> relevance position. A Map lookup instead of Array.includes keeps the
   // filter and the sort linear rather than quadratic over 600-odd products.
@@ -243,12 +290,19 @@ function Products() {
     // in flight, so the grid keeps showing the previous set instead of flashing
     // empty on every keystroke.
     const matchesSearch = !rankedIds || rankIndex.has(product.id);
-    const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'All' || 
+      product.category === selectedCategory || 
+      (selectedCategory === 'Fashion' && (product.category === 'Fashion' || (product.specifications || '').includes('Subcategory:'))) ||
+      ((product.specifications || '').includes('Subcategory: ' + selectedCategory));
     const price = Number(product.price);
     const matchesMinPrice = minPrice === '' || price >= Number(minPrice);
     const matchesMaxPrice = maxPrice === '' || price <= Number(maxPrice);
     const matchesRating = minRating === 0 || Number(product.averageRating || 0) >= minRating;
     const matchesStock = !inStockOnly || Number(product.stockQuantity || 0) > 0;
+    const productBrand = (product.brand || '').trim().toLowerCase();
+    const matchesBrand =
+      selectedBrands.length === 0 ||
+      selectedBrands.some((sb) => sb.toLowerCase() === productBrand);
     const matchesSustainability =
       minSustainability === 0 || Number(product.sustainabilityScore || 0) >= minSustainability;
     return (
@@ -257,7 +311,7 @@ function Products() {
       matchesMinPrice &&
       matchesMaxPrice &&
       matchesRating &&
-      matchesStock &&
+      matchesStock && matchesBrand &&
       matchesSustainability
     );
   });
@@ -298,10 +352,21 @@ function Products() {
       clear: () => { setMinSustainability(0); syncUrl({ sustainable: '' }); },
     });
   }
+  selectedBrands.forEach((brandName) => {
+    activeChips.push({
+      key: 'brand-' + brandName,
+      label: brandName,
+      clear: () => {
+        const next = selectedBrands.filter((b) => b !== brandName);
+        setSelectedBrands(next);
+        syncUrl({ brands: next.join(',') });
+      },
+    });
+  });
 
   const clearAllFilters = () => {
     selectCategory('All');
-    setMinPrice('');
+    setSelectedBrands([]);
     setMaxPrice('');
     setMinRating(0);
     setInStockOnly(false);
@@ -310,8 +375,25 @@ function Products() {
     setSearchParams({}, { replace: true });
   };
 
+
+  const toggleBrand = (brandName) => {
+    const exists = selectedBrands.some((b) => b.toLowerCase() === brandName.toLowerCase());
+    const next = exists
+      ? selectedBrands.filter((b) => b.toLowerCase() !== brandName.toLowerCase())
+      : [...selectedBrands, brandName];
+    setSelectedBrands(next);
+    syncUrl({ brands: next.join(',') });
+  };
+
+  const clearBrands = () => {
+    setSelectedBrands([]);
+    syncUrl({ brands: '' });
+  };
+
   const selectCategory = (cat) => {
     setSelectedCategory(cat);
+    if (cat === 'All') setActiveMainCategory('All');
+    else if (MAIN_CATEGORIES.includes(cat)) setActiveMainCategory(cat);
     // Overrides rather than a bare replace, so changing category keeps the
     // other filters (and the search text) instead of silently discarding them.
     syncUrl({ category: cat === 'All' ? '' : cat });
@@ -345,6 +427,15 @@ function Products() {
     <div className="container-x py-[var(--space-8)]">
       {!browsing && <Hero onCategory={selectCategory} />}
 
+      {/* Personalized recommendations — only shown on the default landing view
+          (no search query, no category filter). When a shopper is actively
+          browsing or filtering, the grid is the right focus. */}
+      {!browsing && (
+        <div className="mb-[var(--space-9)]">
+          <PersonalizedRecommendations limit={4} />
+        </div>
+      )}
+
       {/* Controls */}
       <div className="flex flex-col gap-4 mb-[var(--space-6)]">
         <h2 id="grid" className="font-[family-name:var(--font-heading)] text-[32px] font-bold">
@@ -362,15 +453,24 @@ function Products() {
               className="w-full bg-transparent outline-none text-[15px]"
             />
             {searching && <Loader2 size={16} className="text-[var(--color-text-muted)] animate-spin shrink-0" />}
+            <button
+              type="button"
+              onClick={() => setVisualModalOpen(true)}
+              aria-label={t('visualSearch.open')}
+              title={t('visualSearch.open')}
+              className="shrink-0 text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors"
+            >
+              <Camera size={18} />
+            </button>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {categories.map((cat) => (
+            {MAIN_CATEGORIES.map((cat) => (
               <button
                 key={cat}
                 onClick={() => selectCategory(cat)}
                 className={`px-4 py-2 rounded-[var(--radius-full)] text-sm font-medium transition-colors ${
-                  selectedCategory === cat
+                  (cat === 'All' ? selectedCategory === 'All' : activeMainCategory === cat)
                     ? 'bg-[var(--color-primary)] text-white'
                     : 'bg-[var(--color-card-bg-tint)] text-[var(--color-text-secondary)] hover:bg-[var(--color-border)]'
                 }`}
@@ -379,6 +479,23 @@ function Products() {
               </button>
             ))}
           </div>
+          {activeMainCategory !== 'All' && availableCategories.filter(c => c !== activeMainCategory).length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {availableCategories.filter(c => c !== activeMainCategory).map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => selectCategory(cat)}
+                  className={`px-3 py-1.5 rounded-[var(--radius-full)] text-xs font-medium transition-colors ${
+                    selectedCategory === cat
+                      ? 'bg-[var(--color-primary)]/90 text-white'
+                      : 'bg-[var(--color-card-bg-tint)] text-[var(--color-text-secondary)] hover:bg-[var(--color-border)]'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          )}
 
           {role === 'ADMIN' && (
             <button
@@ -459,6 +576,109 @@ function Products() {
             />
             <span className="text-sm">{t('catalog.inStockOnly')}</span>
           </label>
+
+          {/* Dynamic Multi-Brand Filter */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setBrandDropdownOpen(!brandDropdownOpen)}
+              className={"flex items-center gap-2 rounded-[var(--radius-full)] px-4 h-11 text-sm font-medium transition-all " +
+                (selectedBrands.length > 0
+                  ? "bg-[var(--color-primary)] text-white shadow-[var(--shadow-sm)]"
+                  : "bg-[var(--color-card-bg-tint)] text-[var(--color-text-secondary)] hover:bg-[var(--color-border)]")}
+            >
+              <Tag size={15} />
+              <span>
+                {selectedBrands.length === 0
+                  ? "Brands"
+                  : selectedBrands.length === 1
+                  ? selectedBrands[0]
+                  : `Brands (${selectedBrands.length})`}
+              </span>
+              <ChevronDown size={14} className={"transition-transform " + (brandDropdownOpen ? "rotate-180" : "")} />
+            </button>
+
+            {brandDropdownOpen && (
+              <div className="absolute left-0 mt-2 w-72 max-h-96 rounded-[var(--radius-lg)] bg-[var(--color-surface)] shadow-[var(--shadow-xl)] border border-[var(--color-border)] p-3 z-[var(--z-dropdown)] flex flex-col">
+                <div className="flex items-center justify-between pb-2 mb-2 border-b border-[var(--color-border)]">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-muted)]">
+                    Filter by Brand ({brandCounts.length})
+                  </span>
+                  {selectedBrands.length > 0 && (
+                    <button
+                      onClick={clearBrands}
+                      className="text-xs text-[var(--color-primary)] font-semibold hover:underline"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+
+                <div className="mb-2">
+                  <input
+                    type="text"
+                    placeholder="Search brand..."
+                    value={brandSearch}
+                    onChange={(e) => setBrandSearch(e.target.value)}
+                    className="w-full px-3 py-1.5 text-xs rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] border border-[var(--color-border)] outline-none focus:border-[var(--color-primary)]"
+                  />
+                </div>
+
+                <div className="overflow-y-auto space-y-1 max-h-56 pr-1">
+                  {brandCounts
+                    .filter((b) => b.name.toLowerCase().includes(brandSearch.toLowerCase()))
+                    .map((b) => {
+                      const isChecked = selectedBrands.some(
+                        (sb) => sb.toLowerCase() === b.name.toLowerCase()
+                      );
+                      return (
+                        <label
+                          key={b.name}
+                          onClick={() => toggleBrand(b.name)}
+                          className="flex items-center justify-between px-2.5 py-1.5 rounded-[var(--radius-md)] text-xs text-[var(--color-text-primary)] hover:bg-[var(--color-card-bg-tint)] cursor-pointer transition-colors"
+                        >
+                          <span className="flex items-center gap-2">
+                            <span
+                              className={"w-4 h-4 rounded border flex items-center justify-center " +
+                                (isChecked
+                                  ? "bg-[var(--color-primary)] border-[var(--color-primary)] text-white"
+                                  : "border-[var(--color-border)] bg-white")}
+                            >
+                              {isChecked && <Check size={12} strokeWidth={3} />}
+                            </span>
+                            <span className="font-medium">{b.name}</span>
+                          </span>
+                          <span className="text-[11px] text-[var(--color-text-muted)] bg-[var(--color-card-bg-tint)] px-1.5 py-0.5 rounded-full">
+                            {b.count}
+                          </span>
+                        </label>
+                      );
+                    })}
+                </div>
+
+                <div className="pt-2 mt-2 border-t border-[var(--color-border)] flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBrandDropdownOpen(false);
+                      setBrowseBrandsModalOpen(true);
+                    }}
+                    className="text-xs text-[var(--color-primary)] font-semibold hover:underline flex items-center gap-1"
+                  >
+                    <Award size={13} /> Browse all companies
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBrandDropdownOpen(false)}
+                    className="text-xs px-2.5 py-1 rounded bg-[var(--color-primary)] text-white font-semibold"
+                  >
+                    Apply
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
         </div>
 
         {/* Shown when the search endpoint itself failed. Without this the grid
@@ -618,6 +838,77 @@ function Products() {
           ))}
         </div>
       )}
+
+      {/* Browse by Brand / Company Modal */}
+      {browseBrandsModalOpen && (
+        <div className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-[var(--color-surface)] w-full max-w-4xl rounded-[var(--radius-xl)] shadow-[var(--shadow-2xl)] border border-[var(--color-border)] flex flex-col max-h-[85vh] overflow-hidden">
+            <div className="p-6 border-b border-[var(--color-border)] flex items-center justify-between">
+              <div>
+                <h3 className="font-[family-name:var(--font-heading)] text-2xl font-bold text-[var(--color-text-primary)] flex items-center gap-2">
+                  <Award className="text-[var(--color-primary)]" size={26} /> Browse by Brand & Company
+                </h3>
+                <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+                  Explore verified products across {brandCounts.length} official brands and manufacturers
+                </p>
+              </div>
+              <button
+                onClick={() => setBrowseBrandsModalOpen(false)}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:bg-[var(--color-card-bg-tint)] hover:text-[var(--color-text-primary)] transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                {brandCounts.map((b) => {
+                  const isChecked = selectedBrands.some(
+                    (sb) => sb.toLowerCase() === b.name.toLowerCase()
+                  );
+                  return (
+                    <button
+                      key={b.name}
+                      onClick={() => {
+                        toggleBrand(b.name);
+                        setBrowseBrandsModalOpen(false);
+                      }}
+                      className={"flex flex-col p-3 rounded-[var(--radius-lg)] border text-left transition-all " +
+                        (isChecked
+                          ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5 ring-2 ring-[var(--color-primary)]/20"
+                          : "border-[var(--color-border)] bg-[var(--color-card-bg)] hover:border-[var(--color-primary)] hover:shadow-[var(--shadow-sm)]")}
+                    >
+                      <span className="font-semibold text-sm text-[var(--color-text-primary)] truncate">
+                        {b.name}
+                      </span>
+                      <span className="text-xs text-[var(--color-text-muted)] mt-1">
+                        {b.count} {b.count === 1 ? 'product' : 'products'}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-[var(--color-border)] flex justify-between items-center bg-[var(--color-card-bg-tint)]">
+              <span className="text-xs text-[var(--color-text-muted)]">
+                Selected: {selectedBrands.length > 0 ? selectedBrands.join(', ') : 'None'}
+              </span>
+              <button
+                onClick={() => setBrowseBrandsModalOpen(false)}
+                className="px-5 py-2 rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white text-sm font-semibold hover:bg-[var(--color-primary-hover)] transition-colors"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    <VisualSearchModal
+        isOpen={visualModalOpen}
+        onClose={() => setVisualModalOpen(false)}
+        catalog={products}
+      />
     </div>
   );
 }

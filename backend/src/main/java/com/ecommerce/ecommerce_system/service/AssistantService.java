@@ -93,6 +93,9 @@ public class AssistantService {
         m.put("quick", List.of("low-maintenance", "machine-washable"));
         m.put("easy", List.of("low-maintenance", "machine-washable"));
         m.put("small", List.of("compact", "foldable", "portable"));
+        m.put("coding", List.of("16gb", "ryzen", "core i5", "ssd", "ram", "laptop"));
+        m.put("programming", List.of("16gb", "ryzen", "core i5", "ssd", "ram", "laptop"));
+        m.put("developer", List.of("16gb", "ryzen", "core i5", "ssd", "ram", "laptop"));
         return m;
     }
 
@@ -155,6 +158,16 @@ public class AssistantService {
         m.put("pen", "Books & Stationery");
         m.put("novel", "Books & Stationery");
         m.put("backpack", "Books & Stationery");
+        m.put("laptop", "Laptops");
+        m.put("laptops", "Laptops");
+        m.put("notebook", "Laptops");
+        m.put("ultrabook", "Laptops");
+        m.put("mobile", "Mobiles");
+        m.put("mobiles", "Mobiles");
+        m.put("phone", "Mobiles");
+        m.put("phones", "Mobiles");
+        m.put("smartphone", "Mobiles");
+        m.put("smartphones", "Mobiles");
         return m;
     }
 
@@ -179,7 +192,7 @@ public class AssistantService {
      * Visible for testing: the behaviour worth testing is the interpretation of
      * a phrase against a known catalogue, not the database read.
      */
-    Reply chat(String rawMessage, List<Turn> history, List<Product> all) {
+    public Reply chat(String rawMessage, List<Turn> history, List<Product> all) {
         String message = (rawMessage == null ? "" : rawMessage).trim();
         if (message.length() > MAX_MESSAGE) message = message.substring(0, MAX_MESSAGE);
         String lower = message.toLowerCase(Locale.ROOT);
@@ -282,7 +295,7 @@ public class AssistantService {
             }
         }
 
-        return new Reply(reply, toProductMaps(matches), source, understood, chipsFor(category));
+        return new Reply(reply, toProductMaps(matches, message, budget), source, understood, chipsFor(category));
     }
 
     /**
@@ -474,7 +487,8 @@ public class AssistantService {
         return haystack.matches("(?s).*\\b" + java.util.regex.Pattern.quote(needle) + "\\b.*");
     }
 
-    private List<Map<String, Object>> toProductMaps(List<Product> matches) {
+    private List<Map<String, Object>> toProductMaps(List<Product> matches, String message, Double[] budget) {
+        String lower = (message == null ? "" : message).toLowerCase(Locale.ROOT);
         return matches.stream().map(p -> {
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("id", p.getId());
@@ -483,8 +497,31 @@ public class AssistantService {
             m.put("price", p.getPrice());
             m.put("imageUrl", p.getImageUrl());
             m.put("stockQuantity", p.getStockQuantity());
+            m.put("specifications", p.getSpecifications());
+            m.put("reason", generateFitReason(p, lower, budget));
             return m;
         }).toList();
+    }
+
+    private String generateFitReason(Product p, String query, Double[] budget) {
+        String name = p.getName() != null ? p.getName() : "";
+        String desc = p.getDescription() != null ? p.getDescription() : "";
+        String specs = p.getSpecifications() != null ? p.getSpecifications() : "";
+        String combined = (name + " " + desc + " " + specs).toLowerCase(Locale.ROOT);
+
+        if (query.contains("coding") || query.contains("programm") || query.contains("developer")) {
+            if (combined.contains("16gb") || combined.contains("32gb")) {
+                return "16GB+ RAM & fast processor ensure smooth code compilation, IDE performance, and multitasking.";
+            }
+            return "Equipped with high-performance CPU and SSD storage suitable for programming and development workloads.";
+        }
+        if (budget[1] != null && p.getPrice() != null && p.getPrice().doubleValue() <= budget[1]) {
+            return "Within your " + fmt(budget[1]) + " budget with top specs and verified customer satisfaction.";
+        }
+        if (p.getCategory() != null && query.contains(p.getCategory().toLowerCase(Locale.ROOT))) {
+            return "Popular choice in " + p.getCategory() + " with reliable quality and high ratings.";
+        }
+        return "Matches your search criteria with excellent performance and reliable build.";
     }
 
     private List<String> chipsFor(String category) {
@@ -497,7 +534,7 @@ public class AssistantService {
     }
 
     private List<String> defaultChips() {
-        return List.of("a dress for a beach wedding", "gifts under 1500",
+        return List.of("I need a laptop for coding under ₹50,000", "a dress for a beach wedding", "gifts under 1500",
                 "eco friendly gym gear", "something for travel");
     }
 

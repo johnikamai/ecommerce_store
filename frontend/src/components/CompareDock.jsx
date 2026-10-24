@@ -8,7 +8,7 @@ import ProductImage from './ProductImage';
 
 export default function CompareDock() {
   const { ids, remove, clear, count, limit } = useCompare();
-  const { t } = useLanguage();
+  const { t, formatCurrency } = useLanguage();
   const location = useLocation();
   const [minimized, setMinimized] = useState(false);
   const [catalog, setCatalog] = useState([]);
@@ -34,8 +34,11 @@ export default function CompareDock() {
 
   if (count === 0 || isComparePage) return null;
 
+  // A selected product that is no longer in the catalogue is shown as an
+  // unnamed slot rather than an invented "Product #12" entry, so the dock
+  // never displays a product name that does not exist.
   const selectedProducts = ids
-    .map((id) => catalog.find((p) => p.id === id) || { id, name: `Product #${id}`, price: '' })
+    .map((id) => catalog.find((p) => p.id === id) || { id, name: null, price: null })
     .slice(0, limit);
 
   const emptySlotsCount = Math.max(0, limit - selectedProducts.length);
@@ -46,7 +49,7 @@ export default function CompareDock() {
         <button
           onClick={() => setMinimized(false)}
           className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-[var(--color-primary)] text-white font-semibold text-xs shadow-lg hover:bg-[var(--color-primary-hover)] transition-all hover:scale-105"
-          aria-label="Expand comparison dock"
+          aria-label={t('compare.dockExpand')}
         >
           <Scale className="w-4 h-4" />
            <span>{t('compare.dockTitle')} ({count}/{limit})</span>
@@ -92,22 +95,30 @@ export default function CompareDock() {
               className="relative group flex items-center gap-2 p-1.5 pr-3 rounded-[var(--radius-md)] bg-[var(--color-card-bg)] border border-[var(--color-border)] shadow-sm shrink-0 min-w-[140px] max-w-[180px]"
             >
               <div className="w-10 h-10 rounded overflow-hidden bg-[var(--color-card-bg-tint)] shrink-0">
-                <ProductImage product={p} alt={p.name} className="w-full h-full object-cover" />
+                {p.name ? (
+                  <ProductImage product={p} alt={p.name} className="w-full h-full object-cover" />
+                ) : (
+                  // The catalogue did not return this product, so there is no
+                  // image to show; an empty slot is honest, a guess is not.
+                  <div className="w-full h-full flex items-center justify-center text-[var(--color-text-muted)]">
+                    <Scale className="w-4 h-4" />
+                  </div>
+                )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-medium text-[var(--color-text-primary)] truncate" title={p.name}>
-                  {p.name}
+                <p className="text-xs font-medium text-[var(--color-text-primary)] truncate" title={p.name || undefined}>
+                  {p.name || t('compare.notSpecified')}
                 </p>
-                {p.price && (
+                {p.price != null && p.price !== '' && (
                   <p className="text-[11px] font-semibold text-[var(--color-primary)]">
-                    ₹{p.price}
+                    {formatCurrency(p.price)}
                   </p>
                 )}
               </div>
               <button
                 onClick={() => remove(p.id)}
-                aria-label={`Remove ${p.name}`}
-                title="Remove from comparison"
+                aria-label={t('compare.dockRemove', { name: p.name || '' })}
+                title={t('compare.dockRemove', { name: p.name || '' })}
                 className="p-1 rounded-full text-[var(--color-text-muted)] hover:text-[var(--color-error)] hover:bg-[var(--color-error-bg)] transition-colors"
               >
                 <X className="w-3.5 h-3.5" />
@@ -120,11 +131,11 @@ export default function CompareDock() {
             <Link
               key={`empty-${i}`}
               to="/products"
-              title="Add another product"
+              title={t('compare.dockAddAnother')}
               className="hidden md:flex items-center justify-center gap-1.5 h-12 px-3 rounded-[var(--radius-md)] border-2 border-dashed border-[var(--color-border)] text-[var(--color-text-muted)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] text-xs font-medium transition-colors shrink-0"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>{t('compare.addSlot', 'Add product')}</span>
+              <span>{t('compare.addSlot')}</span>
             </Link>
           ))}
         </div>
@@ -134,24 +145,24 @@ export default function CompareDock() {
           <button
             onClick={clear}
             className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors font-medium"
-            title="Clear all selected products"
+            title={t('compare.dockClear')}
           >
             <Trash2 className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{t('compare.clearAll', 'Clear all')}</span>
+            <span className="hidden sm:inline">{t('compare.clearAll')}</span>
           </button>
 
           <Link
             to="/compare"
             className="flex items-center gap-1.5 px-4 py-2 rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white text-xs font-semibold hover:bg-[var(--color-primary-hover)] shadow-sm transition-all hover:gap-2"
           >
-            <span>{t('compare.compareNow', 'Compare Now')}</span>
+            <span>{t('compare.compareNow')}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
 
           <button
             onClick={() => setMinimized(true)}
-            aria-label="Minimize comparison dock"
-            title="Minimize"
+            aria-label={t('compare.dockMinimize')}
+            title={t('compare.dockMinimize')}
             className="p-1.5 rounded text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-card-bg-tint)] transition-colors"
           >
             <ChevronDown className="w-4 h-4" />

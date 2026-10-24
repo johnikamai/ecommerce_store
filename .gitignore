@@ -1,0 +1,23 @@
+# ── Build artifacts ────────────────────────────────────────────────
+*.zip
+*.jar
+*.war
+
+# ── Log files ──────────────────────────────────────────────────────
+*.log
+*.log.*
+*.err
+*.err.*
+*.txt
+
+# ── OS / editor ────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ── Runtime PID files ──────────────────────────────────────────────
+*.pid
+*_pid*.txt
+hs_err_pid*.log
+replay_pid*.log

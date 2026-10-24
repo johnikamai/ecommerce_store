@@ -130,6 +130,46 @@ export const QUERIES = {
   'Aquarium Starter Kit': 'aquarium fish tank',
   'Pet Travel Carrier': 'dog carrier',
   'Cat Litter Scoop Box': 'cat litter',
+
+  // ---------- Mobiles ----------
+  'Apex Neo 5G': 'smartphone',
+  'Nova X Lite': 'smartphone',
+  'Vertex Alpha 12': 'smartphone',
+  'Apex Orbit Go': 'smartphone',
+  'Nova Prime 5G': 'smartphone',
+  'Vertex Nova Pro': 'smartphone',
+
+  // ---------- Laptops ----------
+  'ApexBook Air 14': 'laptop',
+  'NovaLite Slim 15': 'laptop',
+  'Vertex ProBook 14X': 'laptop',
+  'Apex Flex 13': 'laptop',
+  'NovaWorkstation 16': 'laptop',
+  'Vertex UltraBook X': 'laptop',
+
+  // ---------- Headphones ----------
+  'Apex SoundWave NC': 'over ear headphones',
+  'Nova Pods Max': 'wireless earbuds',
+  'Vertex BeatPro X': 'over ear headphones',
+  'Apex AirBuds Lite': 'wireless earbuds',
+  'Nova Studio ANC': 'over ear headphones',
+  'Vertex Pulse TWS': 'wireless earbuds',
+
+  // ---------- Shoes ----------
+  'Apex Stride Runner': 'running sneakers',
+  'Nova Urban Glide': 'sneakers',
+  'Vertex Terra Trek': 'walking shoes',
+  'Apex Court Classic': 'sneakers',
+  'Nova Flex Trainer': 'training shoes',
+  'Vertex Aero Sprint': 'running sneakers',
+
+  // ---------- Watches ----------
+  'Apex ChronoFit': 'smartwatch',
+  'Nova TimeTrack': 'smartwatch',
+  'Vertex Elite X': 'smartwatch',
+  'Apex SlimLink': 'smartwatch',
+  'Nova SportPulse': 'smartwatch',
+  'Vertex Active Pro': 'smartwatch',
 };
 
 // Product names ending in one of these are the generated variants of a base

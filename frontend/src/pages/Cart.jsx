@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Banknote, CreditCard, Smartphone, MapPin, Plus, LocateFixed, Loader2, Split } from 'lucide-react';
+import { Banknote, CreditCard, Smartphone, MapPin, Plus, LocateFixed, Loader2, Split, Tag, CheckCircle2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
 import axiosClient from '../api/axiosClient';
@@ -69,6 +69,67 @@ function BundleProgress({ serverBundleDiscount }) {
         {t(needed > 1 ? 'cart.bundle.moreOther' : 'cart.bundle.moreOne', { count: needed, off: nextTierOff })}{' '}
         {t('cart.bundle.stacks')}
       </p>
+    </div>
+  );
+}
+
+/**
+ * Smart Coupon Recommendation banner.
+ *
+ * Fetches the best eligible coupon for the current cart subtotal from
+ * GET /api/coupons/recommend and renders a dismissible banner with a
+ * one-click Apply button. Hides itself when the recommended coupon is
+ * already typed into the coupon field.
+ */
+function SmartCouponBanner({ subtotal, appliedCode, onApply }) {
+  const { formatCurrency } = useLanguage();
+  const [rec, setRec] = useState(null);
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    if (!subtotal || subtotal <= 0) { setRec(null); return; }
+    let active = true;
+    axiosClient.get('/coupons/recommend', { params: { subtotal } })
+      .then((res) => { if (active && res.data) setRec(res.data); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [subtotal]);
+
+  // Reset dismiss when the subtotal changes (new item added, etc.)
+  useEffect(() => { setDismissed(false); }, [subtotal]);
+
+  if (!rec || dismissed) return null;
+  if (appliedCode && appliedCode.toUpperCase() === rec.code) return null;
+
+  const savingText = formatCurrency(rec.saving);
+  const discountText = rec.discountType === 'PERCENT'
+    ? `${rec.discountValue}% off`
+    : `${formatCurrency(rec.discountValue)} off`;
+
+  return (
+    <div className="flex items-center gap-3 p-4 rounded-[var(--radius-lg)] bg-gradient-to-r from-[var(--color-primary)]/10 to-[var(--color-success)]/10 border-[1.5px] border-[var(--color-primary)] shadow-[var(--shadow-sm)]">
+      <Tag size={20} className="text-[var(--color-primary)] shrink-0" />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-[var(--color-text-primary)]">
+          Best coupon for your cart: <span className="text-[var(--color-primary)] font-bold">{rec.code}</span>
+        </p>
+        <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
+          {discountText} · saves you <span className="font-semibold text-[var(--color-success)]">{savingText}</span>
+          {rec.description ? ` · ${rec.description}` : ''}
+        </p>
+      </div>
+      <button
+        id="cart-apply-recommended-coupon"
+        onClick={() => { onApply(rec.code); setDismissed(true); }}
+        className="flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white text-xs font-semibold hover:bg-[var(--color-primary-hover)] transition-colors shrink-0"
+      >
+        <CheckCircle2 size={14} /> Apply
+      </button>
+      <button
+        onClick={() => setDismissed(true)}
+        className="text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors shrink-0 text-lg leading-none"
+        aria-label="Dismiss"
+      >×</button>
     </div>
   );
 }
@@ -472,6 +533,15 @@ function Cart() {
         </div>
       </div>
 
+      {/* ── Smart Coupon Recommendation ── */}
+      <div className="mt-4">
+        <SmartCouponBanner
+          subtotal={currentQuote?.subtotal ?? totalPrice}
+          appliedCode={couponCode}
+          onApply={(code) => setCouponCode(code)}
+        />
+      </div>
+
       <div className="flex items-center justify-between gap-4 mt-4 p-4 rounded-[var(--radius-lg)] bg-[var(--color-card-bg)] shadow-[var(--shadow-sm)]">
         <input
           value={couponCode}
@@ -485,6 +555,7 @@ function Cart() {
       {!currentQuote && !quoteError && <p className="text-sm mt-3">{t('fix.addressQuote')}</p>}
       {quoteError && <p className="text-[var(--color-error)] text-sm mt-3">{quoteError}</p>}
       {error && <p className="text-[var(--color-error)] text-sm mt-3">{t(error)}</p>}
+
 
       {/* ── Bill Split Modal ── */}
       <BillSplitModal

@@ -85,7 +85,10 @@ export function adminGuard(token, cachedRole) {
   // The signed claim is the authority; the cached copy is only a fallback for a
   // token that predates the claim being issued.
   const role = tokenRole(token) || cachedRole || null;
-  return role === 'ADMIN' || role === 'STAFF' ? null : '/products';
+  // Admin portal is ADMIN-only. Staff have their own portal at /staff.
+  // Allowing STAFF here let staff accounts reach admin pages client-side,
+  // even though the server correctly blocked their API calls.
+  return role === 'ADMIN' ? null : '/products';
 }
 
 /**

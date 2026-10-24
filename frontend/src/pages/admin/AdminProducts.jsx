@@ -7,7 +7,7 @@ import { useLanguage } from '../../context/LanguageContext';
 const PAGE_SIZE = 20;
 
 const emptyForm = {
-  name: '', description: '', category: '', price: '', stockQuantity: '', sustainabilityScore: '', imageUrl: '',
+  name: '', description: '', category: '', brand: '', price: '', stockQuantity: '', sustainabilityScore: '', imageUrl: '',
 };
 
 export default function AdminProducts() {
@@ -50,16 +50,17 @@ export default function AdminProducts() {
   useEffect(() => { load(); }, []);
 
   const openModal = (product) => {
-    setForm(product ? {
-      name: product.name,
-      description: product.description || '',
-      category: product.category || '',
-      price: product.price,
-      stockQuantity: product.stockQuantity,
-      reorderLevel: product.reorderLevel ?? '',
-      sustainabilityScore: product.sustainabilityScore == null ? '' : product.sustainabilityScore,
-      imageUrl: product.imageUrl || '',
-    } : { ...emptyForm });
+  setForm(product ? {
+    name: product.name || '',
+    description: product.description || '',
+    category: product.category || '',
+    brand: product.brand || '',
+    price: product.price,
+    stockQuantity: product.stockQuantity,
+    reorderLevel: product.reorderLevel ?? '',
+    sustainabilityScore: product.sustainabilityScore ?? '',
+    imageUrl: product.imageUrl || '',
+  } : { ...emptyForm });
     setModal(product ? { product } : {});
   };
 
@@ -71,14 +72,15 @@ export default function AdminProducts() {
     setMessage('');
     try {
       const body = {
-        name: form.name,
-        description: form.description,
-        category: form.category,
-        price: parseFloat(form.price),
-        stockQuantity: parseInt(form.stockQuantity),
-        reorderLevel: form.reorderLevel === '' ? null : parseInt(form.reorderLevel),
-        sustainabilityScore: form.sustainabilityScore === '' ? null : parseInt(form.sustainabilityScore),
-        imageUrl: form.imageUrl === '' ? null : form.imageUrl,
+      name: form.name,
+      description: form.description,
+      category: form.category,
+      brand: form.brand === '' ? null : form.brand,
+      price: parseFloat(form.price),
+      stockQuantity: parseInt(form.stockQuantity),
+      reorderLevel: form.reorderLevel === '' ? null : parseInt(form.reorderLevel),
+      sustainabilityScore: form.sustainabilityScore === '' ? null : parseInt(form.sustainabilityScore),
+      imageUrl: form.imageUrl === '' ? null : form.imageUrl,
       };
       if (modal.product) {
         await axiosClient.put(`/products/${modal.product.id}`, body);
@@ -146,6 +148,7 @@ export default function AdminProducts() {
                 <th className="py-3 px-4">{t('admin.products.colImage')}</th>
                 <th className="py-3 px-4">{t('admin.products.colProduct')}</th>
                 <th className="py-3 px-4">{t('common.category')}</th>
+                <th className="py-3 px-4">Brand</th>
                 <th className="py-3 px-4 text-right">{t('admin.products.colPrice')}</th>
                 <th className="py-3 px-4 text-right">{t('admin.products.colStock')}</th>
                 <th className="py-3 px-4 text-center">{t('admin.products.colSustainability')}</th>
@@ -164,6 +167,7 @@ export default function AdminProducts() {
                     <div className="text-xs text-[var(--color-text-muted)] max-w-xs truncate">{p.description}</div>
                   </td>
                   <td className="py-3 px-4 text-[var(--color-text-secondary)]">{p.category}</td>
+                  <td className="py-3 px-4 text-[var(--color-text-secondary)]">{p.brand || '-'}</td>
                   <td className="py-3 px-4 text-right font-medium">{formatCurrency(p.price)}</td>
                   <td className={`py-3 px-4 text-right font-medium ${p.lowStock ? 'text-[var(--color-warning)]' : ''}`}>
                     {formatNumber(p.stockQuantity)}
@@ -228,6 +232,7 @@ export default function AdminProducts() {
                 <option value="">{t('admin.products.selectCategory')}</option>
                 {categories.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
               </select>
+              <input className={inputClass} placeholder={t('admin.products.brandPlaceholder') || 'Brand'} value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} />
               <div className="grid grid-cols-3 gap-3">
                 <input className={inputClass} placeholder={t('admin.products.pricePlaceholder')} type="number" min="0" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
                 <input className={inputClass} placeholder={t('admin.products.stockPlaceholder')} type="number" min="0" value={form.stockQuantity} onChange={(e) => setForm({ ...form, stockQuantity: e.target.value })} required />

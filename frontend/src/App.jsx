@@ -13,6 +13,7 @@ import WishlistPage from './pages/WishlistPage';
 import GroupOrders from './pages/GroupOrders';
 import GroupOrderDetail from './pages/GroupOrderDetail';
 import Compare from './pages/Compare';
+import GiftFinder from './pages/GiftFinder';
 import Account from './pages/Account';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -86,6 +87,7 @@ function App() {
               <Route path="/products" element={<Products />} />
               <Route path="/product/:id" element={<ProductDetail />} />
               <Route path="/compare" element={<Compare />} />
+              <Route path="/gift-finder" element={<ProtectedRoute><GiftFinder /></ProtectedRoute>} />
               <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="products" element={<AdminProducts />} />

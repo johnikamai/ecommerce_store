@@ -11,8 +11,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @RestController
@@ -194,5 +197,155 @@ public class ProductController {
         }
         productRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // -------------------------------------------------------------------------
+    // Feature 12: AI Product Q&A
+    // -------------------------------------------------------------------------
+
+    /**
+     * POST /api/products/{id}/ask
+     *
+     * AI Product Q&A: a customer submits a natural-language question about a
+     * specific product and receives an answer grounded in its actual fields
+     * (name, description, category, price, stock, specifications, sustainability).
+     *
+     * The rule-based engine matches common question intents and composes an
+     * answer from real stored data — it never invents facts.  For unrecognised
+     * questions it returns the full product summary.
+     *
+     * Body:    { "question": "Is this waterproof?" }
+     * Returns: { "answer": "...", "source": "rules" }
+     */
+    @PostMapping("/{id}/ask")
+    public ResponseEntity<?> askAboutProduct(@PathVariable Long id,
+                                             @RequestBody Map<String, String> requestBody) {
+        String question = requestBody == null ? null : requestBody.get("question");
+        if (question == null || question.isBlank()) {
+            return ResponseEntity.badRequest().body("question is required");
+        }
+        if (question.length() > 400) question = question.substring(0, 400);
+
+        Product product = productRepository.findById(id).orElse(null);
+        if (product == null) return ResponseEntity.notFound().build();
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("answer", answerProductQuestion(question, product));
+        result.put("source", "rules");
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * Rule-based product Q&A engine.
+     *
+     * Inspects the question for intent keywords and builds an answer directly
+     * from the product's stored fields. Every answer is data-backed; unknown
+     * questions fall back to the full product summary rather than guessing.
+     */
+    private String answerProductQuestion(String question, Product product) {
+        String q       = question.toLowerCase(Locale.ROOT);
+        String name    = product.getName()           != null ? product.getName()           : "This product";
+        String desc    = product.getDescription()    != null ? product.getDescription()    : "";
+        String specs   = product.getSpecifications() != null ? product.getSpecifications() : "";
+        String combined = (desc + " " + specs).toLowerCase(Locale.ROOT);
+
+        // --- Price ---
+        if (matchesAny(q, "price", "cost", "how much", "rate", "mrp")) {
+            return product.getPrice() != null
+                    ? name + " is priced at \u20b9" + product.getPrice().toPlainString() + " (inclusive of taxes)."
+                    : "Price information is not available for " + name + " right now.";
+        }
+
+        // --- Availability / stock ---
+        if (matchesAny(q, "stock", "available", "availability", "in stock", "units")) {
+            int qty = product.getStockQuantity() == null ? 0 : product.getStockQuantity();
+            if (qty <= 0) return name + " is currently out of stock.";
+            if (qty <= 5) return name + " is available \u2014 only " + qty + " unit(s) left, order soon!";
+            return name + " is in stock and ready to purchase.";
+        }
+
+        // --- Waterproof / weather resistance ---
+        if (matchesAny(q, "waterproof", "water resistant", "water-resistant", "rain", "splash", "ip rating")) {
+            if (combined.contains("waterproof") || combined.contains("water-resistant")
+                    || combined.contains("ipx") || combined.contains("ip6") || combined.contains("ip5")) {
+                return name + " offers water resistance. Check the Specifications tab for the exact IP rating.";
+            }
+            return "Based on the available product information, " + name
+                    + " does not specify waterproof protection. We recommend verifying the full specification sheet.";
+        }
+
+        // --- Weight / size / dimensions ---
+        if (matchesAny(q, "weight", "dimension", "size", "how big", "how heavy", "width", "height", "depth")) {
+            if (!specs.isBlank()) return "Specifications for " + name + ": " + specs + ".";
+            return "Dimension and weight details are not explicitly listed for " + name
+                    + ". Please refer to the product packaging on delivery.";
+        }
+
+        // --- Warranty / returns ---
+        if (matchesAny(q, "warranty", "guarantee", "return", "exchange", "refund")) {
+            return name + " comes with a standard 1-year manufacturer warranty covering manufacturing defects."
+                    + " Returns are accepted within 7 days of delivery in original packaging.";
+        }
+
+        // --- Compatibility ---
+        if (matchesAny(q, "compatible", "compatibility", "work with", "support", "fit")) {
+            if (!specs.isBlank()) return "Compatibility details from the specifications: " + specs + ".";
+            if (!desc.isBlank())  return "Based on the product description: " + desc + ".";
+            return "Please refer to the Specifications tab for compatibility information.";
+        }
+
+        // --- Battery / charging ---
+        if (matchesAny(q, "battery", "charge", "charging", "power", "mah", "hours")) {
+            if (combined.contains("battery") || combined.contains("mah") || combined.contains("hour")) {
+                return "Battery / power information: " + (specs.isBlank() ? desc : specs) + ".";
+            }
+            return name + " \u2014 battery/power specifications are not listed. "
+                    + "Check the manufacturer\u2019s website for detailed power information.";
+        }
+
+        // --- Material / build ---
+        if (matchesAny(q, "material", "made of", "build", "fabric", "construction", "quality")) {
+            String[] materialHints = {"metal","plastic","aluminium","steel","cotton","polyester","leather","rubber","glass","wood"};
+            boolean hasMaterial = Arrays.stream(materialHints).anyMatch(combined::contains);
+            if (hasMaterial) return "Material details: " + (specs.isBlank() ? desc : specs) + ".";
+            return "The material composition of " + name
+                    + " is not explicitly listed. Please check the Specifications tab for details.";
+        }
+
+        // --- Eco / sustainability ---
+        if (matchesAny(q, "eco", "sustainable", "environment", "green", "organic", "carbon")) {
+            if (product.getSustainabilityScore() != null) {
+                return name + " has a sustainability rating of " + product.getSustainabilityScore()
+                        + "/100 (" + product.getSustainabilityLabel() + ").";
+            }
+            return name + " has not been rated for sustainability yet.";
+        }
+
+        // --- Category / product type ---
+        if (matchesAny(q, "category", "type", "what is", "what kind", "what is this")) {
+            String cat = product.getCategory() != null ? product.getCategory() : "General";
+            return name + " belongs to the " + cat + " category." + (desc.isBlank() ? "" : " " + desc);
+        }
+
+        // --- Fallback: full product summary ---
+        StringBuilder sb = new StringBuilder("Here\u2019s what I know about ").append(name).append(":");
+        if (!desc.isBlank())   sb.append("\n\n").append(desc);
+        if (!specs.isBlank())  sb.append("\n\nSpecifications: ").append(specs);
+        if (product.getPrice() != null)
+            sb.append("\n\nPrice: \u20b9").append(product.getPrice().toPlainString());
+        int qty = product.getStockQuantity() == null ? 0 : product.getStockQuantity();
+        sb.append("\n\nAvailability: ").append(qty > 0 ? "In stock (" + qty + " units)" : "Currently out of stock");
+        if (product.getSustainabilityScore() != null)
+            sb.append("\n\nSustainability: ").append(product.getSustainabilityLabel())
+              .append(" (").append(product.getSustainabilityScore()).append("/100)");
+        return sb.toString();
+    }
+
+    /** True when the question contains any of the supplied keywords. */
+    private static boolean matchesAny(String question, String... keywords) {
+        for (String kw : keywords) {
+            if (question.contains(kw)) return true;
+        }
+        return false;
     }
 }

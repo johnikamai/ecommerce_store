@@ -617,6 +617,101 @@ commercially.
 | `usb-c-charger-65w-5.webp` | USB-C Charger 65W Ultra | power charger | by 2.0 | Triple-green | [link](https://www.flickr.com/photos/66451944@N03/53093148570) |
 | `usb-c-charger-65w-6.webp` | USB-C Charger 65W Max | power charger | by 2.0 | Triple-green | [link](https://www.flickr.com/photos/66451944@N03/53108565861) |
 
+## Wikimedia Commons additions
+
+Fetched with the strict title-match gate and reviewed by hand; remove any row
+whose image does not show the product.
+
+| File | Product | Search | Licence | Creator | Source |
+| --- | --- | --- | --- | --- | --- |
+| `laptop-c.webp` | Laptop | Laptop | cc by-sa 2.0 | The Master Shake Signal | [link](https://www.flickr.com/photos/43266053@N00/42089247) |
+| `gaming-headset-c.webp` | Gaming Headset | Gaming Headset | cc by 2.0 | tandemsystemsltd | [link](https://www.flickr.com/photos/109369158@N08/10963478003) |
+| `portable-ssd-1tb-c.webp` | Portable SSD 1TB | Portable SSD 1TB | cc by 2.0 | Tony Webster from Minneapolis, Minnesota, United States | [link](https://commons.wikimedia.org/w/index.php?curid=68966543) |
+| `leather-sneakers-c.webp` | Leather Sneakers | Leather Sneakers | cc by-sa 2.0 | koustourika | [link](https://www.flickr.com/photos/45265583@N07/6696821677) |
+| `woolen-scarf-c.webp` | Woolen Scarf | Woolen Scarf | cc by-sa 2.0 | Tigist Sapphire | [link](https://www.flickr.com/photos/73159597@N03/16286986432) |
+| `ceramic-planter-set-c.webp` | Ceramic Planter Set | Ceramic Planter Set | cc by 2.0 | Rob Young | [link](https://www.flickr.com/photos/76562640@N00/2562002006) |
+| `educational-puzzle-c.webp` | Educational Puzzle | Educational Puzzle | cc by 2.0 | Shixart1985 | [link](https://commons.wikimedia.org/wiki/File:Child_engages_in_educational_play_with_a_colorful_puzzle_in_a_cozy_indoor_setting_of_a_playroom_during_the_afternoon.jpg) |
+| `car-vacuum-cleaner-c.webp` | Car Vacuum Cleaner | Car Vacuum Cleaner | public domain | Alf van Beem | [link](https://commons.wikimedia.org/wiki/File:Hoover_Car_Vacuum_Cleaner.JPG) |
+| `tabletop-foosball-c.webp` | Tabletop Foosball | Tabletop Foosball | cc by-sa 3.0 | No machine-readable author provided. PoprocksCk~commonswiki assumed (based on copyright claims). | [link](https://commons.wikimedia.org/wiki/File:FAS_Foosball_table_1.jpg) |
+| `almond-butter-jar-c.webp` | Almond Butter Jar | Almond Butter Jar | cc by-sa 4.0 | Steven Pavlov | [link](https://commons.wikimedia.org/wiki/File:Barney_Almond_Butter,_Crunchy,_10_oz_jar.jpg) |
+| `dried-fruit-mix-c.webp` | Dried Fruit Mix | Dried Fruit Mix | cc by 2.0 | Personal Creations | [link](https://commons.wikimedia.org/wiki/File:Dried_fruit_and_nuts_mix_for_kid_snacks_(15093547798).jpg) |
+| `exercise-resistance-band-c.webp` | Exercise Resistance Band | Exercise Resistance Band | public domain | Federal Bureau of Investigation | [link](https://commons.wikimedia.org/wiki/File:EFTA00000622_-_Neatly_organized_home_gym_closet_featuring_exercise_balls_foam_rollers_and_a_resistance_band_system.jpg) |
+| `mini-projector-c.webp` | Mini Projector | Mini Projector | cc by-sa 4.0 | DiscoA340 | [link](https://commons.wikimedia.org/wiki/File:Film_Projector_in_the_Fondation_J%C3%A9r%C3%B4me_Seydoux-Path%C3%A9_(Digitized_Photo).jpg) |
+| `bluetooth-keyboard-c.webp` | Bluetooth Keyboard | Bluetooth Keyboard | cc by 2.0 | tawalker | [link](https://commons.wikimedia.org/wiki/File:ESYNiC_folding_Bluetooth_keyboard_-_in_case,_under_iPhone_5S.jpg) |
+| `over-ear-headphones-c.webp` | Over-Ear Headphones | Over-Ear Headphones | cc by-sa 4.0 | RPSkokie | [link](https://commons.wikimedia.org/wiki/File:Sony_WH-CH510_Bluetooth_Over-Ear_Headphone.jpg) |
+| `knit-beanie-c.webp` | Knit Beanie | Knit Beanie | cc by 2.0 | ajay_suresh | [link](https://commons.wikimedia.org/wiki/File:Beanie_-_Knit_Cap_(51013511676).jpg) |
+| `ankle-boots-c.webp` | Ankle Boots | Ankle Boots | cc by-sa 4.0 | N509FZ | [link](https://commons.wikimedia.org/wiki/File:Black_8cm_high-heeled_ankle_boots_(20211007153232).jpg) |
+| `eyeshadow-palette-c.webp` | Eyeshadow Palette | Eyeshadow Palette | cc by 2.0 | geehairimages | [link](https://commons.wikimedia.org/wiki/File:Eyeshadow_Brushes_and_Eyeshadow_Palette_(White_Background)_-_50922168986.jpg) |
+| `stainless-steel-bottle-c.webp` | Stainless Steel Bottle | Stainless Steel Bottle | cc by-sa 4.0 | TwentytwoAug | [link](https://commons.wikimedia.org/wiki/File:A_Tiger_Corp._Stainless_Steel_Bottle.jpg) |
+| `meditation-cushion-c.webp` | Meditation Cushion | Meditation Cushion | cc0 | Holabuenosdiasquetal | [link](https://commons.wikimedia.org/wiki/File:Meditation_cushion.jpg) |
+| `peanut-butter-jar-c.webp` | Peanut Butter Jar | Peanut Butter Jar | cc by-sa 4.0 | Twopower332.1938 | [link](https://commons.wikimedia.org/wiki/File:Three_lb_peanut_butter_jar.jpg) |
+| `himalayan-pink-salt-c.webp` | Himalayan Pink Salt | Himalayan Pink Salt | cc by 2.0 | Elizabeth from Lansing, MI, USA | [link](https://commons.wikimedia.org/wiki/File:Chunk_of_Pink_Himalayan_Rock_Salt_from_Salt_Rox_(6979595515).jpg) |
+| `bluetooth-fm-transmitter-c.webp` | Bluetooth FM Transmitter | Bluetooth FM Transmitter | cc by-sa 4.0 | Raimond Spekking | [link](https://commons.wikimedia.org/wiki/File:T10_Car_Bluetooth_FM_Transmitter-0465.jpg) |
+| `tire-pressure-gauge-c.webp` | Tire Pressure Gauge | Tire Pressure Gauge | cc by 2.0 | Antti | [link](https://commons.wikimedia.org/wiki/File:Porsche_Tire_Pressure_Gauge_(9207945919).jpg) |
+| `nova-monitor-c.webp` | Nova Monitor | Monitor | cc by 4.0 | Museum of Transport and Technology | [link](https://commons.wikimedia.org/wiki/File:DATA_General_Nova_monitor.jpg) |
+| `nova-tea-towel-c.webp` | Nova Tea Towel | Tea Towel | cc by-sa 4.0 | TeaTowel341076 | [link](https://commons.wikimedia.org/wiki/File:Dark_blue_tea_towel_stack.jpg) |
+| `nova-photo-frame-c.webp` | Nova Photo Frame | Photo Frame | cc by-sa 2.0 | Takashi Hososhima from Tokyo, Japan | [link](https://commons.wikimedia.org/wiki/File:A_photo_frame_of_bernese_mountain_dog_(11018600043).jpg) |
+| `nova-rug-runner-c.webp` | Nova Rug Runner | Rug Runner | public domain | American 20th Century | [link](https://commons.wikimedia.org/wiki/File:American_20th_Century,_Rug_Runner,_1935-1942,_NGA_28535.jpg) |
+| `nova-closet-organizer-c.webp` | Nova Closet Organizer | Closet Organizer | public domain | Federal Bureau of Investigation | [link](https://commons.wikimedia.org/wiki/File:EFTA00000563_-_Neatly_organized_walk-in_closet_with_white_towels_hangers_storage_baskets_and_shoe_organizers_on_a_gold_carpet.jpg) |
+| `nova-plant-pot-c.webp` | Nova Plant Pot | Plant Pot | cc by-sa 4.0 | Tamilarasi Annadurai | [link](https://commons.wikimedia.org/wiki/File:Plant_pot*image.jpg) |
+| `vertex-tea-towel-c.webp` | Vertex Tea Towel | Tea Towel | cc by 4.0 | Ina Sodersten | [link](https://commons.wikimedia.org/wiki/File:Tea_towels_(set_of)_(AM_2002.64.1-14).jpg) |
+| `vertex-photo-frame-c.webp` | Vertex Photo Frame | Photo Frame | cc by-sa 3.0 | Hustvedt | [link](https://commons.wikimedia.org/wiki/File:Digital_photo_frame_with_picture.jpg) |
+| `nova-index-cards-c.webp` | Nova Index Cards | Index Cards | cc by-sa 4.0 | Pittigrilli | [link](https://commons.wikimedia.org/wiki/File:Filing_box_with_index_cards_containing_customer_data_of_a_small_business,_2022.jpg) |
+| `nova-notebook-cover-c.webp` | Nova Notebook Cover | Notebook Cover | cc0 | Alf van Beem | [link](https://commons.wikimedia.org/wiki/File:Chocolat_Lombart,_75_Avenue_de_Choisy,_Paris,_tin_notebook_cover,_foto3.JPG) |
+| `nova-pencil-sharpener-c.webp` | Nova Pencil Sharpener | Pencil Sharpener | cc0 | ShyAndroid | [link](https://commons.wikimedia.org/wiki/File:Fiskars_squeeze_pencil_sharpener,_closed,_pink_and_purple..jpg) |
+| `nova-tape-dispenser-c.webp` | Nova Tape Dispenser | Tape Dispenser | public domain | Evan-amos | [link](https://commons.wikimedia.org/wiki/File:Tape-dispenser.jpg) |
+| `vertex-index-cards-c.webp` | Vertex Index Cards | Index Cards | cc by-sa 3.0 | Goatid | [link](https://commons.wikimedia.org/wiki/File:Index_cards.jpg) |
+| `nova-hand-cream-c.webp` | Nova Hand Cream | Hand Cream | cc by-sa 3.0 | Misaochan | [link](https://commons.wikimedia.org/wiki/File:Eucerin_hand_cream.jpg) |
+| `nova-exfoliating-scrub-c.webp` | Nova Exfoliating Scrub | Exfoliating Scrub | cc by 4.0 | Corn cheese | [link](https://commons.wikimedia.org/wiki/File:Exfoliating_face_scrub.jpg) |
+| `nova-keyboard-dock-c.webp` | Nova Keyboard Dock | Keyboard Dock | cc0 | Dinominant at English Wikipedia | [link](https://commons.wikimedia.org/wiki/File:Asus_Transformer_Pad_TF701T_Tablet_and_Keyboard_Dock.png) |
+| `nova-usb-hub-c.webp` | Nova USB Hub | USB Hub | cc by-sa 3.0 | PrimeEvil at de.wikipedia | [link](https://commons.wikimedia.org/wiki/File:4port-usb-hub-bus-powered.jpg) |
+| `nova-card-reader-c.webp` | Nova Card Reader | Card Reader | cc by 2.0 | leighklotz | [link](https://commons.wikimedia.org/wiki/File:Card_reader_unit_from_calculator_HP-67_with_motor_and_drive_train,_el._connection_to_mainboard_(above).jpg) |
+| `nova-streaming-stick-c.webp` | Nova Streaming Stick | Streaming Stick | cc by-sa 4.0 | TaurusEmerald | [link](https://commons.wikimedia.org/wiki/File:Roku_Streaming_Stick_4K.jpg) |
+| `nova-smart-bulb-c.webp` | Nova Smart Bulb | Smart Bulb | cc by-sa 4.0 | Nord794ub | [link](https://commons.wikimedia.org/wiki/File:Yeelight_gu10_smart_bulb_W1_dimmable_YLDP004_1527_4.8w.jpg) |
+| `nova-laptop-tray-c.webp` | Nova Laptop Tray | Laptop Tray | cc0 | Lauren Mancke laurenmancke | [link](https://commons.wikimedia.org/wiki/File:Laptop_on_a_wicker_tray_(Unsplash).jpg) |
+| `vertex-keyboard-dock-c.webp` | Vertex Keyboard Dock | Keyboard Dock | cc by-sa 3.0 | fieldafar | [link](https://commons.wikimedia.org/wiki/File:ASUS_Eeepad_Transformer_with_Dock_Keyboard.JPG) |
+| `vertex-usb-hub-c.webp` | Vertex USB Hub | USB Hub | cc by-sa 4.0 | F ASTILY | [link](https://commons.wikimedia.org/wiki/File:USB_hub_1_2019-02-16.jpg) |
+| `vertex-card-reader-c.webp` | Vertex Card Reader | Card Reader | cc by-sa 4.0 | Project Kei | [link](https://commons.wikimedia.org/wiki/File:IC_Card_Reader_Writer_RW-5100W.jpg) |
+| `nova-stainless-bowl-c.webp` | Nova Stainless Bowl | Stainless Bowl | cc by 2.0 | Photo Dharma from Sadao, Thailand | [link](https://commons.wikimedia.org/wiki/File:056_Stainless_Steel_Bowl_(9261384016).jpg) |
+| `nova-teething-ring-c.webp` | Nova Teething Ring | Teething Ring | cc by-sa 3.0 | MultK | [link](https://commons.wikimedia.org/wiki/File:Teething_Ring.jpg) |
+| `nova-brush-comb-c.webp` | Nova Brush Comb | Brush Comb | public domain | Sam Hood | [link](https://commons.wikimedia.org/wiki/File:SLNSW_20468_Brush_comb_and_mirror_set.jpg) |
+| `nova-pull-toy-c.webp` | Nova Pull Toy | Pull Toy | public domain | Unknown author Unknown author | [link](https://commons.wikimedia.org/wiki/File:Bell_Pull_Toy.jpg) |
+| `vertex-stainless-bowl-c.webp` | Vertex Stainless Bowl | Stainless Bowl | cc by-sa 2.0 | Jan Bockaert | [link](https://commons.wikimedia.org/wiki/File:2016-10-15_Naengmyeon_with_boiled_eggs_in_stainless_steel_bowl_in_Pyongyang.jpg) |
+| `nova-ribbed-top-c.webp` | Nova Ribbed Top | Ribbed Top | cc by 2.0 | John Benson from Madison WI | [link](https://commons.wikimedia.org/wiki/File:Young_woman_wearing_a_ribbed_top_and_sweatpants_in_Madison,_Wisconsin_2023.jpeg) |
+| `nova-wrist-band-c.webp` | Nova Wrist Band | Wrist Band | cc by-sa 4.0 | Sunkissedguy | [link](https://commons.wikimedia.org/wiki/File:Let_Leni_Lead_wrist_band_worn_by_supporters_of_Leni_Robredo.jpg) |
+| `nova-trucker-cap-c.webp` | Nova Trucker Cap | Trucker Cap | cc0 | Mantelmoewe | [link](https://commons.wikimedia.org/wiki/File:Trucker_cap.jpg) |
+| `nova-bomber-jacket-c.webp` | Nova Bomber Jacket | Bomber Jacket | cc by-sa 4.0 | Cici water | [link](https://commons.wikimedia.org/wiki/File:Women_Bomber_Jacket_Detail.jpg) |
+| `nova-pleated-skirt-c.webp` | Nova Pleated Skirt | Pleated Skirt | cc0 | David Ring | [link](https://commons.wikimedia.org/wiki/File:Pleated_skirt.jpg) |
+| `vertex-wrist-band-c.webp` | Vertex Wrist Band | Wrist Band | cc by-sa 4.0 | Ibn Shiraz | [link](https://commons.wikimedia.org/wiki/File:Multi-Metal_Wrist_Band_in_Northern_Ghana.jpg) |
+| `vertex-trucker-cap-c.webp` | Vertex Trucker Cap | Trucker Cap | cc by 2.0 | Ron Cogswell from Arlington, Virginia, USA | [link](https://commons.wikimedia.org/wiki/File:%27Taco_Truck%27_Cap_--_The_High_Line_New_York_(NY)_April_2016_(27084468766).jpg) |
+| `vertex-bomber-jacket-c.webp` | Vertex Bomber Jacket | Bomber Jacket | cc by-sa 4.0 | Premeditated Chaos | [link](https://commons.wikimedia.org/wiki/File:Orlando_Dugi_-_Gold_Sun_Bomber_Jacket_2022.jpg) |
+| `nova-pull-up-bar-c.webp` | Nova Pull Up Bar | Pull Up Bar | cc by 4.0 | Santeri Viinamäki | [link](https://commons.wikimedia.org/wiki/File:Pull-up_bar.JPG) |
+| `nova-foam-roller-c.webp` | Nova Foam Roller | Foam Roller | public domain | Federal Bureau of Investigation | [link](https://commons.wikimedia.org/wiki/File:EFTA00000263_-_Neatly_organized_closet_shelf_holds_blue_foam_rollers_a_zebra-print_cushion_and_a_small_box_all_under_soft_lighting.jpg) |
+| `nova-exercise-ball-c.webp` | Nova Exercise Ball | Exercise Ball | cc by-sa 4.0 | Jules Verne Times Two | [link](https://commons.wikimedia.org/wiki/File:Acrobatic_flip_using_an_exercise_ball_buried_in_the_sand,_Praia_Am%C3%A9rica,_Galicia,_Spain_(PPL1-Corrected)_2_julesvernex2.jpg) |
+| `nova-grip-trainer-c.webp` | Nova Grip Trainer | Grip Trainer | cc by-sa 3.0 | Fitnesslova | [link](https://commons.wikimedia.org/wiki/File:Human_Trainer_Pullups_Wide_Grip_START_-.jpg) |
+| `nova-knee-sleeve-c.webp` | Nova Knee Sleeve | Knee Sleeve | cc by 3.0 | North Sullivan Photography, CSIRO | [link](https://commons.wikimedia.org/wiki/File:CSIRO_ScienceImage_2627_Intelligent_knee_sleeve.jpg) |
+| `nova-heart-monitor-c.webp` | Nova Heart Monitor | Heart Monitor | cc by 2.0 | Seattle Municipal Archives from Seattle, WA | [link](https://commons.wikimedia.org/wiki/File:Heart_monitor,_1965_(51652725634).jpg) |
+| `nova-yoga-block-c.webp` | Nova Yoga Block | Yoga Block | cc by-sa 4.0 | Corn cheese | [link](https://commons.wikimedia.org/wiki/File:Green_yoga_block.jpg) |
+| `vertex-exercise-ball-c.webp` | Vertex Exercise Ball | Exercise Ball | cc by 2.0 | Spiralz from England | [link](https://commons.wikimedia.org/wiki/File:Exercise_ball.jpg) |
+| `nova-brake-fluid-c.webp` | Nova Brake Fluid | Brake Fluid | cc0 | Alf van Beem | [link](https://commons.wikimedia.org/wiki/File:Delco_brake_fluid_can_pic1.JPG) |
+| `vertex-brake-fluid-c.webp` | Vertex Brake Fluid | Brake Fluid | cc0 | Alf van Beem | [link](https://commons.wikimedia.org/wiki/File:Delco_brake_fluid_can_pic3.JPG) |
+| `nova-lentil-mix-c.webp` | Nova Lentil Mix | Lentil Mix | cc by-sa 2.0 | jasleen_kaur from USA | [link](https://commons.wikimedia.org/wiki/File:A_mix_of_split_lentils,_masoor_dal_India.jpg) |
+| `nova-turmeric-powder-c.webp` | Nova Turmeric Powder | Turmeric Powder | cc by-sa 4.0 | Businesses247 | [link](https://commons.wikimedia.org/wiki/File:Chlorofeel_Spices_Turmeric_Powder_Packet.jpg) |
+| `nova-cumin-seeds-c.webp` | Nova Cumin Seeds | Cumin Seeds | cc0 | Unknown | [link](https://commons.wikimedia.org/wiki/File:Lidded_basket_with_cumin_seeds_and_fruits_-_Museo_Egizio_(Turin)_S_8415_p01.jpg) |
+| `nova-black-pepper-c.webp` | Nova Black Pepper | Black Pepper | cc by-sa 4.0 | Halima Waziri | [link](https://commons.wikimedia.org/wiki/File:Basket_of_black_pepper.jpg) |
+| `nova-coconut-oil-c.webp` | Nova Coconut Oil | Coconut Oil | cc by-sa 4.0 | PaulReis123 | [link](https://commons.wikimedia.org/wiki/File:Coconut_Oil_amp_30050.jpg) |
+| `nova-cashew-jar-c.webp` | Nova Cashew Jar | Cashew Jar | cc by-sa 4.0 | TudorTulok | [link](https://commons.wikimedia.org/wiki/File:Meridian_Smooth_Cashew_Butter_Jar.jpg) |
+| `nova-ragi-flour-c.webp` | Nova Ragi Flour | Ragi Flour | cc by-sa 4.0 | Medhi jyoti | [link](https://commons.wikimedia.org/wiki/File:Ragi_millet_flour.jpg) |
+| `nova-jaggery-block-c.webp` | Nova Jaggery Block | Jaggery Block | cc0 | Sushant Medhe Pawar of Kolhapur Agricultural Produce Market (Kolhapur Sheti Utpanna Bazar Samiti) from Kolhapur | [link](https://commons.wikimedia.org/wiki/File:Kolhapur_jaggery_in_semi-liquid_form_filled_in_the_Vofaa_rectangular_section._Later_will_be_transferred_into_the_1_Kg_containers_with_white_cloth_placed_inside_it_for_making_Jaggery_blocks_(Dheps).jpg) |
+| `vertex-lentil-mix-c.webp` | Vertex Lentil Mix | Lentil Mix | cc by-sa 4.0 | Sumita Roy Dutta | [link](https://commons.wikimedia.org/wiki/File:Back_side_of_Mix_lentils_Uttapam_P_20190410_144927.jpg) |
+| `vertex-turmeric-powder-c.webp` | Vertex Turmeric Powder | Turmeric Powder | cc by-sa 4.0 | Businesses247 | [link](https://commons.wikimedia.org/wiki/File:Chlorofeel_Spices_Turmeric_Powder_Packet_Image.jpg) |
+| `vertex-cumin-seeds-c.webp` | Vertex Cumin Seeds | Cumin Seeds | cc0 | Unknown | [link](https://commons.wikimedia.org/wiki/File:Lidded_basket_with_cumin_seeds_and_fruits_-_Museo_Egizio_(Turin)_S_8415_p02.jpg) |
+| `vertex-black-pepper-c.webp` | Vertex Black Pepper | Black Pepper | cc by-sa 4.0 | NorbertNagel | [link](https://commons.wikimedia.org/wiki/File:Black_Pepper_-_Piper_nigrum_-_Le_Jardin_du_Roi_-_01.jpg) |
+| `vertex-coconut-oil-c.webp` | Vertex Coconut Oil | Coconut Oil | cc by-sa 4.0 | Tiia Monto | [link](https://commons.wikimedia.org/wiki/File:Coconut_oil_2.jpg) |
+| `nova-coloring-book-c.webp` | Nova Coloring Book | Coloring Book | public domain | Saalfield Publishing and Kayro Productions | [link](https://commons.wikimedia.org/wiki/File:Calvin_and_the_Colonel_-_A_Coloring_Book_(1962)_-_Front_Cover.jpg) |
+| `nova-finger-paint-c.webp` | Nova Finger Paint | Finger Paint | public domain | D.M. Vernon, aka DVernon at en.wikipedia | [link](https://commons.wikimedia.org/wiki/File:Finger_Painting.jpg) |
+| `vertex-coloring-book-c.webp` | Vertex Coloring Book | Coloring Book | cc by-sa 4.0 | Avery Jensen | [link](https://commons.wikimedia.org/wiki/File:Wikimania_2017_-_Opening_ceremony_-_the_coloring_book_7468.jpg) |
+
 ## Unconfirmed sources - review before commercial use
 
 The 46 rows below are referenced by `frontend/src/utils/productPhotos.json`

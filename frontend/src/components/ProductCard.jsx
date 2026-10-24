@@ -51,7 +51,7 @@ export default function ProductCard({ product, defaultRating, defaultReviewCount
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { t, formatCurrency } = useLanguage();
-  const { toggle: toggleCompare, isSelected: isComparing } = useCompare();
+  const { toggle: toggleCompare, isSelected: isComparing, isMixedCategory } = useCompare();
   const compareSelected = isComparing(product.id);
   const [compareFullMessage, setCompareFullMessage] = useState('');
   const [quantity, setQuantity] = useState(1);
@@ -113,15 +113,25 @@ export default function ProductCard({ product, defaultRating, defaultReviewCount
     }
   };
 
+  const flashCompareMessage = (text) => {
+    setCompareFullMessage(text);
+    setTimeout(() => setCompareFullMessage(''), 2500);
+  };
+
   const handleCompare = () => {
     // The context refuses the fourth pick, so say so rather than letting the
     // button look broken when nothing happens.
-    if (toggleCompare(product.id)) {
-      setCompareFullMessage('');
+    if (!toggleCompare(product.id, product.category)) {
+      flashCompareMessage(t('product.compareLimit'));
       return;
     }
-    setCompareFullMessage(t('product.compareLimit'));
-    setTimeout(() => setCompareFullMessage(''), 2500);
+    // Ticking a product from a different category is allowed, but the shopper
+    // should know their specifications will not line up.
+    if (!compareSelected && isMixedCategory(product.category)) {
+      flashCompareMessage(t('compare.crossCategoryNote'));
+      return;
+    }
+    setCompareFullMessage('');
   };
 
   return (
@@ -180,6 +190,9 @@ export default function ProductCard({ product, defaultRating, defaultReviewCount
         <Link to={`/product/${product.id}`} className="font-[family-name:var(--font-heading)] font-semibold text-[var(--color-text-primary)] text-[16px] leading-[1.3] mb-1 line-clamp-2 hover:text-[var(--color-primary)] transition-colors">
           {product.name}
         </Link>
+        {product.brand && product.brand !== 'Unbranded' && (
+          <span className="text-xs text-[var(--color-text-muted)] mb-1">{product.brand}</span>
+        )}
 
         <div className="flex items-center gap-2 mb-2">
           <Stars rating={summary.averageRating} />

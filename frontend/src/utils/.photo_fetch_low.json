@@ -1,0 +1,1390 @@
+[
+  {
+    "product": "Smart Doorbell",
+    "category": "Electronics"
+  },
+  {
+    "product": "Slim Fit Chinos",
+    "category": "Fashion"
+  },
+  {
+    "product": "Silk Blend Saree",
+    "category": "Fashion"
+  },
+  {
+    "product": "Organic Honey 500g",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Premium Basmati Rice 5kg",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Arabica Coffee Beans 1kg",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Extra Virgin Olive Oil 1L",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Vitamin C Serum 30ml",
+    "category": "Beauty"
+  },
+  {
+    "product": "SPF 50 Sunscreen Gel",
+    "category": "Beauty"
+  },
+  {
+    "product": "Herbal Hair Oil 200ml",
+    "category": "Beauty"
+  },
+  {
+    "product": "Hydrating Face Mask",
+    "category": "Beauty"
+  },
+  {
+    "product": "Friction Pen Set",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Hardcover Notebook A5",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Eco Yoga Mat",
+    "category": "Sports"
+  },
+  {
+    "product": "Adjustable Dumbbells 10kg",
+    "category": "Sports"
+  },
+  {
+    "product": "Wooden Building Blocks",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Pet Grooming Kit",
+    "category": "Pets"
+  },
+  {
+    "product": "Cat Tree Tower",
+    "category": "Pets"
+  },
+  {
+    "product": "Wireless Phone Mount",
+    "category": "Automotive"
+  },
+  {
+    "product": "Portable Tire Inflator",
+    "category": "Automotive"
+  },
+  {
+    "product": "Reusable Pet Bed Mat",
+    "category": "Pets"
+  },
+  {
+    "product": "Grain-Free Cat Food 3kg",
+    "category": "Pets"
+  },
+  {
+    "product": "Pet Nail Trimmer",
+    "category": "Pets"
+  },
+  {
+    "product": "Interactive Ball Launcher",
+    "category": "Pets"
+  },
+  {
+    "product": "Dashboard Camera 4K",
+    "category": "Automotive"
+  },
+  {
+    "product": "Cabin Air Filter",
+    "category": "Automotive"
+  },
+  {
+    "product": "RC Stunt Car",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Brain Teaser Puzzles",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Sticker Activity Book",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Jasmine Rice 1kg",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Turmeric Latte Blend",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Wi-Fi Range Extender",
+    "category": "Electronics"
+  },
+  {
+    "product": "Smart Plug Wi-Fi",
+    "category": "Electronics"
+  },
+  {
+    "product": "Collapsible Water Bottle",
+    "category": "Sports"
+  },
+  {
+    "product": "Washi Tape Set",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Cotton Boxer 3-Pack",
+    "category": "Fashion"
+  },
+  {
+    "product": "Under-Eye Serum",
+    "category": "Beauty"
+  },
+  {
+    "product": "Bamboo Serving Tray",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Graphic Drawing Tablet",
+    "category": "Electronics"
+  },
+  {
+    "product": "Charcoal Face Wash",
+    "category": "Beauty"
+  },
+  {
+    "product": "Body Butter Tub",
+    "category": "Beauty"
+  },
+  {
+    "product": "Macrame Wall Hanger",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Knitted Throw Blanket",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Aroma Wax Melts",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Grip Socks",
+    "category": "Sports"
+  },
+  {
+    "product": "Magnetic Bookmark Set",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Calligraphy Pen Kit",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Lined Softcover Notebook",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Musical Toy Piano",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Rubik Cube Speed",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Sand Play Bucket Set",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Quinoa Seeds 1kg",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Chia Seeds Jar",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Dog Chew Toy Bone",
+    "category": "Pets"
+  },
+  {
+    "product": "Catnip Plush Mice",
+    "category": "Pets"
+  },
+  {
+    "product": "Pet Water Fountain",
+    "category": "Pets"
+  },
+  {
+    "product": "All-Weather Car Mats",
+    "category": "Automotive"
+  },
+  {
+    "product": "Apex Cushion",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Apex Tea Towel",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Apex Coaster Set",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Apex Photo Frame",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Apex Led Wall Lamp",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Apex Vase Duo",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Apex Rug Runner",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Apex Closet Organizer",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Apex Door Stopper",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Apex Plant Pot",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Apex Tray Stack",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Nova Cushion",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Nova Tea Towel",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Nova Coaster Set",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Nova Photo Frame",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Nova Led Wall Lamp",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Nova Vase Duo",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Nova Rug Runner",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Nova Mirror",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Nova Closet Organizer",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Nova Door Stopper",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Nova Plant Pot",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Nova Tray Stack",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Vertex Cushion",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Vertex Tea Towel",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Vertex Coaster Set",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Vertex Photo Frame",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Vertex Led Wall Lamp",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Vertex Vase Duo",
+    "category": "Home & Living"
+  },
+  {
+    "product": "Apex Sticky Note Pad",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Apex Index Cards",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Apex Drawing Board",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Apex Brush Set",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Apex Label Maker",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Apex Ruler Kit",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Apex Compass Tool",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Apex Notebook Cover",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Apex Pencil Sharpener",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Apex Tape Dispenser",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Apex Stencil Set",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Apex Graph Paper Pad",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Nova Sticky Note Pad",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Nova Index Cards",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Nova Drawing Board",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Nova Brush Set",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Nova Label Maker",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Nova Ruler Kit",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Nova Compass Tool",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Nova Notebook Cover",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Nova Pencil Sharpener",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Nova Tape Dispenser",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Nova Stencil Set",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Nova Graph Paper Pad",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Vertex Sticky Note Pad",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Vertex Index Cards",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Vertex Drawing Board",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Vertex Brush Set",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Vertex Label Maker",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Vertex Ruler Kit",
+    "category": "Books & Stationery"
+  },
+  {
+    "product": "Apex Face Mist",
+    "category": "Beauty"
+  },
+  {
+    "product": "Apex Sheet Mask",
+    "category": "Beauty"
+  },
+  {
+    "product": "Apex Lip Oil",
+    "category": "Beauty"
+  },
+  {
+    "product": "Apex Mascara",
+    "category": "Beauty"
+  },
+  {
+    "product": "Apex Brow Pencil",
+    "category": "Beauty"
+  },
+  {
+    "product": "Apex Blush Stick",
+    "category": "Beauty"
+  },
+  {
+    "product": "Apex Concealer",
+    "category": "Beauty"
+  },
+  {
+    "product": "Apex Setting Spray",
+    "category": "Beauty"
+  },
+  {
+    "product": "Apex Night Oil",
+    "category": "Beauty"
+  },
+  {
+    "product": "Apex Hand Cream",
+    "category": "Beauty"
+  },
+  {
+    "product": "Apex Exfoliating Scrub",
+    "category": "Beauty"
+  },
+  {
+    "product": "Apex Foot Mask",
+    "category": "Beauty"
+  },
+  {
+    "product": "Nova Face Mist",
+    "category": "Beauty"
+  },
+  {
+    "product": "Nova Sheet Mask",
+    "category": "Beauty"
+  },
+  {
+    "product": "Nova Lip Oil",
+    "category": "Beauty"
+  },
+  {
+    "product": "Nova Mascara",
+    "category": "Beauty"
+  },
+  {
+    "product": "Nova Brow Pencil",
+    "category": "Beauty"
+  },
+  {
+    "product": "Nova Blush Stick",
+    "category": "Beauty"
+  },
+  {
+    "product": "Nova Concealer",
+    "category": "Beauty"
+  },
+  {
+    "product": "Nova Setting Spray",
+    "category": "Beauty"
+  },
+  {
+    "product": "Nova Night Oil",
+    "category": "Beauty"
+  },
+  {
+    "product": "Nova Hand Cream",
+    "category": "Beauty"
+  },
+  {
+    "product": "Nova Exfoliating Scrub",
+    "category": "Beauty"
+  },
+  {
+    "product": "Nova Foot Mask",
+    "category": "Beauty"
+  },
+  {
+    "product": "Vertex Face Mist",
+    "category": "Beauty"
+  },
+  {
+    "product": "Vertex Sheet Mask",
+    "category": "Beauty"
+  },
+  {
+    "product": "Vertex Lip Oil",
+    "category": "Beauty"
+  },
+  {
+    "product": "Vertex Mascara",
+    "category": "Beauty"
+  },
+  {
+    "product": "Vertex Brow Pencil",
+    "category": "Beauty"
+  },
+  {
+    "product": "Vertex Blush Stick",
+    "category": "Beauty"
+  },
+  {
+    "product": "Apex Keyboard Dock",
+    "category": "Electronics"
+  },
+  {
+    "product": "Apex USB Hub",
+    "category": "Electronics"
+  },
+  {
+    "product": "Apex Card Reader",
+    "category": "Electronics"
+  },
+  {
+    "product": "Apex Streaming Stick",
+    "category": "Electronics"
+  },
+  {
+    "product": "Apex Smart Bulb",
+    "category": "Electronics"
+  },
+  {
+    "product": "Apex AV Cable",
+    "category": "Electronics"
+  },
+  {
+    "product": "Apex Soundbar",
+    "category": "Electronics"
+  },
+  {
+    "product": "Apex Battery Bank",
+    "category": "Electronics"
+  },
+  {
+    "product": "Apex Laptop Tray",
+    "category": "Electronics"
+  },
+  {
+    "product": "Apex Cable Kit",
+    "category": "Electronics"
+  },
+  {
+    "product": "Apex Headset Stand",
+    "category": "Electronics"
+  },
+  {
+    "product": "Nova Monitor",
+    "category": "Electronics"
+  },
+  {
+    "product": "Nova Keyboard Dock",
+    "category": "Electronics"
+  },
+  {
+    "product": "Nova USB Hub",
+    "category": "Electronics"
+  },
+  {
+    "product": "Nova Card Reader",
+    "category": "Electronics"
+  },
+  {
+    "product": "Nova Streaming Stick",
+    "category": "Electronics"
+  },
+  {
+    "product": "Nova Smart Bulb",
+    "category": "Electronics"
+  },
+  {
+    "product": "Nova AV Cable",
+    "category": "Electronics"
+  },
+  {
+    "product": "Nova Soundbar",
+    "category": "Electronics"
+  },
+  {
+    "product": "Nova Battery Bank",
+    "category": "Electronics"
+  },
+  {
+    "product": "Nova Laptop Tray",
+    "category": "Electronics"
+  },
+  {
+    "product": "Nova Cable Kit",
+    "category": "Electronics"
+  },
+  {
+    "product": "Nova Headset Stand",
+    "category": "Electronics"
+  },
+  {
+    "product": "Vertex Monitor",
+    "category": "Electronics"
+  },
+  {
+    "product": "Vertex Keyboard Dock",
+    "category": "Electronics"
+  },
+  {
+    "product": "Vertex USB Hub",
+    "category": "Electronics"
+  },
+  {
+    "product": "Vertex Card Reader",
+    "category": "Electronics"
+  },
+  {
+    "product": "Vertex Streaming Stick",
+    "category": "Electronics"
+  },
+  {
+    "product": "Vertex Smart Bulb",
+    "category": "Electronics"
+  },
+  {
+    "product": "Apex Stainless Bowl",
+    "category": "Pets"
+  },
+  {
+    "product": "Apex Grooming Glove",
+    "category": "Pets"
+  },
+  {
+    "product": "Apex Teething Ring",
+    "category": "Pets"
+  },
+  {
+    "product": "Apex Hideaway Bed",
+    "category": "Pets"
+  },
+  {
+    "product": "Apex Training Pad",
+    "category": "Pets"
+  },
+  {
+    "product": "Apex Interactive Licker",
+    "category": "Pets"
+  },
+  {
+    "product": "Apex Water Bowl",
+    "category": "Pets"
+  },
+  {
+    "product": "Apex Harness Set",
+    "category": "Pets"
+  },
+  {
+    "product": "Apex ID Tag",
+    "category": "Pets"
+  },
+  {
+    "product": "Apex Lint Roller",
+    "category": "Pets"
+  },
+  {
+    "product": "Apex Brush Comb",
+    "category": "Pets"
+  },
+  {
+    "product": "Apex Pull Toy",
+    "category": "Pets"
+  },
+  {
+    "product": "Nova Stainless Bowl",
+    "category": "Pets"
+  },
+  {
+    "product": "Nova Grooming Glove",
+    "category": "Pets"
+  },
+  {
+    "product": "Nova Teething Ring",
+    "category": "Pets"
+  },
+  {
+    "product": "Nova Hideaway Bed",
+    "category": "Pets"
+  },
+  {
+    "product": "Nova Training Pad",
+    "category": "Pets"
+  },
+  {
+    "product": "Nova Interactive Licker",
+    "category": "Pets"
+  },
+  {
+    "product": "Nova Water Bowl",
+    "category": "Pets"
+  },
+  {
+    "product": "Nova Harness Set",
+    "category": "Pets"
+  },
+  {
+    "product": "Nova ID Tag",
+    "category": "Pets"
+  },
+  {
+    "product": "Nova Lint Roller",
+    "category": "Pets"
+  },
+  {
+    "product": "Nova Brush Comb",
+    "category": "Pets"
+  },
+  {
+    "product": "Nova Pull Toy",
+    "category": "Pets"
+  },
+  {
+    "product": "Vertex Stainless Bowl",
+    "category": "Pets"
+  },
+  {
+    "product": "Vertex Grooming Glove",
+    "category": "Pets"
+  },
+  {
+    "product": "Vertex Teething Ring",
+    "category": "Pets"
+  },
+  {
+    "product": "Vertex Hideaway Bed",
+    "category": "Pets"
+  },
+  {
+    "product": "Vertex Training Pad",
+    "category": "Pets"
+  },
+  {
+    "product": "Vertex Interactive Licker",
+    "category": "Pets"
+  },
+  {
+    "product": "Apex Ribbed Top",
+    "category": "Fashion"
+  },
+  {
+    "product": "Apex Belt",
+    "category": "Fashion"
+  },
+  {
+    "product": "Apex Necklace",
+    "category": "Fashion"
+  },
+  {
+    "product": "Apex Wrist Band",
+    "category": "Fashion"
+  },
+  {
+    "product": "Apex Trucker Cap",
+    "category": "Fashion"
+  },
+  {
+    "product": "Apex Bomber Jacket",
+    "category": "Fashion"
+  },
+  {
+    "product": "Apex Pleated Skirt",
+    "category": "Fashion"
+  },
+  {
+    "product": "Apex Cargo Trousers",
+    "category": "Fashion"
+  },
+  {
+    "product": "Apex Espadrilles",
+    "category": "Fashion"
+  },
+  {
+    "product": "Apex Loafers",
+    "category": "Fashion"
+  },
+  {
+    "product": "Apex Pashmina",
+    "category": "Fashion"
+  },
+  {
+    "product": "Apex Half Sleeve Top",
+    "category": "Fashion"
+  },
+  {
+    "product": "Nova Ribbed Top",
+    "category": "Fashion"
+  },
+  {
+    "product": "Nova Belt",
+    "category": "Fashion"
+  },
+  {
+    "product": "Nova Necklace",
+    "category": "Fashion"
+  },
+  {
+    "product": "Nova Wrist Band",
+    "category": "Fashion"
+  },
+  {
+    "product": "Nova Trucker Cap",
+    "category": "Fashion"
+  },
+  {
+    "product": "Nova Bomber Jacket",
+    "category": "Fashion"
+  },
+  {
+    "product": "Nova Pleated Skirt",
+    "category": "Fashion"
+  },
+  {
+    "product": "Nova Cargo Trousers",
+    "category": "Fashion"
+  },
+  {
+    "product": "Nova Espadrilles",
+    "category": "Fashion"
+  },
+  {
+    "product": "Nova Loafers",
+    "category": "Fashion"
+  },
+  {
+    "product": "Nova Pashmina",
+    "category": "Fashion"
+  },
+  {
+    "product": "Nova Half Sleeve Top",
+    "category": "Fashion"
+  },
+  {
+    "product": "Vertex Ribbed Top",
+    "category": "Fashion"
+  },
+  {
+    "product": "Vertex Belt",
+    "category": "Fashion"
+  },
+  {
+    "product": "Vertex Necklace",
+    "category": "Fashion"
+  },
+  {
+    "product": "Vertex Wrist Band",
+    "category": "Fashion"
+  },
+  {
+    "product": "Vertex Trucker Cap",
+    "category": "Fashion"
+  },
+  {
+    "product": "Vertex Bomber Jacket",
+    "category": "Fashion"
+  },
+  {
+    "product": "Apex Pull Up Bar",
+    "category": "Sports"
+  },
+  {
+    "product": "Apex Kettlebells",
+    "category": "Sports"
+  },
+  {
+    "product": "Apex Skipping Set",
+    "category": "Sports"
+  },
+  {
+    "product": "Apex Foam Roller",
+    "category": "Sports"
+  },
+  {
+    "product": "Apex Exercise Ball",
+    "category": "Sports"
+  },
+  {
+    "product": "Apex Burpee Mat",
+    "category": "Sports"
+  },
+  {
+    "product": "Apex Grip Trainer",
+    "category": "Sports"
+  },
+  {
+    "product": "Apex Agility Ladder",
+    "category": "Sports"
+  },
+  {
+    "product": "Apex Knee Sleeve",
+    "category": "Sports"
+  },
+  {
+    "product": "Apex Heart Monitor",
+    "category": "Sports"
+  },
+  {
+    "product": "Apex Shaker Bottle",
+    "category": "Sports"
+  },
+  {
+    "product": "Apex Yoga Block",
+    "category": "Sports"
+  },
+  {
+    "product": "Nova Pull Up Bar",
+    "category": "Sports"
+  },
+  {
+    "product": "Nova Kettlebells",
+    "category": "Sports"
+  },
+  {
+    "product": "Nova Skipping Set",
+    "category": "Sports"
+  },
+  {
+    "product": "Nova Foam Roller",
+    "category": "Sports"
+  },
+  {
+    "product": "Nova Exercise Ball",
+    "category": "Sports"
+  },
+  {
+    "product": "Nova Burpee Mat",
+    "category": "Sports"
+  },
+  {
+    "product": "Nova Grip Trainer",
+    "category": "Sports"
+  },
+  {
+    "product": "Nova Agility Ladder",
+    "category": "Sports"
+  },
+  {
+    "product": "Nova Knee Sleeve",
+    "category": "Sports"
+  },
+  {
+    "product": "Nova Heart Monitor",
+    "category": "Sports"
+  },
+  {
+    "product": "Nova Shaker Bottle",
+    "category": "Sports"
+  },
+  {
+    "product": "Nova Yoga Block",
+    "category": "Sports"
+  },
+  {
+    "product": "Vertex Pull Up Bar",
+    "category": "Sports"
+  },
+  {
+    "product": "Vertex Kettlebells",
+    "category": "Sports"
+  },
+  {
+    "product": "Vertex Skipping Set",
+    "category": "Sports"
+  },
+  {
+    "product": "Vertex Foam Roller",
+    "category": "Sports"
+  },
+  {
+    "product": "Vertex Exercise Ball",
+    "category": "Sports"
+  },
+  {
+    "product": "Vertex Burpee Mat",
+    "category": "Sports"
+  },
+  {
+    "product": "Apex Sun Shade",
+    "category": "Automotive"
+  },
+  {
+    "product": "Apex Window Cleaner",
+    "category": "Automotive"
+  },
+  {
+    "product": "Apex Tire Brush",
+    "category": "Automotive"
+  },
+  {
+    "product": "Apex Wash Mitt",
+    "category": "Automotive"
+  },
+  {
+    "product": "Apex Trunk Liner",
+    "category": "Automotive"
+  },
+  {
+    "product": "Apex Brake Fluid",
+    "category": "Automotive"
+  },
+  {
+    "product": "Apex Coolant",
+    "category": "Automotive"
+  },
+  {
+    "product": "Apex Wiper Blades",
+    "category": "Automotive"
+  },
+  {
+    "product": "Apex Lock Nuts",
+    "category": "Automotive"
+  },
+  {
+    "product": "Apex Jump Leads",
+    "category": "Automotive"
+  },
+  {
+    "product": "Apex UV Spray",
+    "category": "Automotive"
+  },
+  {
+    "product": "Apex Safety Vest",
+    "category": "Automotive"
+  },
+  {
+    "product": "Nova Sun Shade",
+    "category": "Automotive"
+  },
+  {
+    "product": "Nova Window Cleaner",
+    "category": "Automotive"
+  },
+  {
+    "product": "Nova Tire Brush",
+    "category": "Automotive"
+  },
+  {
+    "product": "Nova Wash Mitt",
+    "category": "Automotive"
+  },
+  {
+    "product": "Nova Trunk Liner",
+    "category": "Automotive"
+  },
+  {
+    "product": "Nova Brake Fluid",
+    "category": "Automotive"
+  },
+  {
+    "product": "Nova Coolant",
+    "category": "Automotive"
+  },
+  {
+    "product": "Nova Wiper Blades",
+    "category": "Automotive"
+  },
+  {
+    "product": "Nova Lock Nuts",
+    "category": "Automotive"
+  },
+  {
+    "product": "Nova Jump Leads",
+    "category": "Automotive"
+  },
+  {
+    "product": "Nova UV Spray",
+    "category": "Automotive"
+  },
+  {
+    "product": "Nova Safety Vest",
+    "category": "Automotive"
+  },
+  {
+    "product": "Vertex Sun Shade",
+    "category": "Automotive"
+  },
+  {
+    "product": "Vertex Window Cleaner",
+    "category": "Automotive"
+  },
+  {
+    "product": "Vertex Tire Brush",
+    "category": "Automotive"
+  },
+  {
+    "product": "Vertex Wash Mitt",
+    "category": "Automotive"
+  },
+  {
+    "product": "Vertex Trunk Liner",
+    "category": "Automotive"
+  },
+  {
+    "product": "Vertex Brake Fluid",
+    "category": "Automotive"
+  },
+  {
+    "product": "Apex Oats Pack",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Apex Lentil Mix",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Apex Turmeric Powder",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Apex Cumin Seeds",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Apex Black Pepper",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Apex Coconut Oil",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Apex Dates Tub",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Apex Cashew Jar",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Apex Almonds Box",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Apex Ragi Flour",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Apex Jaggery Block",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Apex Herb Infusion",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Nova Oats Pack",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Nova Lentil Mix",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Nova Turmeric Powder",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Nova Cumin Seeds",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Nova Black Pepper",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Nova Coconut Oil",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Nova Dates Tub",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Nova Cashew Jar",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Nova Almonds Box",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Nova Ragi Flour",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Nova Jaggery Block",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Nova Herb Infusion",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Vertex Oats Pack",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Vertex Lentil Mix",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Vertex Turmeric Powder",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Vertex Cumin Seeds",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Vertex Black Pepper",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Vertex Coconut Oil",
+    "category": "Groceries & Food"
+  },
+  {
+    "product": "Apex Stackable Truck",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Apex Train Set",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Apex Coloring Book",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Apex Pickup Game",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Apex Party Pack",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Apex Kite",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Apex Ball Pit Balls",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Apex Play Dough Tub",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Apex Finger Paint",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Apex Spin Top",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Apex Pretend Kit",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Apex Walkie Set",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Nova Stackable Truck",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Nova Coloring Book",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Nova Pickup Game",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Nova Party Pack",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Nova Kite",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Nova Ball Pit Balls",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Nova Play Dough Tub",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Nova Finger Paint",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Nova Spin Top",
+    "category": "Toys & Kids"
+  },
+  {
+    "product": "Vertex Stackable Truck",
+    "category": "Toys & Kids"
+  }
+]

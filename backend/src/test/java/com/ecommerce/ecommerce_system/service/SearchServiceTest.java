@@ -61,7 +61,10 @@ class SearchServiceTest {
             product(24, "Sheer Curtains Pair", "Home & Living", "Light filtering sheer curtains, two panels", "2199"),
             // Size variants are named "Max", which collides with "max 500" as a
             // budget phrasing. Kept here so that collision stays covered.
-            product(25, "Cotton T-Shirt Max", "Fashion", "Oversized cotton t-shirt, extra large", "999")
+            product(25, "Cotton T-Shirt Max", "Fashion", "Oversized cotton t-shirt, extra large", "999"),
+            // A real brand name, so typo-tolerance is exercised against a word
+            // shoppers actually mistype rather than a catalogue noun.
+            product(26, "Samsung Galaxy S24", "Mobiles", "6.2-inch AMOLED phone with a 50MP camera", "74999")
     );
 
     private List<String> names(String query) {
@@ -110,6 +113,15 @@ class SearchServiceTest {
         assertTrue(matcher.isTypoOf("shoees", "shoes"), "transposed pair is still a typo");
         assertTrue(matcher.isTypoOf("wireles", "wireless"), "dropped letter is still a typo");
         assertTrue(matcher.isTypoOf("erbudz", "earbuds"));
+    }
+
+    @Test
+    void correctsBrandNameTypo() {
+        List<String> hits = names("samsng");
+        assertEquals("Samsung Galaxy S24", hits.get(0), "a missing vowel in a brand should still match");
+        SearchService.Result result = service.search("samsng", catalogue);
+        assertTrue(result.correctedQuery().toLowerCase().contains("samsung"),
+                "UI needs the correction to explain itself, got: " + result.correctedQuery());
     }
 
     @Test

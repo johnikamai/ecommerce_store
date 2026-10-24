@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { X, ShoppingCart, Scale, Trash2, Search, Plus } from 'lucide-react';
+import { X, ShoppingCart, Scale, Trash2, Search, Plus, AlertTriangle, CheckCircle2, ExternalLink } from 'lucide-react';
 import axiosClient from '../api/axiosClient';
 import { useCompare } from '../context/CompareContext';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
 import ProductImage from '../components/ProductImage';
+import ComparisonVerdictCard from '../components/ComparisonVerdictCard';
+import { generateComparisonVerdict } from '../utils/comparisonVerdict';
 
 /**
  * Side-by-side comparison of the products ticked on the catalogue or a product
@@ -17,29 +19,103 @@ import ProductImage from '../components/ProductImage';
  * hand-maintained in a second place.
  *
  * "Best" is only ever claimed where best is unambiguous - cheapest, highest
- * rated, most sustainable. Price is the only row where a single winner is
- * always meaningful, so that is the one the table calls out.
+ * rated. No product is ever labelled "best overall", because that would need a
+ * weighted score the catalogue does not provide.
+ *
+ * Builds the comparison rows from a product, using only values the catalogue
+ * actually carries.
+ *
+ * The backend Product entity exposes name, description, category, price,
+ * stockQuantity, imageUrl and sustainabilityScore/Label - and nothing else.
+ * Fields the brief mentions but the data does not contain (brand,
+ * per-product discount/final price, warranty, category specifications) are
+ * deliberately NOT fabricated here: they resolve to t('compare.notSpecified')
+ * so the table stays honest. Adding them for real would require new columns on
+ * the backend, which is out of scope for this frontend task.
  */
-const ROWS = [
-  { key: 'price', label: 'Price', best: 'lowest', format: (p) => `₹${p.price}`, raw: (p) => Number(p.price) },
-  { key: 'category', label: 'Category', format: (p) => p.category || '—' },
-  { key: 'averageRating', label: 'Rating', best: 'highest', format: (p) => (p.averageRating ? `${Number(p.averageRating).toFixed(1)} / 5` : 'No reviews yet'), raw: (p) => Number(p.averageRating || 0) },
-  { key: 'reviewCount', label: 'Reviews', format: (p) => p.reviewCount ?? 0, raw: (p) => Number(p.reviewCount || 0) },
-  { key: 'unitsSold', label: 'Units sold', format: (p) => p.unitsSold ?? 0, raw: (p) => Number(p.unitsSold || 0) },
-  { key: 'description', labelKey: 'compare.description', format: (p) => p.description || '—' },
-  {
-    key: 'sustainabilityScore',
-    label: 'Sustainability',
-    format: (p) => (p.sustainabilityScore == null ? 'Not rated' : `${p.sustainabilityScore} / 100 — ${p.sustainabilityLabel}`),
-    raw: (p) => Number(p.sustainabilityScore ?? -1),
-  },
-  {
-    key: 'stockQuantity',
-    label: 'Availability',
-    format: (p, t) => (p.stockQuantity > 0 ? `${p.stockQuantity} ${t('compare.inStock')}` : t('compare.outOfStock')),
-    raw: (p) => Number(p.stockQuantity || 0),
-  },
-];
+function buildRows(t, formatCurrency) {
+  const notSpecified = t('compare.notSpecified');
+  return [
+    {
+      key: 'price',
+      label: t('compare.finalPrice'),
+      best: 'lowest',
+      bestLabel: 'compare.bestPrice',
+      format: (p) => formatCurrency(p.price),
+      raw: (p) => Number(p.price),
+    },
+    {
+      // The catalogue has no per-product discount, so the discount and final
+      // price are the same as the listed price; we show a single honest row.
+      key: 'discount',
+      label: t('compare.discount'),
+      format: () => notSpecified,
+    },
+    {
+      key: 'brand',
+      label: t('compare.brand'),
+      format: (p) => p.brand || notSpecified,
+    },
+    {
+      key: 'category',
+      label: t('common.category'),
+      format: (p) => p.category || notSpecified,
+    },
+    {
+      key: 'averageRating',
+      label: t('compare.rating'),
+      best: 'highest',
+      bestLabel: 'compare.bestRating',
+      format: (p) => (Number(p.averageRating) > 0 ? `${Number(p.averageRating).toFixed(1)} / 5` : t('compare.noReviewsYet')),
+      raw: (p) => Number(p.averageRating || 0),
+    },
+    {
+      key: 'reviewCount',
+      label: t('compare.reviews'),
+      best: 'highest',
+      bestLabel: 'compare.mostReviewed',
+      format: (p) => (p.reviewCount ?? 0),
+      raw: (p) => Number(p.reviewCount || 0),
+    },
+    {
+      key: 'unitsSold',
+      label: t('compare.unitsSold'),
+      best: 'highest',
+      bestLabel: 'compare.mostSold',
+      format: (p) => (p.unitsSold ?? 0),
+      raw: (p) => Number(p.unitsSold || 0),
+    },
+    {
+      key: 'description',
+      label: t('compare.description'),
+      format: (p) => p.description || notSpecified,
+    },
+    {
+      key: 'sustainabilityScore',
+      label: t('compare.sustainability'),
+      format: (p) => (p.sustainabilityScore == null
+        ? notSpecified
+        : `${p.sustainabilityScore} / 100 — ${p.sustainabilityLabel}`),
+      raw: (p) => Number(p.sustainabilityScore ?? -1),
+    },
+    {
+      key: 'specifications',
+      label: t('compare.specifications'),
+      format: (p) => p.specifications || notSpecified,
+    },
+    {
+      key: 'warranty',
+      label: t('compare.warranty'),
+      format: () => notSpecified,
+    },
+    {
+      key: 'stockQuantity',
+      label: t('compare.stock'),
+      format: (p) => (Number(p.stockQuantity) > 0 ? `${p.stockQuantity} ${t('compare.inStock')}` : t('compare.outOfStock')),
+      raw: (p) => Number(p.stockQuantity || 0),
+    },
+  ];
+}
 
 function winners(row, products) {
   if (!row.best || products.length < 2) return new Set();
@@ -55,9 +131,9 @@ function winners(row, products) {
 }
 
 export default function Compare() {
-  const { ids, remove, clear, add, count, isFull } = useCompare();
+  const { ids, remove, clear, add, count, isFull, limit } = useCompare();
   const { addToCart } = useCart();
-  const { t } = useLanguage();
+  const { t, formatCurrency } = useLanguage();
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [catalog, setCatalog] = useState([]);
@@ -66,6 +142,9 @@ export default function Compare() {
   const [diffsOnly, setDiffsOnly] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const rows = useMemo(() => buildRows(t, formatCurrency), [t, formatCurrency]);
+  const verdict = useMemo(() => generateComparisonVerdict(products), [products]);
 
   useEffect(() => {
     let cancelled = false;
@@ -94,7 +173,13 @@ export default function Compare() {
   const matches = search.trim()
     ? catalog.filter((product) => product.name?.toLowerCase().includes(search.trim().toLowerCase())).slice(0, 6)
     : [];
-  const visibleRows = ROWS.filter((row) => !diffsOnly || new Set(products.map((product) => row.format(product, t))).size > 1);
+
+  // Category coherence: warn when the picked products span more than one
+  // category, since their specifications are not directly comparable.
+  const categories = [...new Set(products.map((p) => p.category).filter(Boolean))];
+  const mixedCategories = categories.length > 1;
+
+  const visibleRows = rows.filter((row) => !diffsOnly || new Set(products.map((product) => row.format(product, t))).size > 1);
   const productPicker = (
     <div className="mb-5">
       <label className="block text-sm font-semibold mb-2" htmlFor="compare-product-search">{t('compare.selectProduct')}</label>
@@ -119,9 +204,9 @@ export default function Compare() {
                 <span className="min-w-0 truncate text-sm">{product.name}</span>
                 <button
                   type="button"
-                  onClick={() => { if (add(product.id)) setSearch(''); }}
+                  onClick={() => { if (add(product.id, product.category)) setSearch(''); }}
                   disabled={selected || isFull}
-                  title={isFull && !selected ? t('product.compareLimit') : undefined}
+                  title={isFull && !selected ? t('compare.limitReached', { limit }) : undefined}
                   className="inline-flex shrink-0 items-center gap-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] px-2.5 py-1.5 text-xs font-semibold text-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Plus size={13} /> {selected ? t('compare.alreadyComparing') : t('compare.addSlot')}
@@ -145,7 +230,7 @@ export default function Compare() {
           to="/products"
           className="inline-block mt-6 px-6 py-3 rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white text-sm font-semibold hover:bg-[var(--color-primary-hover)]"
         >
-          Browse products
+          {t('compare.browseProducts')}
         </Link>
       </div>
     );
@@ -159,13 +244,28 @@ export default function Compare() {
           onClick={clear}
           className="flex items-center gap-1.5 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-error)]"
         >
-          <Trash2 className="w-4 h-4" /> Clear all
+          <Trash2 className="w-4 h-4" /> {t('compare.clearAll')}
         </button>
       </div>
 
-      {loading && <p className="text-[var(--color-text-muted)] text-sm">Loading…</p>}
+      {loading && <p className="text-[var(--color-text-muted)] text-sm">{t('compare.loading')}</p>}
       {error && <p className="text-[var(--color-error)] text-sm">{error}</p>}
       {productPicker}
+
+      {/* Category coherence: comparing across categories is allowed, but their
+          specifications are not directly comparable, so say so. */}
+      {!loading && !error && mixedCategories && (
+        <p className="mb-4 flex items-start gap-2 rounded-[var(--radius-md)] bg-[var(--color-warning-bg)] text-[var(--color-warning)] px-3 py-2.5 text-sm">
+          <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+          <span>{t('compare.mixedCategories', { categories: categories.join(', ') })}</span>
+        </p>
+      )}
+      {!loading && !error && !mixedCategories && categories.length === 1 && products.length > 1 && (
+        <p className="mb-4 flex items-start gap-2 rounded-[var(--radius-md)] bg-[var(--color-success-bg)] text-[var(--color-success)] px-3 py-2.5 text-sm">
+          <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
+          <span>{t('compare.sameCategory', { category: categories[0] })}</span>
+        </p>
+      )}
 
       {!loading && !error && products.length > 1 && (
         <div className="flex flex-wrap gap-x-5 gap-y-2 mb-4 text-sm">
@@ -188,13 +288,13 @@ export default function Compare() {
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr>
-                  <th className="p-4 text-left text-[var(--color-text-muted)] font-medium w-40">Product</th>
+                  <th className="sticky left-0 z-10 bg-[var(--color-card-bg)] p-4 text-left text-[var(--color-text-muted)] font-medium w-36 min-w-[120px]">{t('compare.product')}</th>
                   {products.map((p) => (
                     <th key={p.id} className="p-4 text-left align-top min-w-[200px]">
                       <div className="relative">
                         <button
                           onClick={() => remove(p.id)}
-                          aria-label={`Remove ${p.name} from comparison`}
+                          aria-label={t('compare.removeFromCompareLabel', { name: p.name })}
                           className="absolute top-0 right-0 p-1 rounded-full bg-[var(--color-card-bg-tint)] hover:bg-[var(--color-error-bg)] hover:text-[var(--color-error)]"
                         >
                           <X className="w-3.5 h-3.5" />
@@ -217,25 +317,28 @@ export default function Compare() {
                   const differs = new Set(values).size > 1;
                   return (
                     <tr key={row.key} className="border-t-[var(--color-border)]">
-                      <th scope="row" className="p-4 text-left font-medium text-[var(--color-text-muted)] align-top">
-                        {row.labelKey ? t(row.labelKey) : row.label}
+                      <th scope="row" className="sticky left-0 z-10 bg-[var(--color-card-bg)] p-4 text-left font-medium text-[var(--color-text-muted)] align-top">
+                        {row.label}
                       </th>
-                      {products.map((p) => {
+                      {products.map((p, i) => {
                         const isBest = best.has(p.id);
+                        const value = values[i];
                         return (
                           <td
                             key={p.id}
                             className={
                               'p-4 align-top ' +
-                              isBest
+                              (isBest
                                 ? 'font-semibold text-[var(--color-success)] bg-[var(--color-success-bg)]'
-                                : highlightDiffs && differs ? 'bg-[var(--color-warning-bg)]' : ''
+                                : highlightDiffs && differs ? 'bg-[var(--color-warning-bg)]' : '')
                             }
                           >
-                            {values[products.indexOf(p)]}
+                            {value === t('compare.notSpecified')
+                              ? <span className="text-[var(--color-text-muted)] italic">{value}</span>
+                              : value}
                             {isBest && row.best && (
                               <span className="block text-[10px] font-normal uppercase tracking-wide opacity-80">
-                                {t(row.best === 'lowest' ? 'compare.bestPrice' : 'compare.bestValue')}
+                                {t(row.bestLabel || 'compare.bestPrice')}
                               </span>
                             )}
                           </td>
@@ -245,20 +348,37 @@ export default function Compare() {
                   );
                 })}
                 <tr className="border-t-[var(--color-border)]">
-                  <th className="p-4 text-left font-medium text-[var(--color-text-muted)]">Actions</th>
+                  <th className="sticky left-0 z-10 bg-[var(--color-card-bg)] p-4 text-left font-medium text-[var(--color-text-muted)]">{t('compare.actions')}</th>
                   {products.map((p) => (
                     <td key={p.id} className="p-4">
-                      <button
-                        onClick={() => {
-                          addToCart(p, 1);
-                          navigate('/cart');
-                        }}
-                        disabled={p.stockQuantity <= 0}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white text-xs font-semibold hover:bg-[var(--color-primary-hover)] disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        <ShoppingCart className="w-3.5 h-3.5" />
-                        {p.stockQuantity > 0 ? 'Add to cart' : 'Out of stock'}
-                      </button>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          onClick={() => {
+                            addToCart(p, 1);
+                            navigate('/cart');
+                          }}
+                          disabled={p.stockQuantity <= 0}
+                          className="flex items-center gap-1.5 px-4 py-2 rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white text-xs font-semibold hover:bg-[var(--color-primary-hover)] disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          <ShoppingCart className="w-3.5 h-3.5" />
+                          {p.stockQuantity > 0 ? t('compare.addToCart') : t('compare.outOfStock')}
+                        </button>
+                        <Link
+                          to={`/product/${p.id}`}
+                          className="flex items-center gap-1.5 px-4 py-2 rounded-[var(--radius-md)] border border-[var(--color-border)] text-xs font-semibold text-[var(--color-text-secondary)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          {t('compare.viewDetails')}
+                        </Link>
+                        <button
+                          onClick={() => remove(p.id)}
+                          aria-label={t('compare.removeFromCompareLabel', { name: p.name })}
+                          className="flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-md)] text-xs font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-error-bg)] hover:text-[var(--color-error)]"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                          {t('compare.removeProduct')}
+                        </button>
+                      </div>
                     </td>
                   ))}
                 </tr>
@@ -271,15 +391,14 @@ export default function Compare() {
           )}
 
           <p className="text-xs text-[var(--color-text-muted)] mt-4">
-            Prices and stock are read live from the catalogue. Adding two or more of these to your cart
-            also unlocks a bundle discount at checkout.
+            {t('compare.liveNote')}
           </p>
         </>
       )}
 
       {!loading && !error && products.length < count && (
         <p className="text-sm text-[var(--color-text-muted)] mt-4">
-          {count - products.length} selected product(s) are no longer in the catalogue and were left out.
+          {t('compare.staleNotice', { count: count - products.length })}
         </p>
       )}
     </div>

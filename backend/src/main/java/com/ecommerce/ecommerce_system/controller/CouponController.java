@@ -1,6 +1,7 @@
 package com.ecommerce.ecommerce_system.controller;
 
 import com.ecommerce.ecommerce_system.model.Coupon;
+import com.ecommerce.ecommerce_system.model.CouponType;
 import com.ecommerce.ecommerce_system.repository.CouponRepository;
 import com.ecommerce.ecommerce_system.repository.CustomerRepository;
 import com.ecommerce.ecommerce_system.service.NotificationService;
@@ -9,8 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
+import java.math.RoundingMode;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/coupons")
@@ -109,5 +110,59 @@ public class CouponController {
         }
         couponRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * GET /api/coupons/recommend?subtotal=1500
+     *
+     * Scans every active, redeemable coupon and returns the one that yields
+     * the largest saving for the given cart subtotal. Returns 204 when no
+     * coupon is applicable (minimum order not met, all expired / exhausted).
+     *
+     * The endpoint is intentionally public: showing the best discount before
+     * sign-in is a conversion nudge, not a security risk. No coupon is marked
+     * used here - that happens at order placement.
+     */
+    @GetMapping("/recommend")
+    public ResponseEntity<?> recommend(@RequestParam BigDecimal subtotal) {
+        if (subtotal == null || subtotal.compareTo(BigDecimal.ZERO) <= 0) {
+            return ResponseEntity.badRequest().body("subtotal must be positive");
+        }
+
+        Coupon best = null;
+        BigDecimal bestSaving = BigDecimal.ZERO;
+
+        for (Coupon c : couponRepository.findAll()) {
+            if (!c.isRedeemable()) continue;
+            if (c.getMinimumOrderAmount() != null
+                    && subtotal.compareTo(c.getMinimumOrderAmount()) < 0) continue;
+
+            BigDecimal saving;
+            if (c.getDiscountType() == CouponType.PERCENT) {
+                saving = subtotal
+                        .multiply(c.getDiscountValue())
+                        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+            } else {
+                saving = c.getDiscountValue().min(subtotal);
+            }
+
+            if (saving.compareTo(bestSaving) > 0) {
+                bestSaving = saving;
+                best = c;
+            }
+        }
+
+        if (best == null) {
+            return ResponseEntity.noContent().build();
+        }
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("code",          best.getCode());
+        result.put("description",   best.getDescription());
+        result.put("discountType",  best.getDiscountType());
+        result.put("discountValue", best.getDiscountValue());
+        result.put("minimumOrderAmount", best.getMinimumOrderAmount());
+        result.put("saving",        bestSaving);
+        return ResponseEntity.ok(result);
     }
 }

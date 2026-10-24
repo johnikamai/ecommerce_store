@@ -1,0 +1,872 @@
+[
+  {
+    "product": "Laptop",
+    "file": "/products/laptop-c.webp",
+    "title": "my new laptop",
+    "author": "The Master Shake Signal",
+    "license": "CC BY-SA 2.0",
+    "source": "openverse",
+    "url": "https://www.flickr.com/photos/43266053@N00/42089247",
+    "score": 1.5
+  },
+  {
+    "product": "Gaming Headset",
+    "file": "/products/gaming-headset-c.webp",
+    "title": "Gaming Headsets",
+    "author": "tandemsystemsltd",
+    "license": "CC BY 2.0",
+    "source": "openverse",
+    "url": "https://www.flickr.com/photos/109369158@N08/10963478003",
+    "score": 1.5
+  },
+  {
+    "product": "Portable SSD 1TB",
+    "file": "/products/portable-ssd-1tb-c.webp",
+    "title": "File:SanDisk Extreme Portable SSD - 1TB, USB-C (41036158305).jpg",
+    "author": "Tony Webster from Minneapolis, Minnesota, United States",
+    "license": "CC BY 2.0",
+    "source": "openverse",
+    "url": "https://commons.wikimedia.org/w/index.php?curid=68966543",
+    "score": 1.5
+  },
+  {
+    "product": "Leather Sneakers",
+    "file": "/products/leather-sneakers-c.webp",
+    "title": "Leather sneakers",
+    "author": "koustourika",
+    "license": "CC BY-SA 2.0",
+    "source": "openverse",
+    "url": "https://www.flickr.com/photos/45265583@N07/6696821677",
+    "score": 1.5
+  },
+  {
+    "product": "Woolen Scarf",
+    "file": "/products/woolen-scarf-c.webp",
+    "title": "22769 ~ [accessories] Big Woolen Scarf Grey COMMON",
+    "author": "Tigist Sapphire",
+    "license": "CC BY-SA 2.0",
+    "source": "openverse",
+    "url": "https://www.flickr.com/photos/73159597@N03/16286986432",
+    "score": 1.5
+  },
+  {
+    "product": "Ceramic Planter Set",
+    "file": "/products/ceramic-planter-set-c.webp",
+    "title": "Prop Department - Glass & Ceramic Planters",
+    "author": "Rob Young",
+    "license": "CC BY 2.0",
+    "source": "openverse",
+    "url": "https://www.flickr.com/photos/76562640@N00/2562002006",
+    "score": 1
+  },
+  {
+    "product": "Educational Puzzle",
+    "file": "/products/educational-puzzle-c.webp",
+    "title": "Child engages in educational play with a colorful puzzle in a cozy indoor setting of a playroom during the afternoon.jpg",
+    "author": "Shixart1985",
+    "license": "CC BY 2.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Child_engages_in_educational_play_with_a_colorful_puzzle_in_a_cozy_indoor_setting_of_a_playroom_during_the_afternoon.jpg",
+    "score": 1
+  },
+  {
+    "product": "Car Vacuum Cleaner",
+    "file": "/products/car-vacuum-cleaner-c.webp",
+    "title": "Hoover Car Vacuum Cleaner.JPG",
+    "author": "Alf van Beem",
+    "license": "Public domain",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Hoover_Car_Vacuum_Cleaner.JPG",
+    "score": 1.5
+  },
+  {
+    "product": "Tabletop Foosball",
+    "file": "/products/tabletop-foosball-c.webp",
+    "title": "FAS Foosball table 1.jpg",
+    "author": "No machine-readable author provided. PoprocksCk~commonswiki assumed (based on copyright claims).",
+    "license": "CC BY-SA 3.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:FAS_Foosball_table_1.jpg",
+    "score": 1
+  },
+  {
+    "product": "Almond Butter Jar",
+    "file": "/products/almond-butter-jar-c.webp",
+    "title": "Barney Almond Butter, Crunchy, 10 oz jar.jpg",
+    "author": "Steven Pavlov",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Barney_Almond_Butter,_Crunchy,_10_oz_jar.jpg",
+    "score": 1
+  },
+  {
+    "product": "Dried Fruit Mix",
+    "file": "/products/dried-fruit-mix-c.webp",
+    "title": "Dried fruit and nuts mix for kid snacks (15093547798).jpg",
+    "author": "Personal Creations",
+    "license": "CC BY 2.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Dried_fruit_and_nuts_mix_for_kid_snacks_(15093547798).jpg",
+    "score": 1
+  },
+  {
+    "product": "Exercise Resistance Band",
+    "file": "/products/exercise-resistance-band-c.webp",
+    "title": "EFTA00000622 - Neatly organized home gym closet featuring exercise balls foam rollers and a resistance band system.jpg",
+    "author": "Federal Bureau of Investigation",
+    "license": "Public domain",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:EFTA00000622_-_Neatly_organized_home_gym_closet_featuring_exercise_balls_foam_rollers_and_a_resistance_band_system.jpg",
+    "score": 1
+  },
+  {
+    "product": "Mini Projector",
+    "file": "/products/mini-projector-c.webp",
+    "title": "Film Projector in the Fondation Jérôme Seydoux-Pathé (Digitized Photo).jpg",
+    "author": "DiscoA340",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Film_Projector_in_the_Fondation_J%C3%A9r%C3%B4me_Seydoux-Path%C3%A9_(Digitized_Photo).jpg",
+    "score": 1
+  },
+  {
+    "product": "Bluetooth Keyboard",
+    "file": "/products/bluetooth-keyboard-c.webp",
+    "title": "ESYNiC folding Bluetooth keyboard - in case, under iPhone 5S.jpg",
+    "author": "tawalker",
+    "license": "CC BY 2.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:ESYNiC_folding_Bluetooth_keyboard_-_in_case,_under_iPhone_5S.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Over-Ear Headphones",
+    "file": "/products/over-ear-headphones-c.webp",
+    "title": "Sony WH-CH510 Bluetooth Over-Ear Headphone.jpg",
+    "author": "RPSkokie",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Sony_WH-CH510_Bluetooth_Over-Ear_Headphone.jpg",
+    "score": 1
+  },
+  {
+    "product": "Knit Beanie",
+    "file": "/products/knit-beanie-c.webp",
+    "title": "Beanie - Knit Cap (51013511676).jpg",
+    "author": "ajay_suresh",
+    "license": "CC BY 2.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Beanie_-_Knit_Cap_(51013511676).jpg",
+    "score": 1
+  },
+  {
+    "product": "Ankle Boots",
+    "file": "/products/ankle-boots-c.webp",
+    "title": "Black 8cm high-heeled ankle boots (20211007153232).jpg",
+    "author": "N509FZ",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Black_8cm_high-heeled_ankle_boots_(20211007153232).jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Eyeshadow Palette",
+    "file": "/products/eyeshadow-palette-c.webp",
+    "title": "Eyeshadow Brushes and Eyeshadow Palette (White Background) - 50922168986.jpg",
+    "author": "geehairimages",
+    "license": "CC BY 2.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Eyeshadow_Brushes_and_Eyeshadow_Palette_(White_Background)_-_50922168986.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Stainless Steel Bottle",
+    "file": "/products/stainless-steel-bottle-c.webp",
+    "title": "A Tiger Corp. Stainless Steel Bottle.jpg",
+    "author": "TwentytwoAug",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:A_Tiger_Corp._Stainless_Steel_Bottle.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Meditation Cushion",
+    "file": "/products/meditation-cushion-c.webp",
+    "title": "Meditation cushion.jpg",
+    "author": "Holabuenosdiasquetal",
+    "license": "CC0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Meditation_cushion.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Peanut Butter Jar",
+    "file": "/products/peanut-butter-jar-c.webp",
+    "title": "Three lb peanut butter jar.jpg",
+    "author": "Twopower332.1938",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Three_lb_peanut_butter_jar.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Himalayan Pink Salt",
+    "file": "/products/himalayan-pink-salt-c.webp",
+    "title": "Chunk of Pink Himalayan Rock Salt from Salt Rox (6979595515).jpg",
+    "author": "Elizabeth from Lansing, MI, USA",
+    "license": "CC BY 2.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Chunk_of_Pink_Himalayan_Rock_Salt_from_Salt_Rox_(6979595515).jpg",
+    "score": 1
+  },
+  {
+    "product": "Bluetooth FM Transmitter",
+    "file": "/products/bluetooth-fm-transmitter-c.webp",
+    "title": "T10 Car Bluetooth FM Transmitter-0465.jpg",
+    "author": "Raimond Spekking",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:T10_Car_Bluetooth_FM_Transmitter-0465.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Tire Pressure Gauge",
+    "file": "/products/tire-pressure-gauge-c.webp",
+    "title": "Porsche Tire Pressure Gauge (9207945919).jpg",
+    "author": "Antti",
+    "license": "CC BY 2.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Porsche_Tire_Pressure_Gauge_(9207945919).jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Monitor",
+    "file": "/products/nova-monitor-c.webp",
+    "title": "DATA General Nova monitor.jpg",
+    "author": "Museum of Transport and Technology",
+    "license": "CC BY 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:DATA_General_Nova_monitor.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Tea Towel",
+    "file": "/products/nova-tea-towel-c.webp",
+    "title": "Dark blue tea towel stack.jpg",
+    "author": "TeaTowel341076",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Dark_blue_tea_towel_stack.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Photo Frame",
+    "file": "/products/nova-photo-frame-c.webp",
+    "title": "A photo frame of bernese mountain dog (11018600043).jpg",
+    "author": "Takashi Hososhima from Tokyo, Japan",
+    "license": "CC BY-SA 2.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:A_photo_frame_of_bernese_mountain_dog_(11018600043).jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Rug Runner",
+    "file": "/products/nova-rug-runner-c.webp",
+    "title": "American 20th Century, Rug Runner, 1935-1942, NGA 28535.jpg",
+    "author": "American 20th Century",
+    "license": "Public domain",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:American_20th_Century,_Rug_Runner,_1935-1942,_NGA_28535.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Closet Organizer",
+    "file": "/products/nova-closet-organizer-c.webp",
+    "title": "EFTA00000563 - Neatly organized walk-in closet with white towels hangers storage baskets and shoe organizers on a gold carpet.jpg",
+    "author": "Federal Bureau of Investigation",
+    "license": "Public domain",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:EFTA00000563_-_Neatly_organized_walk-in_closet_with_white_towels_hangers_storage_baskets_and_shoe_organizers_on_a_gold_carpet.jpg",
+    "score": 1
+  },
+  {
+    "product": "Nova Plant Pot",
+    "file": "/products/nova-plant-pot-c.webp",
+    "title": "Plant pot*image.jpg",
+    "author": "Tamilarasi Annadurai",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Plant_pot*image.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Vertex Tea Towel",
+    "file": "/products/vertex-tea-towel-c.webp",
+    "title": "Tea towels (set of) (AM 2002.64.1-14).jpg",
+    "author": "Ina Sodersten",
+    "license": "CC BY 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Tea_towels_(set_of)_(AM_2002.64.1-14).jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Vertex Photo Frame",
+    "file": "/products/vertex-photo-frame-c.webp",
+    "title": "Digital photo frame with picture.jpg",
+    "author": "Hustvedt",
+    "license": "CC BY-SA 3.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Digital_photo_frame_with_picture.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Index Cards",
+    "file": "/products/nova-index-cards-c.webp",
+    "title": "Filing box with index cards containing customer data of a small business, 2022.jpg",
+    "author": "Pittigrilli",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Filing_box_with_index_cards_containing_customer_data_of_a_small_business,_2022.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Notebook Cover",
+    "file": "/products/nova-notebook-cover-c.webp",
+    "title": "Chocolat Lombart, 75 Avenue de Choisy, Paris, tin notebook cover, foto3.JPG",
+    "author": "Alf van Beem",
+    "license": "CC0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Chocolat_Lombart,_75_Avenue_de_Choisy,_Paris,_tin_notebook_cover,_foto3.JPG",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Pencil Sharpener",
+    "file": "/products/nova-pencil-sharpener-c.webp",
+    "title": "Fiskars squeeze pencil sharpener, closed, pink and purple..jpg",
+    "author": "ShyAndroid",
+    "license": "CC0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Fiskars_squeeze_pencil_sharpener,_closed,_pink_and_purple..jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Tape Dispenser",
+    "file": "/products/nova-tape-dispenser-c.webp",
+    "title": "Tape-dispenser.jpg",
+    "author": "Evan-amos",
+    "license": "Public domain",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Tape-dispenser.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Vertex Index Cards",
+    "file": "/products/vertex-index-cards-c.webp",
+    "title": "Index cards.jpg",
+    "author": "Goatid",
+    "license": "CC BY-SA 3.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Index_cards.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Hand Cream",
+    "file": "/products/nova-hand-cream-c.webp",
+    "title": "Eucerin hand cream.jpg",
+    "author": "Misaochan",
+    "license": "CC BY-SA 3.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Eucerin_hand_cream.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Exfoliating Scrub",
+    "file": "/products/nova-exfoliating-scrub-c.webp",
+    "title": "Exfoliating face scrub.jpg",
+    "author": "Corn cheese",
+    "license": "CC BY 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Exfoliating_face_scrub.jpg",
+    "score": 1
+  },
+  {
+    "product": "Nova Keyboard Dock",
+    "file": "/products/nova-keyboard-dock-c.webp",
+    "title": "Asus Transformer Pad TF701T Tablet and Keyboard Dock.png",
+    "author": "Dinominant at English Wikipedia",
+    "license": "CC0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Asus_Transformer_Pad_TF701T_Tablet_and_Keyboard_Dock.png",
+    "score": 1.5
+  },
+  {
+    "product": "Nova USB Hub",
+    "file": "/products/nova-usb-hub-c.webp",
+    "title": "4port-usb-hub-bus-powered.jpg",
+    "author": "PrimeEvil at de.wikipedia",
+    "license": "CC BY-SA 3.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:4port-usb-hub-bus-powered.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Card Reader",
+    "file": "/products/nova-card-reader-c.webp",
+    "title": "Card reader unit from calculator HP-67 with motor and drive train, el. connection to mainboard (above).jpg",
+    "author": "leighklotz",
+    "license": "CC BY 2.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Card_reader_unit_from_calculator_HP-67_with_motor_and_drive_train,_el._connection_to_mainboard_(above).jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Streaming Stick",
+    "file": "/products/nova-streaming-stick-c.webp",
+    "title": "Roku Streaming Stick 4K.jpg",
+    "author": "TaurusEmerald",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Roku_Streaming_Stick_4K.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Smart Bulb",
+    "file": "/products/nova-smart-bulb-c.webp",
+    "title": "Yeelight gu10 smart bulb W1 dimmable YLDP004 1527 4.8w.jpg",
+    "author": "Nord794ub",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Yeelight_gu10_smart_bulb_W1_dimmable_YLDP004_1527_4.8w.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Laptop Tray",
+    "file": "/products/nova-laptop-tray-c.webp",
+    "title": "Laptop on a wicker tray (Unsplash).jpg",
+    "author": "Lauren Mancke laurenmancke",
+    "license": "CC0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Laptop_on_a_wicker_tray_(Unsplash).jpg",
+    "score": 1
+  },
+  {
+    "product": "Vertex Keyboard Dock",
+    "file": "/products/vertex-keyboard-dock-c.webp",
+    "title": "ASUS Eeepad Transformer with Dock Keyboard.JPG",
+    "author": "fieldafar",
+    "license": "CC BY-SA 3.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:ASUS_Eeepad_Transformer_with_Dock_Keyboard.JPG",
+    "score": 1
+  },
+  {
+    "product": "Vertex USB Hub",
+    "file": "/products/vertex-usb-hub-c.webp",
+    "title": "USB hub 1 2019-02-16.jpg",
+    "author": "F ASTILY",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:USB_hub_1_2019-02-16.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Vertex Card Reader",
+    "file": "/products/vertex-card-reader-c.webp",
+    "title": "IC Card Reader Writer RW-5100W.jpg",
+    "author": "Project Kei",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:IC_Card_Reader_Writer_RW-5100W.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Stainless Bowl",
+    "file": "/products/nova-stainless-bowl-c.webp",
+    "title": "056 Stainless Steel Bowl (9261384016).jpg",
+    "author": "Photo Dharma from Sadao, Thailand",
+    "license": "CC BY 2.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:056_Stainless_Steel_Bowl_(9261384016).jpg",
+    "score": 1
+  },
+  {
+    "product": "Nova Teething Ring",
+    "file": "/products/nova-teething-ring-c.webp",
+    "title": "Teething Ring.jpg",
+    "author": "MultK",
+    "license": "CC BY-SA 3.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Teething_Ring.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Brush Comb",
+    "file": "/products/nova-brush-comb-c.webp",
+    "title": "SLNSW 20468 Brush comb and mirror set.jpg",
+    "author": "Sam Hood",
+    "license": "Public domain",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:SLNSW_20468_Brush_comb_and_mirror_set.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Pull Toy",
+    "file": "/products/nova-pull-toy-c.webp",
+    "title": "Bell Pull Toy.jpg",
+    "author": "Unknown author Unknown author",
+    "license": "Public domain",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Bell_Pull_Toy.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Vertex Stainless Bowl",
+    "file": "/products/vertex-stainless-bowl-c.webp",
+    "title": "2016-10-15 Naengmyeon with boiled eggs in stainless steel bowl in Pyongyang.jpg",
+    "author": "Jan Bockaert",
+    "license": "CC BY-SA 2.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:2016-10-15_Naengmyeon_with_boiled_eggs_in_stainless_steel_bowl_in_Pyongyang.jpg",
+    "score": 1
+  },
+  {
+    "product": "Nova Ribbed Top",
+    "file": "/products/nova-ribbed-top-c.webp",
+    "title": "Young woman wearing a ribbed top and sweatpants in Madison, Wisconsin 2023.jpeg",
+    "author": "John Benson from Madison WI",
+    "license": "CC BY 2.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Young_woman_wearing_a_ribbed_top_and_sweatpants_in_Madison,_Wisconsin_2023.jpeg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Wrist Band",
+    "file": "/products/nova-wrist-band-c.webp",
+    "title": "Let Leni Lead wrist band worn by supporters of Leni Robredo.jpg",
+    "author": "Sunkissedguy",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Let_Leni_Lead_wrist_band_worn_by_supporters_of_Leni_Robredo.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Trucker Cap",
+    "file": "/products/nova-trucker-cap-c.webp",
+    "title": "Trucker cap.jpg",
+    "author": "Mantelmoewe",
+    "license": "CC0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Trucker_cap.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Bomber Jacket",
+    "file": "/products/nova-bomber-jacket-c.webp",
+    "title": "Women Bomber Jacket Detail.jpg",
+    "author": "Cici water",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Women_Bomber_Jacket_Detail.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Pleated Skirt",
+    "file": "/products/nova-pleated-skirt-c.webp",
+    "title": "Pleated skirt.jpg",
+    "author": "David Ring",
+    "license": "CC0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Pleated_skirt.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Vertex Wrist Band",
+    "file": "/products/vertex-wrist-band-c.webp",
+    "title": "Multi-Metal Wrist Band in Northern Ghana.jpg",
+    "author": "Ibn Shiraz",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Multi-Metal_Wrist_Band_in_Northern_Ghana.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Vertex Trucker Cap",
+    "file": "/products/vertex-trucker-cap-c.webp",
+    "title": "'Taco Truck' Cap -- The High Line New York (NY) April 2016 (27084468766).jpg",
+    "author": "Ron Cogswell from Arlington, Virginia, USA",
+    "license": "CC BY 2.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:%27Taco_Truck%27_Cap_--_The_High_Line_New_York_(NY)_April_2016_(27084468766).jpg",
+    "score": 1
+  },
+  {
+    "product": "Vertex Bomber Jacket",
+    "file": "/products/vertex-bomber-jacket-c.webp",
+    "title": "Orlando Dugi - Gold Sun Bomber Jacket 2022.jpg",
+    "author": "Premeditated Chaos",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Orlando_Dugi_-_Gold_Sun_Bomber_Jacket_2022.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Pull Up Bar",
+    "file": "/products/nova-pull-up-bar-c.webp",
+    "title": "Pull-up bar.JPG",
+    "author": "Santeri Viinamäki",
+    "license": "CC BY 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Pull-up_bar.JPG",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Foam Roller",
+    "file": "/products/nova-foam-roller-c.webp",
+    "title": "EFTA00000263 - Neatly organized closet shelf holds blue foam rollers a zebra-print cushion and a small box all under soft lighting.jpg",
+    "author": "Federal Bureau of Investigation",
+    "license": "Public domain",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:EFTA00000263_-_Neatly_organized_closet_shelf_holds_blue_foam_rollers_a_zebra-print_cushion_and_a_small_box_all_under_soft_lighting.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Exercise Ball",
+    "file": "/products/nova-exercise-ball-c.webp",
+    "title": "Acrobatic flip using an exercise ball buried in the sand, Praia América, Galicia, Spain (PPL1-Corrected) 2 julesvernex2.jpg",
+    "author": "Jules Verne Times Two",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Acrobatic_flip_using_an_exercise_ball_buried_in_the_sand,_Praia_Am%C3%A9rica,_Galicia,_Spain_(PPL1-Corrected)_2_julesvernex2.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Grip Trainer",
+    "file": "/products/nova-grip-trainer-c.webp",
+    "title": "Human Trainer Pullups Wide Grip START -.jpg",
+    "author": "Fitnesslova",
+    "license": "CC BY-SA 3.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Human_Trainer_Pullups_Wide_Grip_START_-.jpg",
+    "score": 1
+  },
+  {
+    "product": "Nova Knee Sleeve",
+    "file": "/products/nova-knee-sleeve-c.webp",
+    "title": "CSIRO ScienceImage 2627 Intelligent knee sleeve.jpg",
+    "author": "North Sullivan Photography, CSIRO",
+    "license": "CC BY 3.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:CSIRO_ScienceImage_2627_Intelligent_knee_sleeve.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Heart Monitor",
+    "file": "/products/nova-heart-monitor-c.webp",
+    "title": "Heart monitor, 1965 (51652725634).jpg",
+    "author": "Seattle Municipal Archives from Seattle, WA",
+    "license": "CC BY 2.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Heart_monitor,_1965_(51652725634).jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Yoga Block",
+    "file": "/products/nova-yoga-block-c.webp",
+    "title": "Green yoga block.jpg",
+    "author": "Corn cheese",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Green_yoga_block.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Vertex Exercise Ball",
+    "file": "/products/vertex-exercise-ball-c.webp",
+    "title": "Exercise ball.jpg",
+    "author": "Spiralz from England",
+    "license": "CC BY 2.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Exercise_ball.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Brake Fluid",
+    "file": "/products/nova-brake-fluid-c.webp",
+    "title": "Delco brake fluid can pic1.JPG",
+    "author": "Alf van Beem",
+    "license": "CC0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Delco_brake_fluid_can_pic1.JPG",
+    "score": 1.5
+  },
+  {
+    "product": "Vertex Brake Fluid",
+    "file": "/products/vertex-brake-fluid-c.webp",
+    "title": "Delco brake fluid can pic3.JPG",
+    "author": "Alf van Beem",
+    "license": "CC0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Delco_brake_fluid_can_pic3.JPG",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Lentil Mix",
+    "file": "/products/nova-lentil-mix-c.webp",
+    "title": "A mix of split lentils, masoor dal India.jpg",
+    "author": "jasleen_kaur from USA",
+    "license": "CC BY-SA 2.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:A_mix_of_split_lentils,_masoor_dal_India.jpg",
+    "score": 1
+  },
+  {
+    "product": "Nova Turmeric Powder",
+    "file": "/products/nova-turmeric-powder-c.webp",
+    "title": "Chlorofeel Spices Turmeric Powder Packet.jpg",
+    "author": "Businesses247",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Chlorofeel_Spices_Turmeric_Powder_Packet.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Cumin Seeds",
+    "file": "/products/nova-cumin-seeds-c.webp",
+    "title": "Lidded basket with cumin seeds and fruits - Museo Egizio (Turin) S 8415 p01.jpg",
+    "author": "Unknown",
+    "license": "CC0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Lidded_basket_with_cumin_seeds_and_fruits_-_Museo_Egizio_(Turin)_S_8415_p01.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Black Pepper",
+    "file": "/products/nova-black-pepper-c.webp",
+    "title": "Basket of black pepper.jpg",
+    "author": "Halima Waziri",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Basket_of_black_pepper.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Coconut Oil",
+    "file": "/products/nova-coconut-oil-c.webp",
+    "title": "Coconut Oil amp 30050.jpg",
+    "author": "PaulReis123",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Coconut_Oil_amp_30050.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Cashew Jar",
+    "file": "/products/nova-cashew-jar-c.webp",
+    "title": "Meridian Smooth Cashew Butter Jar.jpg",
+    "author": "TudorTulok",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Meridian_Smooth_Cashew_Butter_Jar.jpg",
+    "score": 1
+  },
+  {
+    "product": "Nova Ragi Flour",
+    "file": "/products/nova-ragi-flour-c.webp",
+    "title": "Ragi millet flour.jpg",
+    "author": "Medhi jyoti",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Ragi_millet_flour.jpg",
+    "score": 1
+  },
+  {
+    "product": "Nova Jaggery Block",
+    "file": "/products/nova-jaggery-block-c.webp",
+    "title": "Kolhapur jaggery in semi-liquid form filled in the Vofaa rectangular section. Later will be transferred into the 1 Kg containers with white cloth placed inside it for making Jaggery blocks (Dheps).jpg",
+    "author": "Sushant Medhe Pawar of Kolhapur Agricultural Produce Market (Kolhapur Sheti Utpanna Bazar Samiti) from Kolhapur",
+    "license": "CC0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Kolhapur_jaggery_in_semi-liquid_form_filled_in_the_Vofaa_rectangular_section._Later_will_be_transferred_into_the_1_Kg_containers_with_white_cloth_placed_inside_it_for_making_Jaggery_blocks_(Dheps).jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Vertex Lentil Mix",
+    "file": "/products/vertex-lentil-mix-c.webp",
+    "title": "Back side of Mix lentils Uttapam P 20190410 144927.jpg",
+    "author": "Sumita Roy Dutta",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Back_side_of_Mix_lentils_Uttapam_P_20190410_144927.jpg",
+    "score": 1
+  },
+  {
+    "product": "Vertex Turmeric Powder",
+    "file": "/products/vertex-turmeric-powder-c.webp",
+    "title": "Chlorofeel Spices Turmeric Powder Packet Image.jpg",
+    "author": "Businesses247",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Chlorofeel_Spices_Turmeric_Powder_Packet_Image.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Vertex Cumin Seeds",
+    "file": "/products/vertex-cumin-seeds-c.webp",
+    "title": "Lidded basket with cumin seeds and fruits - Museo Egizio (Turin) S 8415 p02.jpg",
+    "author": "Unknown",
+    "license": "CC0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Lidded_basket_with_cumin_seeds_and_fruits_-_Museo_Egizio_(Turin)_S_8415_p02.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Vertex Black Pepper",
+    "file": "/products/vertex-black-pepper-c.webp",
+    "title": "Black Pepper - Piper nigrum - Le Jardin du Roi - 01.jpg",
+    "author": "NorbertNagel",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Black_Pepper_-_Piper_nigrum_-_Le_Jardin_du_Roi_-_01.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Vertex Coconut Oil",
+    "file": "/products/vertex-coconut-oil-c.webp",
+    "title": "Coconut oil 2.jpg",
+    "author": "Tiia Monto",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Coconut_oil_2.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Coloring Book",
+    "file": "/products/nova-coloring-book-c.webp",
+    "title": "Calvin and the Colonel - A Coloring Book (1962) - Front Cover.jpg",
+    "author": "Saalfield Publishing and Kayro Productions",
+    "license": "Public domain",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Calvin_and_the_Colonel_-_A_Coloring_Book_(1962)_-_Front_Cover.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Nova Finger Paint",
+    "file": "/products/nova-finger-paint-c.webp",
+    "title": "Finger Painting.jpg",
+    "author": "D.M. Vernon, aka DVernon at en.wikipedia",
+    "license": "Public domain",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Finger_Painting.jpg",
+    "score": 1.5
+  },
+  {
+    "product": "Vertex Coloring Book",
+    "file": "/products/vertex-coloring-book-c.webp",
+    "title": "Wikimania 2017 - Opening ceremony - the coloring book 7468.jpg",
+    "author": "Avery Jensen",
+    "license": "CC BY-SA 4.0",
+    "source": "wikimedia",
+    "url": "https://commons.wikimedia.org/wiki/File:Wikimania_2017_-_Opening_ceremony_-_the_coloring_book_7468.jpg",
+    "score": 1.5
+  }
+]

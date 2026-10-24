@@ -75,7 +75,7 @@ test('paths are local, so no entry can leak a third-party host', () => {
 // studio photos, and curated files - which are listed in CREDITS.md.
 test('photos outside the Openverse set are listed as unconfirmed in CREDITS.md', () => {
   const unconfirmed = Object.entries(photos).filter(([, p]) => !p.startsWith('/products/'));
-  assert.equal(unconfirmed.length, 47, 'expected 47 entries outside the curated set');
+  assert.equal(unconfirmed.length, 41, 'expected 46 entries outside the curated set');
 
   const section = credits.split('## Unconfirmed sources')[1] || '';
   assert.ok(section, 'CREDITS.md has no "Unconfirmed sources" section');

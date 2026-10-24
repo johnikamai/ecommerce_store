@@ -46,6 +46,13 @@ public class Product {
     // (the front end shows a styled placeholder tile instead).
     private String imageUrl;
 
+    // Brand name (optional). When set, the compare table shows it.
+    private String brand;
+
+    // Free-form specifications text (optional). When set, the compare table shows it.
+    @Column(length = 2000)
+    private String specifications;
+
     // Eco-rating from 0 (not sustainable) to 100 (fully sustainable).
     // Optional field; null means not rated yet.
     private Integer sustainabilityScore;

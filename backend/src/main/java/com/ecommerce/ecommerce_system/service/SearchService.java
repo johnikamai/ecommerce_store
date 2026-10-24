@@ -28,6 +28,17 @@ import java.util.TreeSet;
  */
 @Service
 public class SearchService {
+    private static String normalizeQueryNumbers(String text) {
+        if (text == null) return "";
+        String s = text.toLowerCase(Locale.ROOT)
+                .replace("₹", " ")
+                .replace("$", " ")
+                .replace(",", "");
+        // Handle 50k -> 50000
+        s = java.util.regex.Pattern.compile("(\\d+)\\s*k\\b").matcher(s).replaceAll("$1000");
+        return s;
+    }
+
 
     /**
      * Constructed directly rather than injected: FuzzyMatcher is stateless, and
@@ -263,7 +274,7 @@ public class SearchService {
      * words that should be matched against the catalogue.
      */
     static String stripBudget(String query) {
-        String normalised = query.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9\\s]", " ");
+        String normalised = normalizeQueryNumbers(query).replaceAll("[^a-z0-9\\s]", " ");
         return BUDGET_PHRASE.matcher(normalised).replaceAll(" ");
     }
 
@@ -274,7 +285,7 @@ public class SearchService {
      * the only currency this store prices in.
      */
     public static Double[] parsePriceHint(String query) {
-        String q = query.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9\\s]", " ");
+        String q = normalizeQueryNumbers(query).replaceAll("[^a-z0-9\\s]", " ");
         Double min = null;
         Double max = null;
 

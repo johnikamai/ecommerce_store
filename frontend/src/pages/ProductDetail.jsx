@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Zap, Heart, Bell, ChevronRight } from 'lucide-react';
+import { ShoppingCart, Zap, Heart, Bell, ChevronRight, MessageCircleQuestion, ChevronDown, Send, Loader2 } from 'lucide-react';
 import axiosClient from '../api/axiosClient';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
 import ProductCard from '../components/ProductCard';
+import ReviewAiSummary from '../components/ReviewAiSummary';
 import PersonalizedRecommendations from '../components/PersonalizedRecommendations';
+import SmartBundleCard from '../components/SmartBundleCard';
+import { buildProductBundle } from '../utils/bundleEngine';
 import ProductImage from '../components/ProductImage';
 import { getCustomerId } from '../utils/customer';
 
@@ -125,6 +128,7 @@ export default function ProductDetail() {
   const [notifyStatus, setNotifyStatus] = useState('idle');
   const [summary, setSummary] = useState({ averageRating: 0, reviewCount: 0 });
   const [reviews, setReviews] = useState([]);
+  const [catalog, setCatalog] = useState([]);
   const [related, setRelated] = useState([]);
   const [tab, setTab] = useState('description');
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -135,8 +139,16 @@ export default function ProductDetail() {
   const [editRating, setEditRating] = useState(5);
   const [editComment, setEditComment] = useState('');
 
+  // AI Product Q&A state
+  const [qaOpen, setQaOpen] = useState(false);
+  const [qaQuestion, setQaQuestion] = useState('');
+  const [qaHistory, setQaHistory] = useState([]);
+  const [qaAsking, setQaAsking] = useState(false);
+  const qaEndRef = useRef(null);
+
   useEffect(() => {
     let active = true;
+    axiosClient.get('/products/catalog').then((res) => { if (active) setCatalog(res.data?.products || res.data || []); }).catch(() => {});
     axiosClient.get(`/products/${id}`)
       .then((res) => { if (active) setProduct(res.data); })
       .catch(() => { if (active) setError(t('product.loadFailed')); })
@@ -194,7 +206,7 @@ export default function ProductDetail() {
   const sustainText = t(sustain.key);
   const score = product.sustainabilityScore;
 
-  const brand = BRANDS.find((b) => product.name.startsWith(b)) || 'ShopEase';
+  const brand = product.brand || BRANDS.find((b) => product.name.startsWith(b)) || 'ShopEase';
   // Every cell is [labelKey, displayText] with the value already resolved, so
   // the table renders identically in every language.
   const specs = [
@@ -205,6 +217,7 @@ export default function ProductDetail() {
     ['spec.stock', t('spec.units', { count: product.stockQuantity })],
     ['spec.price', formatCurrency(product.price)],
     ['spec.sustainability', `${sustainText}${score != null ? ` (${score}/100)` : ''}`],
+    ...(product.specifications ? [['spec.specifications', product.specifications]] : []),
     ...(EXTRA_SPECS[product.category] || []).map(([labelKey, valueKey]) => [labelKey, t(valueKey)]),
   ];
   const warranty = WARRANTY_POINTS.map((key) => t(key));
@@ -239,6 +252,28 @@ export default function ProductDetail() {
     if (!getCustomerId()) { navigate('/login'); return; }
     addToCart(product, parseInt(quantity) || 1);
     navigate('/cart');
+  };
+
+  /**
+   * Submits a customer question to POST /api/products/{id}/ask.
+   * Adds both the question and the answer to the local history so the panel
+   * reads like a conversation, not a single-shot FAQ.
+   */
+  const handleAskQuestion = async (questionText) => {
+    const q = (questionText ?? qaQuestion).trim();
+    if (!q) return;
+    setQaAsking(true);
+    setQaQuestion('');
+    setQaHistory((prev) => [...prev, { role: 'user', text: q }]);
+    try {
+      const res = await axiosClient.post(`/products/${id}/ask`, { question: q });
+      setQaHistory((prev) => [...prev, { role: 'assistant', text: res.data.answer }]);
+    } catch {
+      setQaHistory((prev) => [...prev, { role: 'assistant', text: 'Sorry, I could not find an answer right now. Please check the product specifications tab.' }]);
+    } finally {
+      setQaAsking(false);
+      setTimeout(() => qaEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 80);
+    }
   };
 
   const handleNotify = async () => {
@@ -416,6 +451,95 @@ export default function ProductDetail() {
             <Heart size={18} className={isWishlisted ? 'fill-[var(--color-secondary)] text-[var(--color-secondary)]' : ''} />
             {isWishlisted ? t('product.removeFromWishlist') : t('product.addToWishlist')}
           </button>
+
+          {/* AI Product Q&A panel */}
+          <div className="mt-5 rounded-[var(--radius-xl)] border-[1.5px] border-[var(--color-border)] overflow-hidden">
+            <button
+              id="product-qa-toggle"
+              onClick={() => setQaOpen((o) => !o)}
+              className="w-full flex items-center justify-between gap-3 px-5 py-4 bg-[var(--color-card-bg-tint)] hover:bg-[var(--color-card-bg)] transition-colors text-left"
+            >
+              <span className="inline-flex items-center gap-2 font-semibold text-sm">
+                <MessageCircleQuestion size={18} className="text-[var(--color-primary)]" />
+                Ask a question about this product
+              </span>
+              <ChevronDown
+                size={16}
+                className={`text-[var(--color-text-muted)] transition-transform duration-200 ${qaOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
+
+            {qaOpen && (
+              <div className="px-5 pb-5 pt-4 bg-[var(--color-card-bg)]">
+                {qaHistory.length === 0 && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {[
+                      'What is the price?',
+                      'Is it in stock?',
+                      'What is the warranty?',
+                      'Is it eco-friendly?',
+                      'What is it made of?',
+                    ].map((chip) => (
+                      <button
+                        key={chip}
+                        onClick={() => handleAskQuestion(chip)}
+                        disabled={qaAsking}
+                        className="px-3 py-1.5 rounded-[var(--radius-full)] bg-[var(--color-card-bg-tint)] border-[1.5px] border-[var(--color-border)] text-xs font-medium text-[var(--color-text-secondary)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors disabled:opacity-50"
+                      >
+                        {chip}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {qaHistory.length > 0 && (
+                  <div className="space-y-3 mb-4 max-h-64 overflow-y-auto pr-1">
+                    {qaHistory.map((msg, i) => (
+                      <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[85%] rounded-[var(--radius-lg)] px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
+                          msg.role === 'user'
+                            ? 'bg-[var(--color-primary)] text-white rounded-br-sm'
+                            : 'bg-[var(--color-card-bg-tint)] text-[var(--color-text-secondary)] rounded-bl-sm'
+                        }`}>
+                          {msg.text}
+                        </div>
+                      </div>
+                    ))}
+                    {qaAsking && (
+                      <div className="flex justify-start">
+                        <div className="bg-[var(--color-card-bg-tint)] rounded-[var(--radius-lg)] rounded-bl-sm px-4 py-2.5">
+                          <Loader2 size={16} className="animate-spin text-[var(--color-text-muted)]" />
+                        </div>
+                      </div>
+                    )}
+                    <div ref={qaEndRef} />
+                  </div>
+                )}
+                <form onSubmit={(e) => { e.preventDefault(); handleAskQuestion(); }} className="flex items-center gap-2">
+                  <input
+                    id="product-qa-input"
+                    type="text"
+                    value={qaQuestion}
+                    onChange={(e) => setQaQuestion(e.target.value)}
+                    placeholder="e.g. Is this waterproof? Does it support Bluetooth?"
+                    disabled={qaAsking}
+                    className="flex-1 px-4 py-2.5 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-border)] bg-white outline-none focus:border-[var(--color-primary)] text-sm disabled:opacity-60"
+                  />
+                  <button
+                    type="submit"
+                    disabled={qaAsking || !qaQuestion.trim()}
+                    id="product-qa-submit"
+                    className="flex items-center gap-1.5 min-h-[42px] px-4 rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white text-sm font-semibold hover:bg-[var(--color-primary-hover)] transition-colors disabled:opacity-50"
+                  >
+                    {qaAsking ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
+                    Ask
+                  </button>
+                </form>
+                <p className="text-[11px] text-[var(--color-text-muted)] mt-2">
+                  Answers are generated from this product's actual specifications and description.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -524,6 +648,10 @@ export default function ProductDetail() {
 
         {tab === 'reviews' && (
           <div>
+            <ReviewAiSummary
+              productId={product.id}
+              refreshKey={reviews.map((r) => `${r.id}:${r.rating}`).join('|')}
+            />
             <button
               onClick={() => setShowReviewForm(!showReviewForm)}
               className="mb-4 inline-flex items-center min-h-[44px] rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white px-5 text-sm font-semibold hover:bg-[var(--color-primary-hover)] transition-colors"
@@ -636,6 +764,13 @@ export default function ProductDetail() {
           </div>
         )}
       </div>
+
+      {/* Smart Shopping Bundle with instant discount */}
+      {product && catalog.length > 0 && (
+        <div className="mb-[var(--space-9)]">
+          <SmartBundleCard bundle={buildProductBundle(product, catalog)} />
+        </div>
+      )}
 
       {/* Co-occurrence picks for this specific product */}
       {related.length > 0 && (

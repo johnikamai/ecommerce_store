@@ -9,6 +9,7 @@ import com.ecommerce.ecommerce_system.repository.OrderItemRepository;
 import com.ecommerce.ecommerce_system.repository.ProductRepository;
 import com.ecommerce.ecommerce_system.repository.ReviewRepository;
 import com.ecommerce.ecommerce_system.security.CustomerGuard;
+import com.ecommerce.ecommerce_system.service.ReviewSummaryService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -26,17 +27,20 @@ public class ReviewController {
     private final CustomerRepository customerRepository;
     private final OrderItemRepository orderItemRepository;
     private final CustomerGuard customerGuard;
+    private final ReviewSummaryService reviewSummaryService;
 
     public ReviewController(ReviewRepository reviewRepository,
                             ProductRepository productRepository,
                             CustomerRepository customerRepository,
                             OrderItemRepository orderItemRepository,
-                            CustomerGuard customerGuard) {
+                            CustomerGuard customerGuard,
+                            ReviewSummaryService reviewSummaryService) {
         this.reviewRepository = reviewRepository;
         this.productRepository = productRepository;
         this.customerRepository = customerRepository;
         this.orderItemRepository = orderItemRepository;
         this.customerGuard = customerGuard;
+        this.reviewSummaryService = reviewSummaryService;
     }
 
     @GetMapping("/product/{productId}")
@@ -54,6 +58,15 @@ public class ReviewController {
         return Map.of(
                 "averageRating", Math.round(average * 10.0) / 10.0,
                 "reviewCount", reviews.size());
+    }
+
+    /**
+     * Pros/cons digest built from the written reviews. Deliberately separate
+     * from {@link #getSummary} so the star-rating widget keeps its tiny payload.
+     */
+    @GetMapping("/product/{productId}/ai-summary")
+    public ReviewSummaryService.Summary getAiSummary(@PathVariable Long productId) {
+        return reviewSummaryService.summarize(reviewRepository.findByProductId(productId));
     }
 
     // Only customers who actually bought this product (in a non-cancelled order)

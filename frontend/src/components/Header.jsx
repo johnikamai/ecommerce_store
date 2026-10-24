@@ -1,7 +1,8 @@
 import { clearSession } from '../utils/session';
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { Search, Heart, ShoppingCart, LogOut, Menu, X, Scale, ChevronDown } from 'lucide-react';
+import { Search, Heart, ShoppingCart, LogOut, Menu, X, Scale, ChevronDown, Camera, Gift } from 'lucide-react';
+import VisualSearchModal from './VisualSearchModal';
 import { useCart } from '../context/CartContext';
 import { useCompare } from '../context/CompareContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -28,8 +29,16 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);
   const [megaGroups, setMegaGroups] = useState(null);
+  const [visualModalOpen, setVisualModalOpen] = useState(false);
+  const [headerCatalog, setHeaderCatalog] = useState([]);
   const megaTimer = useRef(null);
 
+  useEffect(() => {
+    if (!visualModalOpen || headerCatalog.length > 0) return;
+    axiosClient.get('/products/catalog').then((res) => {
+      setHeaderCatalog(res.data?.products || res.data || []);
+    }).catch(() => {});
+  }, [visualModalOpen]);
   const submitSearch = (e) => {
     e.preventDefault();
     navigate(`/products${q.trim() ? `?q=${encodeURIComponent(q.trim())}` : ''}`);
@@ -111,6 +120,13 @@ export default function Header() {
           <Link to="/account" className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors">{t('nav.account')}</Link>
           <Link to="/orders" className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors">{t('nav.orders')}</Link>
           <Link to="/group-orders" className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors">{t('nav.groupOrders')}</Link>
+          <Link
+            to="/gift-finder"
+            className="inline-flex items-center gap-1.5 text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors"
+          >
+            <Gift size={16} />
+            {t('nav.giftFinder')}
+          </Link>
         </>
       )}
     </>
@@ -262,6 +278,14 @@ export default function Header() {
                   <X size={16} className="text-[var(--color-text-muted)]" />
                 </button>
               )}
+              <button
+                type="button"
+                onClick={() => setVisualModalOpen(true)}
+                aria-label={t('visualSearch.open')}
+                className="shrink-0 text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors"
+              >
+                <Camera size={18} />
+              </button>
             </div>
           </form>
         )}
@@ -357,6 +381,14 @@ export default function Header() {
                 placeholder={t('nav.searchPlaceholder')}
                 className="w-full bg-transparent outline-none text-[15px]"
               />
+              <button
+                type="button"
+                onClick={() => setVisualModalOpen(true)}
+                aria-label={t('visualSearch.open')}
+                className="shrink-0 text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors"
+              >
+                <Camera size={18} />
+              </button>
             </form>
           )}
           {navLinks}
@@ -377,6 +409,11 @@ export default function Header() {
           )}
         </div>
       )}
+      <VisualSearchModal
+        isOpen={visualModalOpen}
+        onClose={() => setVisualModalOpen(false)}
+        catalog={headerCatalog}
+      />
     </header>
   );
 }

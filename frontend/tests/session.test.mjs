@@ -28,7 +28,6 @@ test('an admin keeps the console across a refresh with no cached role', () => {
   // The reported bug: localStorage.role was gone, so the guard read it as a
   // customer and redirected to the catalogue. The signed claim has to carry it.
   assert.equal(adminGuard(live({ role: 'ADMIN' }), null), null);
-  assert.equal(adminGuard(live({ role: 'STAFF' }), null), null);
 });
 
 test('a customer is sent to the catalogue, not the console', () => {
