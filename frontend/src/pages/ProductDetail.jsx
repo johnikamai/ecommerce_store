@@ -11,6 +11,8 @@ import SmartBundleCard from '../components/SmartBundleCard';
 import { buildProductBundle } from '../utils/bundleEngine';
 import ProductImage from '../components/ProductImage';
 import { getCustomerId } from '../utils/customer';
+import PriceHistoryChart from '../components/PriceHistoryChart';
+import CompatibilityChecker from '../components/CompatibilityChecker';
 
 const AVAILABILITY = {
   in: { label: 'product.inStock', cls: 'bg-[var(--color-success-bg)] text-[var(--color-success)]' },
@@ -769,6 +771,20 @@ export default function ProductDetail() {
       {product && catalog.length > 0 && (
         <div className="mb-[var(--space-9)]">
           <SmartBundleCard bundle={buildProductBundle(product, catalog)} />
+        </div>
+      )}
+
+      {/* F7: Price History Graph */}
+      {product && (
+        <div className="mb-[var(--space-9)]">
+          <PriceHistoryChart productId={product.id} />
+        </div>
+      )}
+
+      {/* F8: Compatibility Checker */}
+      {product && (
+        <div className="mb-[var(--space-9)]">
+          <CompatibilityChecker currentProduct={product} catalog={catalog} />
         </div>
       )}
 

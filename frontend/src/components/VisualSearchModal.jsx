@@ -57,6 +57,31 @@ export default function VisualSearchModal({ isOpen, onClose, catalog }) {
         const features = await extractImageFeatures(img);
         const category = inferVisualCategory(features, fileName);
         setDetectedCategory(category);
+
+        // F3 enhancement: send features to the backend for server-side matching.
+        // Falls back to client-side ranking if the backend is unreachable.
+        try {
+          const { default: axiosClient } = await import('../utils/axiosClient');
+          const { data } = await axiosClient.post('/products/visual-search', {
+            dominantHue:  features.dominantHue,
+            saturation:   features.saturation,
+            brightness:   features.brightness,
+            aspectRatio:  features.aspectRatio,
+            category:     category || '',
+          });
+          // Backend returns { results: [...] } — map to the same shape as client-side
+          if (data?.results?.length > 0) {
+            setResults(data.results.map(r => ({
+              ...r,
+              score: r.similarity ?? 0,
+            })));
+            return;
+          }
+        } catch (apiErr) {
+          console.warn('Visual search backend unavailable, using client-side fallback.', apiErr.message);
+        }
+
+        // Client-side fallback
         const matches = rankProductsByVisualSimilarity(features, catalog, category);
         setResults(matches);
       } catch (err) {
@@ -66,6 +91,7 @@ export default function VisualSearchModal({ isOpen, onClose, catalog }) {
       }
     };
   };
+
 
   const handleClear = () => {
     setPreview(null);
