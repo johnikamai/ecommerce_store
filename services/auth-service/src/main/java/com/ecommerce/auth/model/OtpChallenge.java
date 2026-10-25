@@ -11,6 +11,3 @@ public class OtpChallenge {
     private int attempts;
     @Version private Long version;
 }
-
-
-

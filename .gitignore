@@ -33,3 +33,6 @@ target/
 .local/
 *.jar.original
 
+
+__pycache__/
+*.pyc

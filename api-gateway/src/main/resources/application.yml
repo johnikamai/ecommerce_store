@@ -19,6 +19,12 @@ spring:
             allowedHeaders: "*"
             allowCredentials: true
       routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth/**,/api/customers/**,/api/staff/**,/api/admin/staff/**,/api/admin/users/**
+          filters:
+            - AddResponseHeader=X-ShopEase-Backend, auth-service
         # Only these public reads have moved to product-service.
         - id: product-read-service
           uri: ${PRODUCT_SERVICE_URI:lb://product-service}

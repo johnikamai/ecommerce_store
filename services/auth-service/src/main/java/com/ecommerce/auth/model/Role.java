@@ -15,6 +15,3 @@ public enum Role {
     STAFF,
     CUSTOMER
 }
-
-
-

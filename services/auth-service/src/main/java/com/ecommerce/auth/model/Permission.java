@@ -28,6 +28,3 @@ public enum Permission {
         return AUTHORITY_PREFIX + name();
     }
 }
-
-
-

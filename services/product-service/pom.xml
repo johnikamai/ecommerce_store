@@ -18,6 +18,7 @@
         <spring-cloud.version>2023.0.3</spring-cloud.version>
     </properties>
     <dependencies>
+        <dependency><groupId>com.ecommerce</groupId><artifactId>service-common</artifactId><version>1.0.0</version></dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -48,6 +49,8 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>com.h2database</groupId><artifactId>h2</artifactId><scope>test</scope></dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>
@@ -82,5 +85,3 @@
         </plugins>
     </build>
 </project>
-
-

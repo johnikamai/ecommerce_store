@@ -40,5 +40,3 @@ public class User {
     // Set for registered customers; null for admins.
     private Long customerId;
 }
-
-

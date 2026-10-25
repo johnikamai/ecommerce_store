@@ -1,0 +1,117 @@
+package com.ecommerce.auth.controller;
+
+import com.ecommerce.auth.model.Customer;
+import com.ecommerce.auth.repo.CustomerRepository;
+import com.ecommerce.auth.security.CustomerGuard;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/customers")
+public class CustomerController {
+
+    private final CustomerRepository customerRepository;
+    private final CustomerGuard customerGuard;
+
+    public CustomerController(CustomerRepository customerRepository, CustomerGuard customerGuard) {
+        this.customerRepository = customerRepository;
+        this.customerGuard = customerGuard;
+    }
+
+    @GetMapping
+    public List<Customer> getAll() {
+        return customerRepository.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getById(@PathVariable Long id, Authentication auth) {
+        if (!customerGuard.canAccess(id, auth)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+        return customerRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping
+    public ResponseEntity<?> create(@RequestBody Customer customer) {
+        if (customerRepository.findByEmail(customer.getEmail()).isPresent()) {
+            return ResponseEntity.badRequest().body("Email already in use: " + customer.getEmail());
+        }
+
+        // Accept an optional referral code from the referrer. If present and valid,
+        // link this new customer to that referrer (referredBy).
+        String referrerCode = customer.getReferralCode();
+        if (referrerCode != null && !referrerCode.isBlank()) {
+            Customer referrer = customerRepository.findByReferralCode(referrerCode).orElse(null);
+            if (referrer == null) {
+                return ResponseEntity.badRequest().body("Invalid referral code: " + referrerCode);
+            }
+            customer.setReferredBy(referrer);
+        }
+
+        // Give this new customer their OWN unique referral code to share with friends.
+        customer.setReferralCode(generateReferralCode(customer.getName()));
+        customer.setReferralRewarded(false);
+
+        Customer saved = customerRepository.save(customer);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    // Build a unique referral code, e.g. "RAVI-A1B2C3".
+    private String generateReferralCode(String name) {
+        String cleaned = name == null ? "" : name.trim().toUpperCase(java.util.Locale.ROOT).replaceAll("[^A-Z0-9]", "");
+        String base = cleaned.substring(0, Math.min(4, cleaned.length()));
+        if (base.isEmpty()) {
+            base = "USER";
+        }
+        String suffix = java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 6).toUpperCase();
+        String code = base + "-" + suffix;
+        // Ensure uniqueness (extremely unlikely to collide, but be safe).
+        while (customerRepository.findByReferralCode(code).isPresent()) {
+            suffix = java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 6).toUpperCase();
+            code = base + "-" + suffix;
+        }
+        return code;
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Customer updated, Authentication auth) {
+        if (!customerGuard.canAccess(id, auth)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+        return customerRepository.findById(id)
+                .map(existing -> {
+                    if (updated.getName() != null) {
+                        existing.setName(updated.getName());
+                    }
+                    if (updated.getEmail() != null && !updated.getEmail().equals(existing.getEmail())) {
+                        return ResponseEntity.badRequest().body("Use the verified email change flow");
+                    }
+                    if (updated.getPhone() != null) {
+                        existing.setPhone(updated.getPhone());
+                    }
+                    if (updated.getShippingAddress() != null) {
+                        existing.setShippingAddress(updated.getShippingAddress());
+                    }
+                    return ResponseEntity.ok(customerRepository.save(existing));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable Long id, Authentication auth) {
+        if (!customerGuard.canAccess(id, auth)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+        if (!customerRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        customerRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+}

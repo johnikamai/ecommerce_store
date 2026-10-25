@@ -50,6 +50,3 @@ public class Customer {
     // Prevents awarding the bonus more than once.
     private Boolean referralRewarded = false;
 }
-
-
-

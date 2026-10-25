@@ -1,10 +1,10 @@
 package com.ecommerce.auth.controller;
 
-import com.ecommerce.auth.controller.model.*;
-import com.ecommerce.auth.controller.service.ApprovalService;
-import com.ecommerce.auth.controller.service.StaffActivityService;
-import com.ecommerce.auth.controller.service.StaffService;
-import com.ecommerce.auth.controller.service.StaffTaskService;
+import com.ecommerce.auth.model.*;
+import com.ecommerce.auth.service.ApprovalService;
+import com.ecommerce.auth.service.StaffActivityService;
+import com.ecommerce.auth.service.StaffService;
+import com.ecommerce.auth.service.StaffTaskService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;

@@ -30,3 +30,6 @@ management:
       exposure:
         include: health,info
 
+
+services:
+  internal-key: ${SERVICE_INTERNAL_KEY:}

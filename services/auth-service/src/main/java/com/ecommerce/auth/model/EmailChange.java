@@ -6,6 +6,3 @@ public class EmailChange {
     @Id private String username;
     private String email;
 }
-
-
-
