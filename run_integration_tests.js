@@ -14,6 +14,7 @@ for(const phase of phases){
  if(phase==='auth'&&!failures.includes('auth'))run('account-deletion-parity','tools/tests/account_deletion_gateway.cjs');
  if(phase==='order'){
   run('group-orders','tools/tests/group_gateway.cjs');
+  run('cart-total-parity','tools/tests/cart_totals_gateway.cjs');
  }
  if(phase==='payment')run('unpaid-refund-consistency','tools/tests/unpaid_refund_gateway.cjs');
  if(phase==='notification'){
