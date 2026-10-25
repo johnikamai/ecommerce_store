@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router-dom';
 import { Search, Plus, ChevronDown, Sparkles, ArrowRight, Star, X, Loader2, Camera, Tag, Check, Award } from 'lucide-react';
 import VisualSearchModal from '../components/VisualSearchModal';
 import PersonalizedRecommendations from '../components/PersonalizedRecommendations';
-import BudgetMode from '../components/BudgetMode';
 import axiosClient from '../api/axiosClient';
 import ProductCard from '../components/ProductCard';
 import { useLanguage } from '../context/LanguageContext';
@@ -463,11 +462,6 @@ function Products() {
             >
               <Camera size={18} />
             </button>
-          </div>
-
-          {/* F9: Budget Shopping Mode toggle */}
-          <div className="flex items-center">
-            <BudgetMode />
           </div>
 
           <div className="flex flex-wrap gap-2">

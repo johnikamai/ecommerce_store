@@ -6,8 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "wishlist_items")
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
@@ -27,13 +25,4 @@ public class Wishlist {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
-
-    /** When the customer added this item, used for price-drop alerting. */
-    @Column(name = "added_at", nullable = false)
-    private LocalDateTime addedAt;
-
-    @PrePersist
-    private void prePersist() {
-        if (addedAt == null) addedAt = LocalDateTime.now();
-    }
-}
+}

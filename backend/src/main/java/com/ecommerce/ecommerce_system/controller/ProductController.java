@@ -1,20 +1,15 @@
 package com.ecommerce.ecommerce_system.controller;
 
-import com.ecommerce.ecommerce_system.model.PriceHistory;
 import com.ecommerce.ecommerce_system.model.Product;
 import com.ecommerce.ecommerce_system.repository.OrderItemRepository;
-import com.ecommerce.ecommerce_system.repository.PriceHistoryRepository;
 import com.ecommerce.ecommerce_system.repository.ProductRepository;
 import com.ecommerce.ecommerce_system.repository.ReviewRepository;
-import com.ecommerce.ecommerce_system.service.CompatibilityService;
-import com.ecommerce.ecommerce_system.service.PriceAlertService;
 import com.ecommerce.ecommerce_system.service.SearchService;
 import com.ecommerce.ecommerce_system.service.StockAlertService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,37 +17,27 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
 
-    private final ProductRepository     productRepository;
-    private final StockAlertService     stockAlertService;
-    private final ReviewRepository      reviewRepository;
-    private final OrderItemRepository   orderItemRepository;
-    private final SearchService         searchService;
-    private final PriceHistoryRepository priceHistoryRepository;
-    private final PriceAlertService     priceAlertService;
-    private final CompatibilityService  compatibilityService;
+    private final ProductRepository productRepository;
+    private final StockAlertService stockAlertService;
+    private final ReviewRepository reviewRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final SearchService searchService;
 
-    public ProductController(ProductRepository     productRepository,
-                             StockAlertService     stockAlertService,
-                             ReviewRepository      reviewRepository,
-                             OrderItemRepository   orderItemRepository,
-                             SearchService         searchService,
-                             PriceHistoryRepository priceHistoryRepository,
-                             PriceAlertService     priceAlertService,
-                             CompatibilityService  compatibilityService) {
-        this.productRepository      = productRepository;
-        this.stockAlertService      = stockAlertService;
-        this.reviewRepository       = reviewRepository;
-        this.orderItemRepository    = orderItemRepository;
-        this.searchService          = searchService;
-        this.priceHistoryRepository = priceHistoryRepository;
-        this.priceAlertService      = priceAlertService;
-        this.compatibilityService   = compatibilityService;
+    public ProductController(ProductRepository productRepository,
+                             StockAlertService stockAlertService,
+                             ReviewRepository reviewRepository,
+                             OrderItemRepository orderItemRepository,
+                             SearchService searchService) {
+        this.productRepository = productRepository;
+        this.stockAlertService = stockAlertService;
+        this.reviewRepository = reviewRepository;
+        this.orderItemRepository = orderItemRepository;
+        this.searchService = searchService;
     }
 
     @GetMapping
@@ -170,10 +155,6 @@ public class ProductController {
             return ResponseEntity.badRequest().body("Sustainability score must be between 0 and 100");
         }
         Product saved = productRepository.save(product);
-        // F7: record initial price in history
-        if (saved.getPrice() != null) {
-            priceAlertService.recordPriceChange(saved.getId(), null, saved.getPrice());
-        }
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
@@ -185,8 +166,8 @@ public class ProductController {
         }
         return productRepository.findById(id)
                 .map(existing -> {
-                    Integer oldStock   = existing.getStockQuantity();
-                    BigDecimal oldPrice = existing.getPrice();
+                    // Track the old stock level so we can detect a restock transition.
+                    Integer oldStock = existing.getStockQuantity();
 
                     existing.setName(updated.getName());
                     existing.setDescription(updated.getDescription());
@@ -204,9 +185,6 @@ public class ProductController {
                     // React to the stock move: warn staff and customers as needed.
                     stockAlertService.onStockChanged(saved, oldStock);
 
-                    // F7: record any price change for the history graph + F15 alerts.
-                    priceAlertService.recordPriceChange(saved.getId(), oldPrice, saved.getPrice());
-
                     return ResponseEntity.ok(saved);
                 })
                 .orElse(ResponseEntity.notFound().build());
@@ -219,180 +197,6 @@ public class ProductController {
         }
         productRepository.deleteById(id);
         return ResponseEntity.noContent().build();
-    }
-
-    // -------------------------------------------------------------------------
-    // F7: Product Price History Graph
-    // -------------------------------------------------------------------------
-
-    /**
-     * GET /api/products/{id}/price-history
-     *
-     * Returns up to 90 price-change events for a product, oldest first.
-     * Each entry: { changedAt, oldPrice, newPrice, reason }.
-     * Used by the price history graph on the Product Detail page.
-     */
-    @GetMapping("/{id}/price-history")
-    public ResponseEntity<?> priceHistory(@PathVariable Long id) {
-        if (!productRepository.existsById(id)) return ResponseEntity.notFound().build();
-        List<PriceHistory> history = priceHistoryRepository
-                .findTop90ByProductIdOrderByChangedAtAsc(id);
-        List<Map<String, Object>> rows = history.stream().map(h -> {
-            Map<String, Object> row = new LinkedHashMap<>();
-            row.put("changedAt", h.getChangedAt().toString());
-            row.put("oldPrice",  h.getOldPrice());
-            row.put("newPrice",  h.getNewPrice());
-            row.put("reason",    h.getReason());
-            return row;
-        }).collect(Collectors.toList());
-        return ResponseEntity.ok(rows);
-    }
-
-    // -------------------------------------------------------------------------
-    // F8: Product Compatibility Checker
-    // -------------------------------------------------------------------------
-
-    /**
-     * POST /api/products/compatibility-check
-     *
-     * Body: { "productAId": 1, "productBId": 2 }
-     * Returns: { compatible, score, verdict, reasons[] }
-     *
-     * Checks whether two products work together using category rules,
-     * complementary-pair matching, and shared spec-keyword analysis.
-     * No AI call required — fully deterministic.
-     */
-    @PostMapping("/compatibility-check")
-    public ResponseEntity<?> compatibilityCheck(@RequestBody Map<String, Long> body) {
-        Long idA = body.get("productAId");
-        Long idB = body.get("productBId");
-        if (idA == null || idB == null) {
-            return ResponseEntity.badRequest().body("productAId and productBId are required");
-        }
-        Product a = productRepository.findById(idA).orElse(null);
-        Product b = productRepository.findById(idB).orElse(null);
-        if (a == null || b == null) {
-            return ResponseEntity.notFound().build();
-        }
-        CompatibilityService.CompatibilityResult result = compatibilityService.check(a, b);
-        Map<String, Object> resp = new LinkedHashMap<>();
-        resp.put("productA",   Map.of("id", a.getId(), "name", a.getName(), "category", a.getCategory()));
-        resp.put("productB",   Map.of("id", b.getId(), "name", b.getName(), "category", b.getCategory()));
-        resp.put("compatible", result.compatible());
-        resp.put("score",      result.score());
-        resp.put("verdict",    result.verdict());
-        resp.put("reasons",    result.reasons());
-        return ResponseEntity.ok(resp);
-    }
-
-    // -------------------------------------------------------------------------
-    // F3: Visual Search — backend color-matching endpoint
-    // -------------------------------------------------------------------------
-
-    /**
-     * POST /api/products/visual-search
-     *
-     * Body: { "dominantHue": 210.5, "saturation": 0.7, "brightness": 0.8,
-     *         "aspectRatio": 1.33, "category": "Electronics" (optional) }
-     *
-     * The frontend extracts these colour/shape features from the uploaded image
-     * via HTML5 Canvas (visualSearch.js) and sends them here.  The backend
-     * scores every product by how closely its image-derived profile matches
-     * and returns the top 12 matches with a similarity score.
-     *
-     * For products without a stored colour profile the score is based only on
-     * category matching so the result is still useful.
-     */
-    @PostMapping("/visual-search")
-    public ResponseEntity<?> visualSearch(@RequestBody Map<String, Object> features) {
-        double hue        = toDouble(features.get("dominantHue"),  0);
-        double saturation = toDouble(features.get("saturation"),   0.5);
-        double brightness = toDouble(features.get("brightness"),   0.5);
-        double aspectRatio= toDouble(features.get("aspectRatio"),  1.0);
-        String catHint    = features.get("category") instanceof String s ? s.toLowerCase(Locale.ROOT) : "";
-
-        List<Product> all = productRepository.findAll();
-        List<Map<String, Object>> scored = new ArrayList<>();
-
-        for (Product p : all) {
-            double score = 0;
-
-            // Category hint boost
-            if (!catHint.isBlank() && p.getCategory() != null
-                    && p.getCategory().toLowerCase(Locale.ROOT).contains(catHint)) {
-                score += 40;
-            }
-
-            // Hue-based colour family matching via product name/description keywords
-            score += hueScore(hue, saturation, brightness, p);
-
-            // Normalise 0-100
-            score = Math.min(100, Math.max(0, score));
-
-            Map<String, Object> row = new LinkedHashMap<>();
-            row.put("id",          p.getId());
-            row.put("name",        p.getName());
-            row.put("category",    p.getCategory());
-            row.put("price",       p.getPrice());
-            row.put("imageUrl",    p.getImageUrl());
-            row.put("similarity",  Math.round(score * 10) / 10.0);
-            scored.add(row);
-        }
-
-        // Return top 12 by score descending
-        scored.sort((x, y) -> Double.compare(
-                ((Number) y.get("similarity")).doubleValue(),
-                ((Number) x.get("similarity")).doubleValue()));
-        if (scored.size() > 12) scored = scored.subList(0, 12);
-
-        Map<String, Object> resp = new LinkedHashMap<>();
-        resp.put("results", scored);
-        return ResponseEntity.ok(resp);
-    }
-
-    /** Scores a product based on how well its text matches the visual colour profile. */
-    private double hueScore(double hue, double saturation, double brightness, Product p) {
-        String text = ((p.getName()        != null ? p.getName()        : "") + " "
-                     + (p.getDescription() != null ? p.getDescription() : "")).toLowerCase(Locale.ROOT);
-        double score = 0;
-
-        // Red family (hue 0-30 or 330-360)
-        if ((hue < 30 || hue > 330) && saturation > 0.3) {
-            if (matchesAny(text, "red","rose","coral","crimson","tomato","maroon")) score += 25;
-        }
-        // Orange/Yellow (30-70)
-        if (hue >= 30 && hue < 70 && saturation > 0.3) {
-            if (matchesAny(text, "orange","yellow","gold","amber","mustard")) score += 25;
-        }
-        // Green (70-160)
-        if (hue >= 70 && hue < 160 && saturation > 0.2) {
-            if (matchesAny(text, "green","olive","lime","forest","mint","sage")) score += 25;
-        }
-        // Cyan/Teal (160-200)
-        if (hue >= 160 && hue < 200 && saturation > 0.2) {
-            if (matchesAny(text, "cyan","teal","turquoise","aqua")) score += 25;
-        }
-        // Blue (200-260)
-        if (hue >= 200 && hue < 260 && saturation > 0.2) {
-            if (matchesAny(text, "blue","navy","cobalt","azure","indigo")) score += 25;
-        }
-        // Purple/Pink (260-330)
-        if (hue >= 260 && hue < 330 && saturation > 0.2) {
-            if (matchesAny(text, "purple","violet","lavender","pink","magenta","plum")) score += 25;
-        }
-        // Achromatic (low saturation)
-        if (saturation < 0.2) {
-            if (brightness > 0.8 && matchesAny(text, "white","silver","pearl","cream")) score += 20;
-            if (brightness < 0.3 && matchesAny(text, "black","dark","charcoal","onyx")) score += 20;
-            if (brightness >= 0.3 && brightness <= 0.8 && matchesAny(text, "grey","gray","graphite")) score += 20;
-        }
-        return score;
-    }
-
-    private static double toDouble(Object val, double def) {
-        if (val instanceof Number n) return n.doubleValue();
-        if (val instanceof String s) { try { return Double.parseDouble(s); } catch (Exception ignored) {} }
-        return def;
     }
 
     // -------------------------------------------------------------------------

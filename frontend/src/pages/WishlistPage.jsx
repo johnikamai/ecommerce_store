@@ -18,8 +18,6 @@ function WishlistPage() {
   const { t, formatCurrency } = useLanguage();
   const navigate = useNavigate();
 
-  const [priceDrops, setPriceDrops] = useState({}); // productId -> { savedPrice, currentPrice, pct }
-
   const fetchWishlist = async () => {
     try {
       const res = await axiosClient.get(`/wishlist/customer/${getCustomerId()}`);
@@ -37,29 +35,12 @@ function WishlistPage() {
         }
       });
       setAlerts(getWishlistAlerts());
-
-      // F15: check server-side price history for confirmed price drops
-      const drops = {};
-      await Promise.allSettled(res.data.map(async (item) => {
-        try {
-          const { data: history } = await axiosClient.get(`/products/${item.product.id}/price-history`);
-          if (!history || history.length < 2) return;
-          const first   = parseFloat(history[0].newPrice);
-          const current = parseFloat(history[history.length - 1].newPrice);
-          if (current < first) {
-            const pct = (((first - current) / first) * 100).toFixed(1);
-            drops[item.product.id] = { savedPrice: first, currentPrice: current, pct };
-          }
-        } catch { /* ignore per-product failures */ }
-      }));
-      setPriceDrops(drops);
     } catch (err) {
       console.error('Failed to load wishlist');
     } finally {
       setLoading(false);
     }
   };
-
 
   useEffect(() => {
     fetchWishlist();
@@ -209,19 +190,7 @@ function WishlistPage() {
                       {formatCurrency(evaluated.initialPrice)}
                     </span>
                   )}
-                  {/* F15: server-confirmed price drop badge */}
-                  {priceDrops[product.id] && (
-                    <span style={{
-                      background: '#dcfce7', color: '#16a34a',
-                      borderRadius: 4, padding: '1px 6px',
-                      fontSize: '0.72rem', fontWeight: 700,
-                      display: 'inline-flex', alignItems: 'center', gap: 3,
-                    }}>
-                      ▼ {priceDrops[product.id].pct}% drop
-                    </span>
-                  )}
                 </div>
-
 
                 {/* Smart Price Alert Panel */}
                 <div className="rounded-[var(--radius-md)] bg-[var(--color-card-bg-tint)] p-2.5 mb-4 text-xs space-y-2 border border-[var(--color-border)]">
