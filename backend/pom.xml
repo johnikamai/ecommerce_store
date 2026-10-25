@@ -31,6 +31,7 @@
 		<!-- Lombok 1.18.36 does not support JDK 25 (TypeTag::UNKNOWN crash).
 		     1.18.40+ is the first release with JDK 25 support. -->
 		<lombok.version>1.18.46</lombok.version>
+        <byte-buddy.version>1.18.11</byte-buddy.version>
 	</properties>
 	<dependencies>
         <dependency>
@@ -134,3 +135,4 @@
 	</build>
 
 </project>
+

@@ -1,45 +1,39 @@
 server:
   port: 8080
-
 spring:
   application:
     name: api-gateway
   cloud:
     gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
       globalcors:
+        add-to-simple-url-handler-mapping: true
         corsConfigurations:
           '[/**]':
-            allowedOrigins:
-              - "http://localhost:5173"
+            allowedOriginPatterns:
+              - "http://localhost:[*]"
+              - "http://127.0.0.1:[*]"
               - "https://*.vercel.app"
             allowedMethods: "*"
             allowedHeaders: "*"
             allowCredentials: true
       routes:
-        - id: auth-service
-          uri: lb://auth-service
+        # Only these public reads have moved to product-service.
+        - id: product-read-service
+          uri: ${PRODUCT_SERVICE_URI:lb://product-service}
           predicates:
-            - Path=/api/auth/**,/api/customers/**,/api/staff/**
-        - id: product-service
-          uri: lb://product-service
+            - Method=GET
+            - Path=/api/products,/api/products/{id:[0-9]+},/api/categories
+          filters:
+            - AddResponseHeader=X-ShopEase-Backend, product-service
+        # Explicit transitional fallback; keeps original JWT and ownership rules.
+        - id: monolith-compatibility
+          uri: ${COMPATIBILITY_URI:http://localhost:8087}
           predicates:
-            - Path=/api/products/**,/api/categories/**,/api/reviews/**,/api/compatibility/**,/api/search/**
-        - id: order-service
-          uri: lb://order-service
-          predicates:
-            - Path=/api/orders/**,/api/group-orders/**,/api/returns/**,/api/restock-requests/**,/api/addresses/**,/api/cart/**
-        - id: payment-service
-          uri: lb://payment-service
-          predicates:
-            - Path=/api/payments/**,/api/coupons/**
-        - id: notification-service
-          uri: lb://notification-service
-          predicates:
-            - Path=/api/notifications/**,/api/admin/alerts/**
-        - id: recommendation-service
-          uri: lb://recommendation-service
-          predicates:
-            - Path=/api/recommendations/**,/api/assistant/**,/api/gift-finder/**,/api/wishlist/**,/api/price-history/**
+            - Path=/api/**,/products/**,/product-photos/**,/images/**,/health
+          filters:
+            - AddResponseHeader=X-ShopEase-Backend, monolith-compatibility
 
 eureka:
   client:
@@ -49,10 +43,9 @@ eureka:
     fetch-registry: true
   instance:
     prefer-ip-address: true
-    ip-address: 127.0.0.1
-
+    ip-address: ${EUREKA_INSTANCE_IP:127.0.0.1}
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,gateway
+        include: health,info

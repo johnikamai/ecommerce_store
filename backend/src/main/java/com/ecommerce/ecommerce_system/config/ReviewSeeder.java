@@ -221,3 +221,5 @@ public class ReviewSeeder implements CommandLineRunner {
                     "Stopped charging after two months. Delivery was fine but durability is poor."),
     };
 }
+
+
