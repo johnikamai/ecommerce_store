@@ -1,9 +1,0 @@
-com\ecommerce\auth\model\Customer.class
-com\ecommerce\auth\model\EmailChange.class
-com\ecommerce\auth\model\User.class
-com\ecommerce\auth\model\OtpChallenge.class
-com\ecommerce\auth\repo\UserRepository.class
-com\ecommerce\auth\model\Role.class
-com\ecommerce\auth\AuthServiceApp.class
-com\ecommerce\auth\model\Permission.class
-com\ecommerce\auth\controller\HealthController.class
