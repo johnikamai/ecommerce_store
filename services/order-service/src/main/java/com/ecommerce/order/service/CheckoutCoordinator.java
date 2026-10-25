@@ -29,6 +29,7 @@ public class CheckoutCoordinator {
     private String encode(Object object){try{return json.writeValueAsString(object);}catch(Exception error){throw new IllegalArgumentException("Invalid checkout payload",error);}}
     private Order snapshot(CheckoutAttempt attempt){try{var order=json.readValue(attempt.getSnapshot(),Order.class);order.getOrderItems().forEach(i->i.setOrder(order));return order;}catch(Exception error){throw new IllegalStateException("Stored checkout snapshot is invalid",error);}}
     private String hash(Object value){try{return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(encode(value).getBytes(java.nio.charset.StandardCharsets.UTF_8)));}catch(Exception error){throw new IllegalArgumentException("Invalid checkout payload",error);}}
+    @org.springframework.transaction.annotation.Transactional(propagation=org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
     public Order place(OrderRequest request){
         String key=request.getOperationId()==null?"checkout:"+UUID.randomUUID():request.getOperationId();if(!key.matches("[A-Za-z0-9:_-]{1,128}"))throw new IllegalArgumentException("Invalid checkout operation ID");request.setOperationId(key);String fingerprint=hash(request);
         CheckoutAttempt attempt=attempts.findById(key).orElse(null);
@@ -72,6 +73,7 @@ public class CheckoutCoordinator {
             work.setState("COMPLETE");work.setError(null);attempts.save(work);
         });
     }
+    @org.springframework.transaction.annotation.Transactional(propagation=org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
     public Order cancel(Long orderId,Long customerId,boolean admin){
         var order=hydrator.load(orderId);if(!order.getCustomerId().equals(customerId))throw new IllegalArgumentException("You can only cancel your own order");
         if(order.getStatus()==OrderStatus.CANCELLED)return order;
@@ -97,6 +99,7 @@ public class CheckoutCoordinator {
             if(old.getReservationId()!=null)attempts.lock(old.getReservationId()).ifPresent(original->{if(original.getState().equals("PENDING")){original.setState("FAILED");original.setError("Order was cancelled");attempts.save(original);}});
         });
     }
+    @org.springframework.transaction.annotation.Transactional(propagation=org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
     public Payment paymentStatus(Long id,PaymentStatus status,String reference,String actor){
         var payment=payments.findById(id).orElseThrow();var body=new LinkedHashMap<String,Object>();body.put("paymentId",id);body.put("status",status.name());body.put("reference",reference);body.put("actor",actor);
         String key="payment:"+id+":"+payment.getVersion()+":"+status.name();journal.begin(key,"PAYMENT_STATUS",body);

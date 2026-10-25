@@ -1,4 +1,67 @@
-# Full migration progress
+# Full migration acceptance — 25 October 2026
+
+The six business services are running, registered in Eureka, and reachable through Gateway. **Compatibility backend port 8087 is stopped and is not a Gateway fallback or launcher dependency.** Original `ecommerce_db` was preserved. Earlier phase notes below are historical, not the current startup instructions.
+
+## Verified results
+
+- Full `node run_integration_tests.js` run exited 0: 140 individual Gateway/API checks across Auth, Product, Order, Payment, Notification, Recommendation, and two-account group settlement. Additional cross-service wishlist price-drop and restock alert checks passed and are now included in the runner.
+- Java: Auth 23, Product 37, Order 58, Payment 5, Notification 2, Recommendation 53, common security 4 — 182 tests passed. Recommendation was rebuilt/retested after reducing repeated order reads in admin reports; its HTTP suite passed again.
+- Frontend: 21 tests passed; production build passed. Browser checks confirmed original product images, fuzzy search with corrected results, cart totals, delivery address input, and COD/UPI/Card demo options with 8087 stopped.
+- Customer journey: register/OTP/login, profile ownership, password reset and immediate token revocation, product/search/reviews, wishlist/addresses, quote, idempotent checkout, payment/receipt, tracking, cancellation with one stock restoration and refund, complete fulfilment, returns and refund.
+- Group journey: two separate accounts, create/join, shared items, exact-cent split, both confirmations, lock, combined CARD checkout, member reports payment, host confirms receipt, remaining amount zero. `CONFIRMED_RECEIVED` retains the original settlement contract.
+- Admin/staff: customer forbidden access, admin catalog mutations, price approval conflict/retry protection, staff application/approval/suspension, dashboard/users/customer detail, sales/top-product/customer-activity reports, payments and refunds.
+- Notification delivery: original inbox APIs and read counts, customer ownership, replay creates one notification/delivery, late watcher events ignored, actual Order wishlist event followed by Product price/stock event reaches Notification inbox. Email/SMS queues persist independently of business transactions.
+- Offline reference audit: 11 checks, zero orphan references (order/customer, items/order/product, reviews/customer/product, payment/order, notification/customer, group members/group/customer, contributions/member, tracking/order).
+
+Local evidence is retained in ignored `.local/full-six-service-acceptance.log`, `alerts-final-http.log`, `recommendation-final-http.log`, `final-reference-audit.log`, each module's build log, and browser screenshots. Tokens, passwords and personal test fixtures are never committed.
+
+## Migration baseline
+
+Every copied table had matching source/target counts and normalized checksums before native writes. IDs, password hashes, images and stored financial data were retained. Post-cutover synthetic API tests add new rows in target schemas; the importer deliberately preserves these changes rather than resetting targets.
+
+| Owner | Existing data copied at cutover |
+|---|---|
+| Auth | 46 customers, 42 users, 22 OTP challenges; remaining owned staff/email-change tables empty |
+| Product | 1,222 products, 15 categories, 49 reviews, 1 admin alert, 1 inventory row; existing empty price/restock tables; price approvals moved to Product |
+| Order | 40 orders, 35 items, 19 tracking events, 2 addresses, 4 wishlist entries, 1 return, 13 groups, 23 members, 16 group cart items, 13 invitations, 74 activities, 8 bill splits |
+| Payment | 21 payments, 1 coupon, 8 group contributions; immutable receipt/member snapshots initialized additively |
+| Notification | 104 existing notifications; watcher projection initialized from owned Order wishlist data once |
+| Recommendation | No original table to copy; owns persistent query history in its schema |
+
+Source backups are under ignored `.local/backups/`. Six explicit additive SQL extension files and the repeatable Python importer are under `tools/migrations/`. Normal reruns skip imported tables; `--verify` is for exact equality at initial cutover, not after live target writes. Offline cross-schema auditing is isolated from runtime service code.
+
+## Main changes
+
+- `services/*`: actual controllers, business services, repositories, security, owned entities or HTTP DTOs, migrations and tests across all six services.
+- `services/service-common`: internal-key enforcement, Eureka HTTP client, Auth introspection, dependency health and transactional outbox.
+- `api-gateway/src/main/resources/application.yml`: explicit six-service routes; protected internal endpoints never exposed; no compatibility fallback.
+- `frontend/src/pages/Cart.jsx`: stable idempotency key per unchanged checkout payload; original UI retained.
+- `tools/tests/*`, `run_integration_tests.js`: real native service acceptance, group settlement and cross-service alert checks.
+- `start-services.ps1`: builds common library first, launches all six services, verifies readiness, keeps secrets/logs ignored, never starts compatibility.
+
+Checkout uses durable intents, idempotent inventory reservations, coupon consumption and Payment commands, with scheduled recovery. Group checkout suspends its enclosing transaction while coordinating checkout so MySQL repeatable-read snapshots do not hide newly committed recovery records. Order/Payment/refund state and stock retry behavior were verified through real HTTP. Order emits customer-order facts to Auth for loyalty/referral calculations; Auth never queries Order tables. Product emits durable stock/price events. Notification owns its watcher projection and never calls back into Product or Order. Recommendation reads owners through Eureka and stores its own query records.
+
+## Startup and known configuration requirements
+
+```powershell
+# Already migrated local machine, from repository root:
+.\start-services.ps1
+# Rebuild artifacts when needed:
+.\start-services.ps1 -Build
+# All business journeys and offline reference audit:
+node run_integration_tests.js
+python tools/migrations/verify_service_references.py
+```
+
+Frontend: http://localhost:5173; Gateway: http://localhost:8080; Eureka: http://localhost:8761. New-machine migration and environment requirements are in `README.md`.
+
+No known failure remains in the tested local acceptance journeys. Online payments remain the existing explicit demo; no real card information is stored. Brevo/Twilio deliveries need provider credentials; without them jobs are recorded `DEMO_SKIPPED`. External provider delivery and Docker deployment were not validated. Synthetic financial verification records are intentionally retained in isolated target schemas for audit; original source rows were not removed. Main was not merged.
+
+---
+
+## Historical phase notes
+
+
 
 ## Phase 1 — Auth Service (verified 25 October 2026)
 

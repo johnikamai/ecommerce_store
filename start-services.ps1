@@ -17,7 +17,7 @@ if (!(Select-String -Path $localProperties -Pattern '^JWT_SECRET=' -Quiet) -and 
     Add-Content $localProperties ('JWT_SECRET=' + [Convert]::ToBase64String($keyBytes))
 }
 $java = (Get-Command java -ErrorAction Stop).Source
-$modules = @('services/service-common', 'services/auth-service', 'services/payment-service', 'services/order-service', 'backend', 'discovery-server', 'services/product-service', 'api-gateway')
+$modules = @('services/service-common', 'services/auth-service', 'services/payment-service', 'services/order-service', 'services/notification-service', 'services/recommendation-service', 'discovery-server', 'services/product-service', 'api-gateway')
 if ($Build) {
     foreach ($module in $modules) {
         & "$projectRoot/backend/mvnw.cmd" -f "$projectRoot/$module/pom.xml" install -DskipTests
@@ -37,10 +37,11 @@ function Start-ShopEase($name, $port, $jar, $arguments) {
 $localConfig = '--spring.config.additional-location=optional:file:./.local/application.properties'
 Start-ShopEase 'discovery' 8761 "$projectRoot/discovery-server/target/discovery-server-1.0.0.jar" @()
 Start-ShopEase 'auth' 8081 "$projectRoot/services/auth-service/target/auth-service-1.0.0.jar" @($localConfig)
-Start-ShopEase 'compatibility' 8087 "$projectRoot/backend/target/ecommerce-system-0.0.1-SNAPSHOT.jar" @('--spring.profiles.active=compatibility', $localConfig)
 Start-ShopEase 'product' 8082 "$projectRoot/services/product-service/target/product-service-1.0.0.jar" @($localConfig)
 Start-ShopEase 'payment' 8084 "$projectRoot/services/payment-service/target/payment-service-1.0.0.jar" @($localConfig)
 Start-ShopEase 'order' 8083 "$projectRoot/services/order-service/target/order-service-1.0.0.jar" @($localConfig)
+Start-ShopEase 'notification' 8085 "$projectRoot/services/notification-service/target/notification-service-1.0.0.jar" @($localConfig)
+Start-ShopEase 'recommendation' 8086 "$projectRoot/services/recommendation-service/target/recommendation-service-1.0.0.jar" @($localConfig)
 Start-ShopEase 'gateway' 8080 "$projectRoot/api-gateway/target/api-gateway-1.0.0.jar" @()
 if (!$NoFrontend) {
     if (!(Get-NetTCPConnection -LocalPort 5173 -State Listen -ErrorAction SilentlyContinue)) {
@@ -62,15 +63,16 @@ function Wait-ShopEase($name, $url) {
 }
 Wait-ShopEase 'discovery' 'http://localhost:8761/actuator/health' | Out-Null
 Wait-ShopEase 'auth' 'http://localhost:8081/actuator/health' | Out-Null
-Wait-ShopEase 'compatibility' 'http://localhost:8087/api/health' | Out-Null
 Wait-ShopEase 'product' 'http://localhost:8082/actuator/health' | Out-Null
 Wait-ShopEase 'payment' 'http://localhost:8084/actuator/health' | Out-Null
 Wait-ShopEase 'order' 'http://localhost:8083/actuator/health' | Out-Null
+Wait-ShopEase 'notification' 'http://localhost:8085/actuator/health' | Out-Null
+Wait-ShopEase 'recommendation' 'http://localhost:8086/actuator/health' | Out-Null
 $catalogCheck = Wait-ShopEase 'gateway' 'http://localhost:8080/api/products'
 if ($catalogCheck.Headers['X-ShopEase-Backend'] -ne 'product-service') {
     throw 'Port 8080 is not serving the expected Gateway product route. Check the existing process before restarting.'
 }
 if (!$NoFrontend) { Wait-ShopEase 'frontend' 'http://localhost:5173' | Out-Null }
 Write-Host 'ShopEase launched. Frontend: http://localhost:5173  Gateway: http://localhost:8080  Eureka: http://localhost:8761'
-Write-Host 'Auth/profile/staff run in auth-service; basic product reads run in product-service. Other APIs are still migrating.'
+Write-Host 'All six business services run through Gateway. The compatibility backend is not started.'
 Write-Host 'Run node run_integration_tests.js after startup. Logs are in .local/.'

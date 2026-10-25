@@ -15,10 +15,12 @@ import java.util.*;
 public class AdminController {
 
     private final UserRepository userRepository;
+    private final com.ecommerce.auth.repo.CustomerOrderLedgerRepository ledger;
     private final CustomerRepository customerRepository;
 
     public AdminController(UserRepository userRepository,
-                           CustomerRepository customerRepository) {
+                           CustomerRepository customerRepository, com.ecommerce.auth.repo.CustomerOrderLedgerRepository ledger) {
+        this.ledger=ledger;
         this.userRepository = userRepository;
         this.customerRepository = customerRepository;
     }
@@ -55,7 +57,8 @@ public class AdminController {
         User user = userRepository.findById(id).orElse(null);
         if (user == null) return ResponseEntity.notFound().build();
         try {
-            Role role = Role.valueOf(body.get("role").toUpperCase());
+            Role role = Role.valueOf(java.util.Objects.requireNonNullElse(body.get("role"),"").toUpperCase());
+            if(user.getRole()==Role.ADMIN&&role!=Role.ADMIN&&auth.getName().equals(user.getUsername()))return ResponseEntity.badRequest().body("You cannot remove your own admin access");
             // Don't allow demoting the last admin
             if (user.getRole() == Role.ADMIN && role != Role.ADMIN
                     && userRepository.countByRole(Role.ADMIN) <= 1) {
@@ -69,10 +72,14 @@ public class AdminController {
         }
     }
 
+    @PutMapping("/users/{id}/enabled")
+    public ResponseEntity<?> enabled(@PathVariable Long id,@RequestBody Map<String,Boolean> body,Authentication auth){var user=userRepository.findById(id).orElse(null);if(user==null)return ResponseEntity.notFound().build();if(body.get("enabled")==null)return ResponseEntity.badRequest().body("enabled flag is required");if(auth.getName().equals(user.getUsername()))return ResponseEntity.badRequest().body("You cannot block your own account");user.setEnabled(body.get("enabled"));return ResponseEntity.ok(userRepository.save(user));}
     @DeleteMapping("/users/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-        if (!userRepository.existsById(id)) return ResponseEntity.notFound().build();
-        userRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteUser(@PathVariable Long id,Authentication auth) {
+        var user=userRepository.findById(id).orElse(null);if(user==null)return ResponseEntity.notFound().build();
+        if(user.getRole()==Role.ADMIN||auth.getName().equals(user.getUsername()))return ResponseEntity.badRequest().body("Cannot delete an admin or your own account");
+        if(user.getCustomerId()!=null&&ledger.existsByCustomerId(user.getCustomerId()))return ResponseEntity.badRequest().body("Cannot delete: this customer has orders. Handle or archive them first.");
+        if(user.getCustomerId()!=null&&customerRepository.findAll().stream().anyMatch(c->c.getReferredBy()!=null&&user.getCustomerId().equals(c.getReferredBy().getId())))return ResponseEntity.badRequest().body("Cannot delete: this customer has referred other customers.");
+        userRepository.delete(user);return ResponseEntity.noContent().build();
     }
 }

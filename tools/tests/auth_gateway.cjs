@@ -29,7 +29,7 @@ async function main(){
  await request(`/api/customers/${customer.customerId}`,{token:customer.token});
  await request(`/api/customers/${customer.customerId}`,{method:'PUT',token:customer.token,body:{name:'Migration Test Customer',phone:'9999999999'}});
  await request(`/api/customers/${customer.customerId+100000}`,{token:customer.token,status:403});
- await request('/api/admin/users',{token:customer.token,status:403});
+ await request('/api/admin/users',{token:customer.token,status:403,owner:'recommendation-service'});
  await request('/api/staff/me',{token:customer.token,status:403});
  await request('/actuator/info',{direct:'http://localhost:8082',token:customer.token,owner:null});
  await request('/api/products',{method:'POST',body:{},token:customer.token,status:403,owner:'product-service'});
@@ -40,7 +40,7 @@ async function main(){
  assert.equal(setup.status,0,'Test-admin fixture setup failed');
  const adminLogin=await request('/api/auth/login',{method:'POST',body:{username:admin.username,password:admin.password}});
  assert.equal(adminLogin.role,'ADMIN');admin.token=adminLogin.token;
- const users=await request('/api/admin/users',{token:admin.token});assert(users.some(u=>u.username===customer.username));assert(users.every(u=>!('password'in u)));
+ const users=await request('/api/admin/users',{token:admin.token,owner:'recommendation-service'});assert(users.some(u=>u.username===customer.username));assert(users.every(u=>!('password'in u)));
  const staffEmail=`phase1_staff_${Date.now()}@example.test`;
  const application=await request('/api/staff/apply',{method:'POST',body:{fullName:'Migration Test Staff',email:staffEmail,phone:'9999999999',department:'INVENTORY',password:customer.password},status:201});
  await request('/api/auth/login',{method:'POST',body:{username:staffEmail,password:customer.password},status:403});

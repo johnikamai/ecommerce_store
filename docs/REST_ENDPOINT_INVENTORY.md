@@ -1,6 +1,6 @@
 # Existing REST endpoint inventory
 
-Extracted from the existing controllers. Mapping declarations retain path variables and multiple mapping values; combine method mappings with the controller base mapping. Except the three product reads documented in MICROSERVICES_DEMO.md, these remain compatibility-backed.
+Extracted from the existing controllers. Mapping declarations retain path variables and multiple mapping values; combine method mappings with the controller base mapping. These contracts are now routed to their native owners through Gateway; see README.md for the ownership map and FULL_MIGRATION_PROGRESS.md for acceptance evidence.
 
 ## AddressController
 

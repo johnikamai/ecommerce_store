@@ -68,7 +68,7 @@ public class PaymentService {
     }
     @Transactional
     public CouponReservation finishCoupon(String id,boolean commit){
-        var known=reservations.findById(id).orElseThrow();var coupon=coupons.lock(known.getCouponId()).orElseThrow();var receipt=reservations.lock(id).orElseThrow();
+        var known=reservations.findById(id).orElseThrow();if(!known.getState().equals("RESERVED"))return known;var coupon=coupons.lock(known.getCouponId()).orElseThrow();var receipt=reservations.lock(id).orElseThrow();
         if(receipt.getState().equals("RESERVED")){if(!commit){coupon.setTimesUsed(Math.max(0,coupon.getTimesUsed()-1));coupons.save(coupon);}receipt.setState(commit?"COMMITTED":"RELEASED");reservations.save(receipt);}return receipt;
     }
     @Transactional
