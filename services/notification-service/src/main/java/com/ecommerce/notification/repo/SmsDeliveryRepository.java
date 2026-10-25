@@ -1,0 +1,1 @@
+package com.ecommerce.notification.repo;public interface SmsDeliveryRepository extends org.springframework.data.jpa.repository.JpaRepository<com.ecommerce.notification.model.SmsDelivery,String>{java.util.List<com.ecommerce.notification.model.SmsDelivery> findTop20ByStateAndNextAttemptAtLessThanEqual(String state,java.time.Instant now);}

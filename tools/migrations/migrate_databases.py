@@ -34,7 +34,7 @@ def main():
   return [line.split('\t') for line in result.stdout.splitlines() if line]
  schema='shopease_'+a.service
  def apply_extensions():
-  files={'auth':'001_auth_extensions.sql','product':'002_product_extensions.sql','payment':'004_payment_extensions.sql','order':'003_order_extensions.sql'}
+  files={'auth':'001_auth_extensions.sql','product':'002_product_extensions.sql','payment':'004_payment_extensions.sql','order':'003_order_extensions.sql','notification':'005_notification_extensions.sql','recommendation':'006_recommendation_extensions.sql'}
   if a.service=='order':
    columns={row[0] for row in sql(f"SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA='{schema}' AND TABLE_NAME='orders'")}
    for name in ['checkout_key','reservation_id']:

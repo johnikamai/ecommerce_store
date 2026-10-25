@@ -1,0 +1,2 @@
+package com.ecommerce.notification.repo;
+public interface WatcherRepository extends org.springframework.data.jpa.repository.JpaRepository<com.ecommerce.notification.model.Watcher,String>{java.util.List<com.ecommerce.notification.model.Watcher> findByProductIdAndActiveTrue(Long id);}

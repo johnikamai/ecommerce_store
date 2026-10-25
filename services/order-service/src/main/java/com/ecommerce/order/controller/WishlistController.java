@@ -23,16 +23,20 @@ public class WishlistController {
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
     private final CustomerGuard customerGuard;
+    private final com.ecommerce.common.outbox.OutboxPublisher outbox;
 
     public WishlistController(WishlistRepository wishlistRepository,
                               CustomerRepository customerRepository,
                               ProductRepository productRepository,
-                              CustomerGuard customerGuard) {
+                              CustomerGuard customerGuard,com.ecommerce.common.outbox.OutboxPublisher outbox) {
+        this.outbox=outbox;
         this.wishlistRepository = wishlistRepository;
         this.customerRepository = customerRepository;
         this.productRepository = productRepository;
         this.customerGuard = customerGuard;
     }
+
+    private void changed(Long customerId,Long productId,boolean active){outbox.publish(java.util.UUID.randomUUID().toString(),"http://notification-service/internal/events","WISHLIST_CHANGED",Map.of("customerId",customerId,"productId",productId,"active",active,"version",System.currentTimeMillis()));}
 
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<?> getForCustomer(@PathVariable Long customerId, Authentication auth) {
@@ -65,7 +69,7 @@ public class WishlistController {
         Wishlist item = new Wishlist();
         item.setCustomer(customer);
         item.setProduct(product);
-        return ResponseEntity.status(HttpStatus.CREATED).body(wishlistRepository.save(item));
+        var saved=wishlistRepository.save(item);changed(customerId,productId,true);return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @DeleteMapping("/customer/{customerId}/product/{productId}")
@@ -75,7 +79,7 @@ public class WishlistController {
         }
         return wishlistRepository.findByCustomerIdAndProductId(customerId, productId)
                 .map(item -> {
-                    wishlistRepository.delete(item);
+                    wishlistRepository.delete(item);changed(customerId,productId,false);
                     return ResponseEntity.noContent().build();
                 })
                 .orElse(ResponseEntity.notFound().build());

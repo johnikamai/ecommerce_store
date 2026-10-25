@@ -1,0 +1,2 @@
+package com.ecommerce.notification.model;
+@jakarta.persistence.Entity @jakarta.persistence.Table(name="product_watchers") public class Watcher {@jakarta.persistence.Id public String id;public Long customerId;public Long productId;public long sourceVersion;public boolean active;}

@@ -1,0 +1,2 @@
+package com.ecommerce.notification.model;
+@jakarta.persistence.Entity @jakarta.persistence.Table(name="sms_deliveries") public class SmsDelivery {@jakarta.persistence.Id public String id;public Long customerId;@jakarta.persistence.Column(columnDefinition="longtext") public String message;public String state;public int attempts;public java.time.Instant nextAttemptAt;}

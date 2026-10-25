@@ -1,13 +1,4 @@
 package com.ecommerce.notification;
-
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-
-@SpringBootApplication
-@EnableDiscoveryClient
-public class NotificationServiceApp {
-    public static void main(String[] args) {
-        SpringApplication.run(NotificationServiceApp.class, args);
-    }
-}
+@org.springframework.boot.autoconfigure.SpringBootApplication(exclude=org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration.class)
+@org.springframework.scheduling.annotation.EnableScheduling
+public class NotificationServiceApp {public static void main(String[] args){org.springframework.boot.SpringApplication.run(NotificationServiceApp.class,args);}}

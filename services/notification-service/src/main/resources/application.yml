@@ -1,31 +1,35 @@
 server:
   port: 8085
-
 spring:
   application:
     name: notification-service
   datasource:
-    url: ${NOTIF_DB_URL:jdbc:mysql://localhost:3306/shopease_notification?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true}
-    username: ${DB_USER:root}
-    password: ${DB_PASS:}
+    url: ${NOTIFICATION_DB_URL:jdbc:mysql://localhost:3306/shopease_notification?useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:${DB_USER:root}}
+    password: ${DB_PASSWORD:${DB_PASS:}}
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
-
+      ddl-auto: validate
+    open-in-view: false
+  cloud:
+    loadbalancer:
+      cache:
+        ttl: 5s
 eureka:
   client:
+    registry-fetch-interval-seconds: 5
     serviceUrl:
       defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
   instance:
     prefer-ip-address: true
-    ip-address: 127.0.0.1
-
+    ip-address: ${EUREKA_INSTANCE_IP:127.0.0.1}
 management:
   endpoints:
     web:
       exposure:
         include: health,info
+services:
+  internal-key: ${SERVICE_INTERNAL_KEY:}
+app:
+  payments:
+    demo-enabled: ${DEMO_PAYMENTS:true}
