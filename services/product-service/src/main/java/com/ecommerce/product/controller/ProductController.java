@@ -269,7 +269,7 @@ public class ProductController {
         // --- Price ---
         if (matchesAny(q, "price", "cost", "how much", "rate", "mrp")) {
             return product.getPrice() != null
-                    ? name + " is priced at \u20b9" + product.getPrice().toPlainString() + " (inclusive of taxes)."
+                    ? name + " is priced at \u20b9" + product.getPrice().toPlainString() + " before checkout discounts, tax and shipping."
                     : "Price information is not available for " + name + " right now.";
         }
 
@@ -300,8 +300,9 @@ public class ProductController {
 
         // --- Warranty / returns ---
         if (matchesAny(q, "warranty", "guarantee", "return", "exchange", "refund")) {
-            return name + " comes with a standard 1-year manufacturer warranty covering manufacturing defects."
-                    + " Returns are accepted within 7 days of delivery in original packaging.";
+            return combined.contains("warranty") || combined.contains("guarantee")
+                    ? "Recorded product information for " + name + ": " + (specs.isBlank() ? desc : specs)
+                    : "No warranty or return terms are recorded for " + name + ". Please confirm the applicable policy with support before purchase.";
         }
 
         // --- Compatibility ---

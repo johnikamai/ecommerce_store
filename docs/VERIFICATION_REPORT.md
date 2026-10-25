@@ -1,3 +1,5 @@
+> Historical verification at `7613bbd`. The three failures below have since been repaired and retested. See [FINAL_VERIFICATION_REPORT.md](FINAL_VERIFICATION_REPORT.md) for the current results. Original evidence is retained below.
+
 # ShopEase verification — 25 October 2026
 
 **Result: verification completed; full migration acceptance fails.** All six services build, pass their existing Java tests, register UP in Eureka, and serve the main Gateway journeys with port 8087 stopped. Three additional regression suites fail. The legacy backend source and existing customer data have been preserved.

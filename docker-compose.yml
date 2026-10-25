@@ -1,114 +1,225 @@
-version: '3.8'
+# Local isolated rehearsal only. Does not reuse or delete existing MySQL volumes.
+name: shopease-preview
 services:
   mysql:
-    image: mysql:8.0
-    container_name: shopease-mysql
+    build:
+      context: .
+      dockerfile: deploy/mysql/Dockerfile
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: shopease_auth
-    ports:
-      - "3307:3306"
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in an ignored
+        env file}
+      AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD:?Set AUTH_DB_PASSWORD in an ignored env
+        file}
+      PRODUCT_DB_PASSWORD: ${PRODUCT_DB_PASSWORD:?Set PRODUCT_DB_PASSWORD in an ignored
+        env file}
+      ORDER_DB_PASSWORD: ${ORDER_DB_PASSWORD:?Set ORDER_DB_PASSWORD in an ignored
+        env file}
+      PAYMENT_DB_PASSWORD: ${PAYMENT_DB_PASSWORD:?Set PAYMENT_DB_PASSWORD in an ignored
+        env file}
+      NOTIFICATION_DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD:?Set NOTIFICATION_DB_PASSWORD
+        in an ignored env file}
+      RECOMMENDATION_DB_PASSWORD: ${RECOMMENDATION_DB_PASSWORD:?Set RECOMMENDATION_DB_PASSWORD
+        in an ignored env file}
     volumes:
-      - mysql_data:/var/lib/mysql
+    - preview_mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
-
+      test:
+      - CMD
+      - mysqladmin
+      - ping
+      - --silent
+      interval: 10s
+      timeout: 5s
+      retries: 15
   discovery-server:
-    build: ./discovery-server
-    ports:
-      - "8761:8761"
+    build:
+      context: .
+      dockerfile: discovery-server/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: container
+      PORT: '10000'
+      SERVICE_HOST: discovery-server
+      DISCOVERY_HOST: discovery-server
+      DISCOVERY_PORT: '10000'
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      SERVICE_INTERNAL_KEY: ${SERVICE_INTERNAL_KEY:?Set SERVICE_INTERNAL_KEY}
+      DEMO_PAYMENTS: ${DEMO_PAYMENTS:-false}
+      NOTIFICATION_DELIVERY_ENABLED: 'false'
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: container
+      PORT: '10000'
+      SERVICE_HOST: api-gateway
+      DISCOVERY_HOST: discovery-server
+      DISCOVERY_PORT: '10000'
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      SERVICE_INTERNAL_KEY: ${SERVICE_INTERNAL_KEY:?Set SERVICE_INTERNAL_KEY}
+      DEMO_PAYMENTS: ${DEMO_PAYMENTS:-false}
+      NOTIFICATION_DELIVERY_ENABLED: 'false'
     depends_on:
+      discovery-server:
+        condition: service_started
+    ports:
+    - 127.0.0.1:8080:10000
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: container
+      PORT: '10000'
+      SERVICE_HOST: auth-service
+      DISCOVERY_HOST: discovery-server
+      DISCOVERY_PORT: '10000'
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      SERVICE_INTERNAL_KEY: ${SERVICE_INTERNAL_KEY:?Set SERVICE_INTERNAL_KEY}
+      DEMO_PAYMENTS: ${DEMO_PAYMENTS:-false}
+      NOTIFICATION_DELIVERY_ENABLED: 'false'
+      DB_HOST: mysql
+      DB_PORT: '3306'
+      DB_SSL_MODE: REQUIRED
+      DB_NAME: shopease_auth
+      DB_USERNAME: shopease_auth
+      DB_PASSWORD: ${AUTH_DB_PASSWORD:?Set owned schema password}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET}
+      BREVO_API_KEY: ${BREVO_API_KEY:-}
+      BREVO_SENDER_EMAIL: ${BREVO_SENDER_EMAIL:-}
+      BREVO_SENDER_NAME: ${BREVO_SENDER_NAME:-ShopEase}
+    depends_on:
+      discovery-server:
+        condition: service_started
       mysql:
         condition: service_healthy
-
-  api-gateway:
-    build: ./api-gateway
-    ports:
-      - "8080:8080"
-    environment:
-      - EUREKA_URI=http://discovery-server:8761/eureka
-    depends_on:
-      - discovery-server
-
-  auth-service:
-    build: ./services/auth-service
-    ports:
-      - "8081:8081"
-    environment:
-      - EUREKA_URI=http://discovery-server:8761/eureka
-      - AUTH_DB_URL=jdbc:mysql://mysql:3306/shopease_auth?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
-      - DB_USER=root
-      - DB_PASS=root
-    depends_on:
-      - discovery-server
-      - mysql
-
   product-service:
-    build: ./services/product-service
-    ports:
-      - "8082:8082"
+    build:
+      context: .
+      dockerfile: services/product-service/Dockerfile
     environment:
-      - EUREKA_URI=http://discovery-server:8761/eureka
-      - PRODUCT_DB_URL=jdbc:mysql://mysql:3306/shopease_product?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
-      - DB_USER=root
-      - DB_PASS=root
+      SPRING_PROFILES_ACTIVE: container
+      PORT: '10000'
+      SERVICE_HOST: product-service
+      DISCOVERY_HOST: discovery-server
+      DISCOVERY_PORT: '10000'
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      SERVICE_INTERNAL_KEY: ${SERVICE_INTERNAL_KEY:?Set SERVICE_INTERNAL_KEY}
+      DEMO_PAYMENTS: ${DEMO_PAYMENTS:-false}
+      NOTIFICATION_DELIVERY_ENABLED: 'false'
+      DB_HOST: mysql
+      DB_PORT: '3306'
+      DB_SSL_MODE: REQUIRED
+      DB_NAME: shopease_product
+      DB_USERNAME: shopease_product
+      DB_PASSWORD: ${PRODUCT_DB_PASSWORD:?Set owned schema password}
     depends_on:
-      - discovery-server
-      - mysql
-
+      discovery-server:
+        condition: service_started
+      mysql:
+        condition: service_healthy
   order-service:
-    build: ./services/order-service
-    ports:
-      - "8083:8083"
+    build:
+      context: .
+      dockerfile: services/order-service/Dockerfile
     environment:
-      - EUREKA_URI=http://discovery-server:8761/eureka
-      - ORDER_DB_URL=jdbc:mysql://mysql:3306/shopease_order?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
-      - DB_USER=root
-      - DB_PASS=root
+      SPRING_PROFILES_ACTIVE: container
+      PORT: '10000'
+      SERVICE_HOST: order-service
+      DISCOVERY_HOST: discovery-server
+      DISCOVERY_PORT: '10000'
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      SERVICE_INTERNAL_KEY: ${SERVICE_INTERNAL_KEY:?Set SERVICE_INTERNAL_KEY}
+      DEMO_PAYMENTS: ${DEMO_PAYMENTS:-false}
+      NOTIFICATION_DELIVERY_ENABLED: 'false'
+      DB_HOST: mysql
+      DB_PORT: '3306'
+      DB_SSL_MODE: REQUIRED
+      DB_NAME: shopease_order
+      DB_USERNAME: shopease_order
+      DB_PASSWORD: ${ORDER_DB_PASSWORD:?Set owned schema password}
     depends_on:
-      - discovery-server
-      - mysql
-
+      discovery-server:
+        condition: service_started
+      mysql:
+        condition: service_healthy
   payment-service:
-    build: ./services/payment-service
-    ports:
-      - "8084:8084"
+    build:
+      context: .
+      dockerfile: services/payment-service/Dockerfile
     environment:
-      - EUREKA_URI=http://discovery-server:8761/eureka
-      - PAYMENT_DB_URL=jdbc:mysql://mysql:3306/shopease_payment?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
-      - DB_USER=root
-      - DB_PASS=root
+      SPRING_PROFILES_ACTIVE: container
+      PORT: '10000'
+      SERVICE_HOST: payment-service
+      DISCOVERY_HOST: discovery-server
+      DISCOVERY_PORT: '10000'
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      SERVICE_INTERNAL_KEY: ${SERVICE_INTERNAL_KEY:?Set SERVICE_INTERNAL_KEY}
+      DEMO_PAYMENTS: ${DEMO_PAYMENTS:-false}
+      NOTIFICATION_DELIVERY_ENABLED: 'false'
+      DB_HOST: mysql
+      DB_PORT: '3306'
+      DB_SSL_MODE: REQUIRED
+      DB_NAME: shopease_payment
+      DB_USERNAME: shopease_payment
+      DB_PASSWORD: ${PAYMENT_DB_PASSWORD:?Set owned schema password}
     depends_on:
-      - discovery-server
-      - mysql
-
+      discovery-server:
+        condition: service_started
+      mysql:
+        condition: service_healthy
   notification-service:
-    build: ./services/notification-service
-    ports:
-      - "8085:8085"
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
     environment:
-      - EUREKA_URI=http://discovery-server:8761/eureka
-      - NOTIF_DB_URL=jdbc:mysql://mysql:3306/shopease_notification?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
-      - DB_USER=root
-      - DB_PASS=root
+      SPRING_PROFILES_ACTIVE: container
+      PORT: '10000'
+      SERVICE_HOST: notification-service
+      DISCOVERY_HOST: discovery-server
+      DISCOVERY_PORT: '10000'
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      SERVICE_INTERNAL_KEY: ${SERVICE_INTERNAL_KEY:?Set SERVICE_INTERNAL_KEY}
+      DEMO_PAYMENTS: ${DEMO_PAYMENTS:-false}
+      NOTIFICATION_DELIVERY_ENABLED: 'false'
+      DB_HOST: mysql
+      DB_PORT: '3306'
+      DB_SSL_MODE: REQUIRED
+      DB_NAME: shopease_notification
+      DB_USERNAME: shopease_notification
+      DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD:?Set owned schema password}
+      BREVO_API_KEY: ${BREVO_API_KEY:-}
+      BREVO_SENDER_EMAIL: ${BREVO_SENDER_EMAIL:-}
+      BREVO_SENDER_NAME: ${BREVO_SENDER_NAME:-ShopEase}
     depends_on:
-      - discovery-server
-      - mysql
-
+      discovery-server:
+        condition: service_started
+      mysql:
+        condition: service_healthy
   recommendation-service:
-    build: ./services/recommendation-service
-    ports:
-      - "8086:8086"
+    build:
+      context: .
+      dockerfile: services/recommendation-service/Dockerfile
     environment:
-      - EUREKA_URI=http://discovery-server:8761/eureka
-      - RECO_DB_URL=jdbc:mysql://mysql:3306/shopease_recommendation?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
-      - DB_USER=root
-      - DB_PASS=root
+      SPRING_PROFILES_ACTIVE: container
+      PORT: '10000'
+      SERVICE_HOST: recommendation-service
+      DISCOVERY_HOST: discovery-server
+      DISCOVERY_PORT: '10000'
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      SERVICE_INTERNAL_KEY: ${SERVICE_INTERNAL_KEY:?Set SERVICE_INTERNAL_KEY}
+      DEMO_PAYMENTS: ${DEMO_PAYMENTS:-false}
+      NOTIFICATION_DELIVERY_ENABLED: 'false'
+      DB_HOST: mysql
+      DB_PORT: '3306'
+      DB_SSL_MODE: REQUIRED
+      DB_NAME: shopease_recommendation
+      DB_USERNAME: shopease_recommendation
+      DB_PASSWORD: ${RECOMMENDATION_DB_PASSWORD:?Set owned schema password}
     depends_on:
-      - discovery-server
-      - mysql
-
+      discovery-server:
+        condition: service_started
+      mysql:
+        condition: service_healthy
 volumes:
-  mysql_data:
+  preview_mysql_data: {}

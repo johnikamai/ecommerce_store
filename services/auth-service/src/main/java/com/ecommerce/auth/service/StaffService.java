@@ -163,6 +163,10 @@ public class StaffService {
         StaffProfile saved = staffProfileRepository.save(profile);
         activityService.record(user.getUsername(), invited ? "STAFF_INVITED" : "STAFF_APPLIED",
                 "STAFF_PROFILE", saved.getId(), "Department: " + req.getDepartment());
+        if (!invited) for (User admin : userRepository.findAll()) {
+            if (admin.getRole()==Role.ADMIN && admin.isEnabled()) notificationService.notify(admin,
+                "New staff access request from " + user.getUsername() + " for " + req.getDepartment(), "STAFF_APPLICATION");
+        }
         return saved;
     }
 

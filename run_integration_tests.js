@@ -11,14 +11,14 @@ function run(name,path){
 for(const phase of phases){
  if(!suites[phase]){console.error(`No verified suite for phase ${phase}`);process.exit(1)}
  run(phase,suites[phase]);
- if(phase==='auth'&&!failures.includes('auth'))run('account-deletion-parity','tools/tests/account_deletion_gateway.cjs');
+ if(phase==='auth'&&!failures.includes('auth')){run('account-deletion-parity','tools/tests/account_deletion_gateway.cjs');run('staff-lifecycle','tools/tests/staff_lifecycle_gateway.cjs');}
  if(phase==='order'){
   run('group-orders','tools/tests/group_gateway.cjs');
   run('cart-total-parity','tools/tests/cart_totals_gateway.cjs');
  }
  if(phase==='payment')run('unpaid-refund-consistency','tools/tests/unpaid_refund_gateway.cjs');
  if(phase==='notification'){
-  run('wishlist-alerts','tools/tests/alerts_gateway.cjs');
+  run('wishlist-alerts','tools/tests/alerts_gateway.cjs');run('smart-features','tools/tests/smart_features_gateway.cjs');
  }
 }
 if(requested==='all')run('gateway-health-contract','tools/tests/gateway_routes.cjs');

@@ -1,3 +1,4 @@
+import BudgetMode from '../components/BudgetMode';
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Banknote, CreditCard, Smartphone, MapPin, Plus, LocateFixed, Loader2, Split, Tag, CheckCircle2 } from 'lucide-react';
@@ -473,6 +474,7 @@ function Cart() {
 
       {quote?.demoPaymentsEnabled && <p className="text-sm mb-4">{t('fix.demoPayments')}</p>}
       {!quote?.demoPaymentsEnabled && <p className="text-sm mb-4">{t('fix.cashOnly')}</p>}
+      <BudgetMode authoritative quoteTotal={currentQuote?.total} quotePending={!currentQuote} />
       <BundleProgress serverBundleDiscount={currentQuote?.bundleDiscount} />
 
       <div className="flex items-center justify-between gap-6 flex-wrap p-6 rounded-[var(--radius-xl)] bg-[var(--color-card-bg-tint)]">

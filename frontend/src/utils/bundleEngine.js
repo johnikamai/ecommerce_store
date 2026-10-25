@@ -1,3 +1,4 @@
+import { bundlePercentFor } from './cartCalculations.js';
 /**
  * Engine to dynamically generate complementary shopping bundles with discount savings.
  * Example: Laptop + Mouse + Bag, or Mobile + Earbuds + Charger.
@@ -38,7 +39,7 @@ const BUNDLE_MAP = {
   ]
 };
 
-const BUNDLE_DISCOUNT_PERCENT = 12; // 12% bundle savings
+
 
 export function buildProductBundle(mainProduct, catalog = []) {
   if (!mainProduct || !catalog || catalog.length === 0) return null;
@@ -75,7 +76,8 @@ export function buildProductBundle(mainProduct, catalog = []) {
 
   const allItems = [mainProduct, ...matchedItems];
   const regularTotal = allItems.reduce((acc, p) => acc + Number(p.price || 0), 0);
-  const bundleDiscount = Math.round((regularTotal * BUNDLE_DISCOUNT_PERCENT) / 100);
+  const discountPercent = bundlePercentFor(allItems.length) * 100;
+  const bundleDiscount = Math.round(regularTotal * discountPercent) / 100;
   const bundlePrice = regularTotal - bundleDiscount;
 
   return {
@@ -85,6 +87,6 @@ export function buildProductBundle(mainProduct, catalog = []) {
     regularTotal,
     bundleDiscount,
     bundlePrice,
-    discountPercent: BUNDLE_DISCOUNT_PERCENT,
+    discountPercent,
   };
 }

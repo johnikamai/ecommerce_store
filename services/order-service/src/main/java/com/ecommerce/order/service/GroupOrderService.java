@@ -138,6 +138,17 @@ public class GroupOrderService {
         return detail(auth, saved.getId());
     }
 
+    @Transactional
+    public Map<String,Object> invite(Authentication auth, Long groupId, Long recipientId) {
+        GroupOrder group = requireHostGroup(auth,groupId);
+        if (!group.getStatus().isPrePlacement()) throw new IllegalStateException("This group no longer accepts members");
+        Customer recipient = customerRepository.findById(recipientId).orElseThrow(()->new IllegalArgumentException("Customer not found"));
+        if (group.memberFor(recipientId)!=null) throw new IllegalArgumentException("Customer is already a member");
+        notificationService.notify(recipient,"GROUP","You are invited to group " + group.getName() + ". Join with code " + group.getInviteCode(),
+            "ShopEase group invitation","Join with code " + group.getInviteCode());
+        return Map.of("invited",true,"code",group.getInviteCode());
+    }
+
     @Transactional(readOnly = true)
     public List<Map<String, Object>> myGroups(Authentication auth) {
         Customer customer = requireCustomer(auth);
@@ -1046,6 +1057,7 @@ public class GroupOrderService {
         Customer customer = requireCustomer(auth);
         GroupOrder group = groupOrderRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("Group order not found"));
+        hydrate(group);
         if (group.memberFor(customer.getId()) == null && !customerGuard.isAdmin(auth)) {
             throw new IllegalStateException("Only members of this group order can view it");
         }
@@ -1056,6 +1068,7 @@ public class GroupOrderService {
         Customer customer = requireCustomer(auth);
         GroupOrder group = groupOrderRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("Group order not found"));
+        hydrate(group);
         if (!group.getHost().getId().equals(customer.getId())) {
             throw new IllegalStateException("Only the host can do that");
         }

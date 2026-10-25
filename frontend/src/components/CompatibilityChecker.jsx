@@ -1,12 +1,12 @@
 ﻿import { useState, useCallback } from 'react';
-import axiosClient from '../utils/axiosClient';
+import axiosClient from '../api/axiosClient';
 
 /**
  * F8: Product Compatibility Checker component.
  *
  * Lets the user search for a second product by name and checks whether
  * it is compatible with the currently viewed product.  Calls
- * POST /api/products/compatibility-check and renders a verdict card.
+ * GET /api/compatibility and renders a verdict card.
  */
 export default function CompatibilityChecker({ currentProduct, catalog = [] }) {
   const [query,   setQuery]   = useState('');
@@ -28,10 +28,9 @@ export default function CompatibilityChecker({ currentProduct, catalog = [] }) {
     setError('');
     setResult(null);
     try {
-      const { data } = await axiosClient.post('/products/compatibility-check', {
-        productAId: currentProduct.id,
-        productBId: secondProduct.id,
-      });
+      const { data } = await axiosClient.get('/compatibility', { params: {
+        productA: currentProduct.id, productB: secondProduct.id,
+      } });
       setResult(data);
     } catch (e) {
       setError('Could not check compatibility. Please try again.');
@@ -136,11 +135,11 @@ export default function CompatibilityChecker({ currentProduct, catalog = [] }) {
               flexShrink: 0,
               fontWeight: 800, fontSize: '1rem', color: scoreColor(result.score),
             }}>
-              {result.score}
+              {result.assessment === 'UNKNOWN' ? '?' : result.compatible ? '✓' : '×'}
             </div>
             <div>
               <div style={{ fontWeight: 700, marginBottom: 2 }}>
-                {result.compatible ? '✅ Compatible' : '❌ Not Compatible'}
+                {result.assessment === 'UNKNOWN' ? 'Specifications insufficient' : result.compatible ? 'Shared interface found' : 'Specification conflict'}
               </div>
               <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
                 {result.verdict}

@@ -36,7 +36,32 @@ public class WishlistController {
         this.customerGuard = customerGuard;
     }
 
-    private void changed(Long customerId,Long productId,boolean active){outbox.publish(java.util.UUID.randomUUID().toString(),"http://notification-service/internal/events","WISHLIST_CHANGED",Map.of("customerId",customerId,"productId",productId,"active",active,"version",System.currentTimeMillis()));}
+    private void changed(Wishlist item, boolean active) {
+        long version = Math.max(System.currentTimeMillis() * 1000, item.getAlertVersion() + 1);
+        item.setAlertVersion(version);
+        var payload = new java.util.LinkedHashMap<String,Object>();
+        payload.put("customerId",item.getCustomerId()); payload.put("productId",item.getProductId());
+        payload.put("active",active); payload.put("version",version);
+        payload.put("targetPrice",item.getTargetPrice());
+        payload.put("notifyOnDrop",item.isNotifyOnDrop()); payload.put("notifyOnRestock",item.isNotifyOnRestock());
+        outbox.publish(java.util.UUID.randomUUID().toString(),"http://notification-service/internal/events","WISHLIST_CHANGED",payload);
+    }
+
+    public record Preferences(java.math.BigDecimal targetPrice, Boolean notifyOnDrop, Boolean notifyOnRestock) {}
+    @PutMapping("/customer/{customerId}/product/{productId}/preferences")
+    public ResponseEntity<?> preferences(@PathVariable Long customerId, @PathVariable Long productId,
+                                          @RequestBody Preferences body, Authentication auth) {
+        if (!customerGuard.canAccess(customerId,auth)) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        if (body.targetPrice()!=null && (body.targetPrice().signum()<=0 || body.targetPrice().scale()>2 || body.targetPrice().compareTo(new java.math.BigDecimal("9999999999.99"))>0))
+            return ResponseEntity.badRequest().body("Target price must be positive with at most two decimal places");
+        var item=wishlistRepository.findByCustomerIdAndProductId(customerId,productId).orElse(null);
+        if(item==null)return ResponseEntity.notFound().build();
+        item.setTargetPrice(body.targetPrice());
+        if(body.notifyOnDrop()!=null)item.setNotifyOnDrop(body.notifyOnDrop());
+        if(body.notifyOnRestock()!=null)item.setNotifyOnRestock(body.notifyOnRestock());
+        changed(item,true);
+        return ResponseEntity.ok(wishlistRepository.save(item));
+    }
 
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<?> getForCustomer(@PathVariable Long customerId, Authentication auth) {
@@ -69,7 +94,9 @@ public class WishlistController {
         Wishlist item = new Wishlist();
         item.setCustomer(customer);
         item.setProduct(product);
-        var saved=wishlistRepository.save(item);changed(customerId,productId,true);return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+        item.setInitialPrice(product.getPrice());
+        changed(item,true);
+        return ResponseEntity.status(HttpStatus.CREATED).body(wishlistRepository.save(item));
     }
 
     @DeleteMapping("/customer/{customerId}/product/{productId}")
@@ -79,7 +106,7 @@ public class WishlistController {
         }
         return wishlistRepository.findByCustomerIdAndProductId(customerId, productId)
                 .map(item -> {
-                    wishlistRepository.delete(item);changed(customerId,productId,false);
+                    changed(item,false);wishlistRepository.delete(item);
                     return ResponseEntity.noContent().build();
                 })
                 .orElse(ResponseEntity.notFound().build());

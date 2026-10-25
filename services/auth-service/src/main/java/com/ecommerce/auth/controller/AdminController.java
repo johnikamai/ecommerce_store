@@ -15,11 +15,16 @@ import java.util.*;
 public class AdminController {
 
     private final UserRepository userRepository;
+    private final com.ecommerce.auth.service.OwnerClient services;
+    private final org.springframework.transaction.support.TransactionTemplate deletionTransaction;
     private final com.ecommerce.auth.repo.CustomerOrderLedgerRepository ledger;
     private final CustomerRepository customerRepository;
 
     public AdminController(UserRepository userRepository,
-                           CustomerRepository customerRepository, com.ecommerce.auth.repo.CustomerOrderLedgerRepository ledger) {
+                           CustomerRepository customerRepository, com.ecommerce.auth.repo.CustomerOrderLedgerRepository ledger, com.ecommerce.auth.service.OwnerClient services,
+                           org.springframework.transaction.PlatformTransactionManager transactions) {
+        this.deletionTransaction=new org.springframework.transaction.support.TransactionTemplate(transactions);
+        this.services=services;
         this.ledger=ledger;
         this.userRepository = userRepository;
         this.customerRepository = customerRepository;
@@ -80,6 +85,23 @@ public class AdminController {
         if(user.getRole()==Role.ADMIN||auth.getName().equals(user.getUsername()))return ResponseEntity.badRequest().body("Cannot delete an admin or your own account");
         if(user.getCustomerId()!=null&&ledger.existsByCustomerId(user.getCustomerId()))return ResponseEntity.badRequest().body("Cannot delete: this customer has orders. Handle or archive them first.");
         if(user.getCustomerId()!=null&&customerRepository.findAll().stream().anyMatch(c->c.getReferredBy()!=null&&user.getCustomerId().equals(c.getReferredBy().getId())))return ResponseEntity.badRequest().body("Cannot delete: this customer has referred other customers.");
-        userRepository.delete(user);return ResponseEntity.noContent().build();
+        if(user.getRole()==Role.STAFF)return ResponseEntity.badRequest().body("Deactivate staff through staff management to retain their audit history");
+        if(user.getCustomerId()!=null) {
+            Long customerId=user.getCustomerId();
+            // Each owner refuses financial/history deletion and cleanup is idempotent.
+            services.get("http://order-service/internal/customers/"+customerId+"/deletion-check",Object.class);
+            user.setEnabled(false); userRepository.saveAndFlush(user);
+            services.post("http://order-service/internal/customers/"+customerId+"/cleanup",Map.of(),Object.class);
+            services.post("http://product-service/internal/customers/"+customerId+"/cleanup",Map.of(),Object.class);
+            services.post("http://notification-service/internal/customers/"+customerId+"/cleanup",Map.of(),Object.class);
+            // Recheck after remote work; never erase a profile with retained orders.
+            services.get("http://order-service/internal/customers/"+customerId+"/deletion-check",Object.class);
+            deletionTransaction.executeWithoutResult(status -> {
+                if(ledger.existsByCustomerId(customerId))throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT,"Customer order history must be retained");
+                userRepository.delete(user);
+                customerRepository.deleteById(customerId);
+            });
+        } else userRepository.delete(user);
+        return ResponseEntity.noContent().build();
     }
 }

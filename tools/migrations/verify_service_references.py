@@ -22,7 +22,7 @@ checks={
 }
 failed=False
 for label,join in checks.items():
- result=subprocess.run([mysql,'-u',env.get('DB_USERNAME','root'),'--batch','--skip-column-names','-e','SELECT COUNT(*) FROM '+join],env=env,capture_output=True,text=True)
+ result=subprocess.run([mysql,'-h',env.get('DB_HOST','127.0.0.1'),'-P',env.get('DB_PORT','3306'),'-u',env.get('DB_USERNAME','root'),*(['--ssl-mode='+env['DB_SSL_MODE']] if env.get('DB_SSL_MODE') else []),*(['--ssl-ca='+env['DB_SSL_CA']] if env.get('DB_SSL_CA') else []),'--batch','--skip-column-names','-e','SELECT COUNT(*) FROM '+join],env=env,capture_output=True,text=True)
  if result.returncode:raise RuntimeError('Audit query failed: '+label)
  count=int(result.stdout.strip());print(f'{label}: {count} orphan references');failed|=count>0
 if failed:raise SystemExit(1)

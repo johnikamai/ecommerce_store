@@ -30,6 +30,8 @@ def main():
             mysql, '-h', environment.get('DB_HOST', '127.0.0.1'),
             '-P', environment.get('DB_PORT', '3306'),
             '-u', environment.get('DB_USERNAME', environment.get('DB_USER', 'root')),
+            *(['--ssl-mode='+environment['DB_SSL_MODE']] if environment.get('DB_SSL_MODE') else []),
+            *(['--ssl-ca='+environment['DB_SSL_CA']] if environment.get('DB_SSL_CA') else []),
             '--batch', '--skip-column-names', '-e', query,
         ], env=environment, capture_output=True, text=True, encoding='utf-8')
         if result.returncode:

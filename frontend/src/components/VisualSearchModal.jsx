@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { Camera, Upload, X, Sparkles, Loader2, ShoppingCart, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import ProductImage from './ProductImage';
-import { extractImageFeatures, inferVisualCategory, rankProductsByVisualSimilarity } from '../utils/visualSearch';
+import { extractImageFeatures, rankProductsByVisualSimilarity } from '../utils/visualSearch';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -10,7 +10,8 @@ export default function VisualSearchModal({ isOpen, onClose, catalog }) {
   const [preview, setPreview] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [results, setResults] = useState([]);
-  const [detectedCategory, setDetectedCategory] = useState(null);
+  const [error, setError] = useState('');
+  const searchVersion = useRef(0);
   const fileInputRef = useRef(null);
   const { addToCart } = useCart();
   const { formatCurrency } = useLanguage();
@@ -47,30 +48,35 @@ export default function VisualSearchModal({ isOpen, onClose, catalog }) {
 
   const analyzeImage = (imgUrl, fileName) => {
     setAnalyzing(true);
+    setError('');
+    const version = ++searchVersion.current;
     setResults([]);
     
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.src = imgUrl;
     img.onload = async () => {
       try {
         const features = await extractImageFeatures(img);
-        const category = inferVisualCategory(features, fileName);
-        setDetectedCategory(category);
-        const matches = rankProductsByVisualSimilarity(features, catalog, category);
+        const matches = await rankProductsByVisualSimilarity(features, catalog);
+        if (version !== searchVersion.current) return;
         setResults(matches);
+        if (!matches.length) setError('No readable catalogue photos were available. Please try again.');
       } catch (err) {
-        console.error('Visual analysis failed', err);
+        if (version === searchVersion.current) setError('Could not read that image. Please choose a PNG, JPG or WEBP photo.');
       } finally {
-        setAnalyzing(false);
+        if (version === searchVersion.current) setAnalyzing(false);
       }
     };
+    img.onerror = () => { if (version === searchVersion.current) { setError('Could not read that image.'); setAnalyzing(false); } };
+    img.src = imgUrl;
   };
 
   const handleClear = () => {
     setPreview(null);
     setResults([]);
-    setDetectedCategory(null);
+    searchVersion.current++;
+    setAnalyzing(false);
+    setError('');
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -91,7 +97,7 @@ export default function VisualSearchModal({ isOpen, onClose, catalog }) {
                 Search by Image
               </h3>
               <p className="text-xs text-[var(--color-text-muted)]">
-                Upload or drag a photo of a shoe, dress, bag, or tech to find matches
+                Matches actual catalogue photos by colour and layout; not AI object recognition.
               </p>
             </div>
           </div>
@@ -103,6 +109,7 @@ export default function VisualSearchModal({ isOpen, onClose, catalog }) {
           </button>
         </div>
 
+        {error && <p role="alert" className="p-4 text-red-600">{error}</p>}
         {/* Content */}
         <div className="p-5 overflow-y-auto flex-1 space-y-5">
           {!preview ? (
@@ -140,11 +147,7 @@ export default function VisualSearchModal({ isOpen, onClose, catalog }) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold text-[var(--color-text-primary)]">Your Photo</span>
-                    {detectedCategory && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-primary-bg)] text-[var(--color-primary)] font-medium">
-                        {detectedCategory}
-                      </span>
-                    )}
+
                   </div>
                   <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
                     {analyzing ? 'Analyzing visual colors & patterns...' : `${results.length} similar items found`}
@@ -172,7 +175,7 @@ export default function VisualSearchModal({ isOpen, onClose, catalog }) {
                     Top Visually Similar Products
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {results.map(({ product, similarity }) => (
+                    {results.map(({ product }) => (
                       <div
                         key={product.id}
                         className="p-2.5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-card-bg)] hover:border-[var(--color-primary)] transition-colors flex gap-3"
@@ -188,7 +191,7 @@ export default function VisualSearchModal({ isOpen, onClose, catalog }) {
                           <div>
                             <div className="flex items-center justify-between gap-1">
                               <span className="text-[10px] font-semibold text-[var(--color-primary)]">
-                                {similarity}% match
+                                Image similarity result
                               </span>
                               <span className="text-[10px] text-[var(--color-text-muted)]">
                                 {product.category}

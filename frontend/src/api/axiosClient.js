@@ -1,12 +1,9 @@
 import axios from 'axios';
 import { clearSession, tokenIsCurrent } from '../utils/session';
+import { resolveApiBaseUrl } from '../utils/apiBase';
 
 // API Gateway for microservices architecture
-const PROD_API = 'http://localhost:8080/api';
-const DEV_API = 'http://localhost:8080/api';
-
-// VITE_API_BASE_URL still wins so the host stays overridable
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || DEV_API;
+const API_BASE_URL = resolveApiBaseUrl(import.meta.env.VITE_API_BASE_URL, import.meta.env.PROD);
 
 const axiosClient = axios.create({
   baseURL: API_BASE_URL,

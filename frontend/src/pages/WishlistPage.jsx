@@ -6,7 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
 import { getCustomerId } from '../utils/customer';
 import ProductImage from '../components/ProductImage';
-import { getWishlistAlerts, saveWishlistAlert, removeWishlistAlert, evaluatePriceAlert } from '../utils/wishlistAlerts';
+import { evaluatePriceAlert } from '../utils/wishlistAlerts';
 
 function WishlistPage() {
   const [items, setItems] = useState([]);
@@ -22,19 +22,11 @@ function WishlistPage() {
     try {
       const res = await axiosClient.get(`/wishlist/customer/${getCustomerId()}`);
       setItems(res.data);
-      const savedAlerts = getWishlistAlerts();
-      
-      // Auto-record initial price for items missing baseline alert tracking
-      res.data.forEach((item) => {
-        if (!savedAlerts[item.product.id]) {
-          saveWishlistAlert(item.product.id, {
-            initialPrice: Number(item.product.price),
-            notifyOnDrop: true,
-            notifyOnRestock: true,
-          });
-        }
-      });
-      setAlerts(getWishlistAlerts());
+      setAlerts(Object.fromEntries(res.data.map(item => [item.product.id, {
+        initialPrice: item.initialPrice ?? item.product.price,
+        targetPrice: item.targetPrice, notifyOnDrop: item.notifyOnDrop, notifyOnRestock: item.notifyOnRestock,
+      }])));
+
     } catch (err) {
       console.error('Failed to load wishlist');
     } finally {
@@ -49,7 +41,7 @@ function WishlistPage() {
   const handleRemove = async (productId) => {
     try {
       await axiosClient.delete(`/wishlist/customer/${getCustomerId()}/product/${productId}`);
-      removeWishlistAlert(productId);
+
       fetchWishlist();
     } catch (err) {
       console.error('Failed to remove');
@@ -61,25 +53,28 @@ function WishlistPage() {
     handleRemove(product.id);
   };
 
-  const handleSaveTargetAlert = (productId) => {
-    const target = parseFloat(targetInput);
-    if (!isNaN(target) && target > 0) {
-      saveWishlistAlert(productId, { targetPrice: target, notifyOnDrop: true });
-      setAlerts(getWishlistAlerts());
-      setEditingAlertId(null);
-      setTargetInput('');
+  const [saveError, setSaveError] = useState('');
+  const savePreferences = async (productId, changes) => {
+    const prior = alerts[productId] || {};
+    setSaveError('');
+    try {
+      await axiosClient.put(`/wishlist/customer/${getCustomerId()}/product/${productId}/preferences`, {
+        targetPrice: prior.targetPrice ?? null, notifyOnDrop: prior.notifyOnDrop !== false,
+        notifyOnRestock: prior.notifyOnRestock !== false, ...changes,
+      });
+      await fetchWishlist();
+      return true;
+    } catch { setSaveError('Could not save alert preferences. Please try again.'); return false; }
+  };
+  const handleSaveTargetAlert = async productId => {
+    const target = Number(targetInput);
+    if (targetInput && (!Number.isFinite(target) || target <= 0)) { setSaveError('Enter a positive target price.'); return; }
+    if (await savePreferences(productId, { targetPrice: targetInput ? target : null, notifyOnDrop: true })) {
+      setEditingAlertId(null); setTargetInput('');
     }
   };
-
-  const toggleDropAlert = (productId, currentVal) => {
-    saveWishlistAlert(productId, { notifyOnDrop: !currentVal });
-    setAlerts(getWishlistAlerts());
-  };
-
-  const toggleRestockAlert = (productId, currentVal) => {
-    saveWishlistAlert(productId, { notifyOnRestock: !currentVal });
-    setAlerts(getWishlistAlerts());
-  };
+  const toggleDropAlert = (id, value) => savePreferences(id, { notifyOnDrop: !value });
+  const toggleRestockAlert = (id, value) => savePreferences(id, { notifyOnRestock: !value });
 
   // Count active price drop alerts that fired
   const dropAlertsCount = items.filter((item) => {
@@ -110,6 +105,7 @@ function WishlistPage() {
 
   return (
     <div className="max-w-[1320px] mx-auto px-6 py-8">
+      {saveError && <p role="alert" className="text-red-600">{saveError}</p>}
       {/* Header & Smart Alert Banner */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
@@ -211,6 +207,9 @@ function WishlistPage() {
                     </button>
                   </div>
 
+                  <button type="button" onClick={() => toggleRestockAlert(product.id, alertData.notifyOnRestock)}>
+                    Restock alerts: {alertData.notifyOnRestock !== false ? 'Active' : 'Off'}
+                  </button>
                   {/* Target Price Configuration */}
                   {editingAlertId === product.id ? (
                     <div className="flex items-center gap-1.5 pt-1">

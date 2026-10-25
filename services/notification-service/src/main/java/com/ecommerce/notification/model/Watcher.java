@@ -1,2 +1,2 @@
 package com.ecommerce.notification.model;
-@jakarta.persistence.Entity @jakarta.persistence.Table(name="product_watchers") public class Watcher {@jakarta.persistence.Id public String id;public Long customerId;public Long productId;public long sourceVersion;public boolean active;}
+@jakarta.persistence.Entity @jakarta.persistence.Table(name="product_watchers") public class Watcher {@jakarta.persistence.Id public String id;public Long customerId;public Long productId;public long sourceVersion;public boolean active;public java.math.BigDecimal targetPrice;public boolean notifyOnDrop=true;public boolean notifyOnRestock=true;}

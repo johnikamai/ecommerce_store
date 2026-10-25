@@ -7,5 +7,5 @@ import java.util.*;
 public class CompatibilityController {
     private final ProductRepository products;private final CompatibilityService compatibility;
     public CompatibilityController(ProductRepository products,CompatibilityService compatibility){this.products=products;this.compatibility=compatibility;}
-    @GetMapping public Object check(@RequestParam Long productA,@RequestParam Long productB){return compatibility.check(products.findById(productA).orElseThrow(),products.findById(productB).orElseThrow());}
+    @GetMapping public Object check(@RequestParam Long productA,@RequestParam Long productB){return compatibility.check(products.findById(productA).orElseThrow(()->new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND,"Product not found")),products.findById(productB).orElseThrow(()->new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND,"Product not found")));}
 }

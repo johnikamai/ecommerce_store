@@ -15,6 +15,8 @@ public interface GroupOrderRepository extends JpaRepository<GroupOrder, Long> {
 
     List<GroupOrder> findByHostId(Long hostId);
 
+    List<GroupOrder> findByPlacedOrder_Id(Long orderId);
+
     @Query("select distinct g from GroupOrder g join g.members m where m.customerId = :customerId order by g.createdAt desc")
     List<GroupOrder> findByMemberCustomerId(@Param("customerId") Long customerId);
 

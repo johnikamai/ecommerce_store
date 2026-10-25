@@ -85,6 +85,15 @@ function GroupOrderDetail() {
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [customShares, setCustomShares] = useState({});
+  const [inviteCustomerId, setInviteCustomerId] = useState('');
+  const [catalog, setCatalog] = useState([]);
+  const [productQuery, setProductQuery] = useState('');
+  const [catalogError, setCatalogError] = useState('');
+  useEffect(() => {
+    let active=true;
+    axiosClient.get('/products/catalog').then(({data})=>{if(active)setCatalog(data.products || data || []);}).catch(()=>{if(active)setCatalogError('Could not load products. Refresh to try again.');});
+    return ()=>{active=false;};
+  }, [id]);
   const [payMethod, setPayMethod] = useState('CASH');
   const [showCheckout, setShowCheckout] = useState(false);
   const pollRef = useRef(null);
@@ -97,7 +106,7 @@ function GroupOrderDetail() {
       setGroup(res.data);
       if (!silent) setError('');
     } catch (err) {
-      if (!silent) setError(err.response?.data?.error || t('group.detail.loadFailed'));
+      if (!silent) setError(err.response?.data?.error || err.response?.data?.message || t('group.detail.loadFailed'));
     } finally {
       if (!silent) setLoading(false);
     }
@@ -129,7 +138,7 @@ function GroupOrderDetail() {
       await load(true);
       if (successMsg) setNotice(successMsg);
     } catch (err) {
-      setError(err.response?.data?.error || t('group.error.generic'));
+      setError(err.response?.data?.error || err.response?.data?.message || t('group.error.generic'));
     } finally {
       setBusy(false);
     }
@@ -161,7 +170,11 @@ function GroupOrderDetail() {
   const myMember = group.members.find((m) => m.customerId === customerId);
   const myPayment = group.payments.find((p) => p.customerId === customerId);
 
-  const setSplit = (method) => act(() => axiosClient.post(`/group-orders/${id}/split`, { method }));
+  const setSplit = method => {
+    const customAmounts = method==='CUSTOM' ? Object.fromEntries(group.members.map(m=>[m.customerId, Number(m.shareAmount || 0)])) : undefined;
+    if(customAmounts)setCustomShares(customAmounts);
+    return act(()=>axiosClient.post(`/group-orders/${id}/split`,{method,customAmounts}));
+  };
   const saveCustomSplit = () => {
     const amounts = {};
     for (const [cid, val] of Object.entries(customShares)) {
@@ -241,6 +254,12 @@ function GroupOrderDetail() {
                 {group.inviteCode}
               </button>
               <span className="text-xs text-[var(--color-text-muted)]">{t('group.detail.codeHint')}</span>
+              {isHost && <form onSubmit={e => { e.preventDefault(); act(() => axiosClient.post(`/group-orders/${id}/invite`, { customerId: Number(inviteCustomerId) }), 'Invitation sent'); }} className="flex gap-2">
+                <input aria-label="Friend customer ID" type="number" min="1" required value={inviteCustomerId} onChange={e => setInviteCustomerId(e.target.value)} placeholder="Friend customer ID" className="border rounded px-2 w-40" />
+                <button type="submit">Send invitation</button>
+              </form>}
+              <button type="button" onClick={() => navigator.clipboard.writeText(`${window.location.origin}/group-orders?join=${encodeURIComponent(group.inviteCode)}`)}>Copy invite link</button>
+
             </div>
           )}
 
@@ -272,7 +291,10 @@ function GroupOrderDetail() {
                         {t('group.detail.addedBy', { name: item.addedByName })} · {formatCurrency(item.unitPrice)}
                       </p>
                     </div>
-                    <span className="text-sm font-semibold shrink-0">×{item.quantity}</span>
+                    {editable && (item.addedById===customerId || isHost)
+                      ? <input aria-label={`Quantity for ${item.productName}`} type="number" min="1" value={item.quantity} className="w-16 border rounded p-1" onChange={e => {const quantity=Number(e.target.value); if(Number.isInteger(quantity)&&quantity>0)act(()=>axiosClient.put(`/group-orders/${id}/items/${item.id}`,{quantity}));}} />
+                      : <span className="text-sm font-semibold shrink-0">×{item.quantity}</span>}
+
                     <span className="text-sm font-semibold w-24 text-right shrink-0">{formatCurrency(item.lineTotal)}</span>
                     {editable && (item.addedById === customerId || isHost) && (
                       <button onClick={() => removeItem(item.id)} aria-label={t('group.detail.removeItem')} className="text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors shrink-0">
@@ -298,14 +320,17 @@ function GroupOrderDetail() {
               )}
             </div>
 
-            {editable && (
-              <Link
-                to="/products"
-                className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--color-primary)] hover:underline"
-              >
-                <Plus size={15} /> {t('group.detail.browseToAdd')}
-              </Link>
-            )}
+            {editable && <div id="group-add-products" className="border-t mt-4 pt-4">
+              <label htmlFor="group-product-search" className="font-semibold">Add products to shared cart</label>
+              <input id="group-product-search" value={productQuery} onChange={e=>setProductQuery(e.target.value)} placeholder="Search catalogue products" className={inputStyle} />
+              {catalogError && <p role="alert">{catalogError}</p>}
+              {productQuery.trim().length>1 && <ul>
+                {catalog.filter(p=>p.stockQuantity>0 && p.name?.toLowerCase().includes(productQuery.trim().toLowerCase())).slice(0,8).map(p=><li key={p.id} className="flex justify-between gap-4 py-2">
+                  <span>{p.name} · {formatCurrency(p.price)}</span>
+                  <button disabled={busy} type="button" aria-label={`Add ${p.name} to shared cart`} onClick={()=>act(()=>axiosClient.post(`/group-orders/${id}/items`,{productId:p.id,quantity:1}), 'Product added to shared cart')}>Add</button>
+                </li>)}
+              </ul>}
+            </div>}
           </section>
 
           {/* Split */}

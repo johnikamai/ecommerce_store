@@ -16,19 +16,17 @@ export default function ComparisonVerdictCard({ verdict }) {
         </div>
         <div>
           <h3 className="font-[family-name:var(--font-heading)] text-base md:text-lg font-bold text-[var(--color-text-primary)]">
-            AI Product Comparison Verdict
+            Product Comparison Verdict
           </h3>
           <p className="text-xs text-[var(--color-text-muted)]">
-            Synthesized recommendation based on price, performance specs, and customer satisfaction
+            Rules based on recorded prices and customer ratings; hardware suitability requires checking specifications.
           </p>
         </div>
       </div>
 
       {/* Main summary message */}
       <div className="p-3.5 rounded-[var(--radius-md)] bg-[var(--color-card-bg)] border border-[var(--color-border)] text-sm text-[var(--color-text-secondary)] mb-4 leading-relaxed">
-        <p dangerouslySetInnerHTML={{
-          __html: verdict.summary.replace(/\*\*(.*?)\*\*/g, '<strong class="text-[var(--color-primary)] font-semibold">$1</strong>')
-        }} />
+        <p>{verdict.summary.replace(/\*\*/g, '')}</p>
       </div>
 
       {/* Structured breakdowns per product */}

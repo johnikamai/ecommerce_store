@@ -18,6 +18,13 @@ public class Wishlist {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(precision=12, scale=2) private java.math.BigDecimal targetPrice;
+    @Column(precision=12, scale=2) private java.math.BigDecimal initialPrice;
+    @Column(nullable=false) private boolean notifyOnDrop = true;
+    @Column(nullable=false) private boolean notifyOnRestock = true;
+    @Column(nullable=false) private long alertVersion;
+    @Version @Column(nullable=false) private long rowVersion;
+
     @com.fasterxml.jackson.annotation.JsonIgnore
     @Column(name="customer_id",nullable=false) private Long customerId;
     @Transient private Customer customer;

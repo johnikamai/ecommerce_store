@@ -126,13 +126,20 @@ public class ReturnService {
         // Notify the customer that their refund has been processed.
         Order order = req.getOrderItem().getOrder();
         String productName = productRepository.findById(req.getOrderItem().getProductId()).map(Product::getName).orElse("Returned item");
-        notificationService.refunded(req.getCustomer(), req.getId(), productName);
+
 
         // Refund is money leaving the business, so it has to move on the payment
         // record as well - otherwise the payments ledger still reports this order
         // as PAID and revenue counts refunded money.
         PaymentStatus previous = order.getPaymentStatus();
-        order.setPaymentStatus(PaymentStatus.REFUNDED);
+        if (previous == PaymentStatus.PAID || previous == PaymentStatus.REFUNDED) notificationService.refunded(req.getCustomer(),req.getId(),productName);
+        else notificationService.notify(req.getCustomer(),"RETURN","Unpaid COD return for " + productName + " completed. No payment was collected and no refund was issued.","Unpaid return completed","No payment was collected; the unpaid balance is cancelled.");
+        if (previous != PaymentStatus.PAID && previous != PaymentStatus.REFUNDED) {
+            Payment cancelled = paymentRepository.cancel(order.getId());
+            order.setPaymentStatus(cancelled.getPaymentStatus());
+        } else {
+            order.setPaymentStatus(PaymentStatus.REFUNDED);
+        }
         orderRepository.save(order);
         orderService.reverseRewards(order);
 

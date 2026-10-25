@@ -1,3 +1,4 @@
+import { bundlePercentFor } from '../utils/cartCalculations.js';
 import { useState, useMemo } from 'react';
 import { Plus, Check, ShoppingBag, Sparkles, Tag, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -37,8 +38,9 @@ export default function SmartBundleCard({ bundle }) {
 
   // Apply bundle discount only when full or partial bundle (at least 2 items) is selected
   const isBundleQualified = selectedProducts.length >= 2;
+  const discountPercent = bundlePercentFor(selectedProducts.length) * 100;
   const discountAmount = isBundleQualified
-    ? Math.round((regularTotal * bundle.discountPercent) / 100)
+    ? Math.round(regularTotal * discountPercent) / 100
     : 0;
   const finalPrice = regularTotal - discountAmount;
 
@@ -62,13 +64,13 @@ export default function SmartBundleCard({ bundle }) {
               Frequently Bought Together (Smart Bundle)
             </h3>
             <p className="text-xs text-[var(--color-text-muted)]">
-              Complementary setup curated for this product with exclusive bundle savings
+              Rule-based suggestions. Shown goods price excludes tax and shipping; cart quote includes coupons and membership discounts.
             </p>
           </div>
         </div>
         {isBundleQualified && (
           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[var(--color-success-bg)] text-[var(--color-success)] text-xs font-bold uppercase tracking-wider">
-            <Tag size={12} /> Save {bundle.discountPercent}% Instant Bundle Discount
+            <Tag size={12} /> Save {discountPercent}% Instant Bundle Discount
           </span>
         )}
       </div>
@@ -131,7 +133,7 @@ export default function SmartBundleCard({ bundle }) {
         <div className="lg:col-span-4 rounded-[var(--radius-lg)] bg-[var(--color-card-bg-tint)] p-5 border border-[var(--color-border)] flex flex-col justify-between h-full">
           <div>
             <span className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
-              Bundle Total ({selectedProducts.length} items)
+              Goods after bundle discount ({selectedProducts.length} items)
             </span>
             <div className="flex items-baseline gap-2 mt-1">
               <span className="font-[family-name:var(--font-heading)] text-2xl font-bold text-[var(--color-text-primary)]">

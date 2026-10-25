@@ -104,7 +104,7 @@ public class OrderController {
         }
         Long customerId = order.getCustomer() == null ? null : order.getCustomer().getId();
         boolean staff = auth != null && auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_STAFF"));
+                .anyMatch(a -> java.util.Set.of("ROLE_ADMIN","PERM_ORDER_VIEW","PERM_ORDER_FULFILL","PERM_DELIVERY_UPDATE").contains(a.getAuthority()));
         if (!staff && !customerGuard.canAccess(customerId, auth)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You can only track your own orders");
         }

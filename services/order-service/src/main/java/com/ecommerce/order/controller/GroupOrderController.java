@@ -36,6 +36,8 @@ public class GroupOrderController {
                                 String couponCode, String splitMethod, String paymentMode) {
     }
 
+    public record InviteRequest(Long customerId) {}
+
     public record JoinRequest(String code) {
     }
 
@@ -75,6 +77,11 @@ public class GroupOrderController {
     @PostMapping("/join")
     public ResponseEntity<?> join(@RequestBody JoinRequest request, Authentication auth) {
         return run(() -> groupOrderService.join(auth, request.code()));
+    }
+
+    @PostMapping("/{id}/invite")
+    public ResponseEntity<?> invite(@PathVariable Long id,@RequestBody InviteRequest request,Authentication auth){
+        return run(()->groupOrderService.invite(auth,id,request.customerId()));
     }
 
     @GetMapping("/{id}")

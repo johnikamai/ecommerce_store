@@ -1,4 +1,10 @@
+Current local acceptance and remaining production limits: [final verification](docs/FINAL_VERIFICATION_REPORT.md) and [all 15 smart features](docs/SMART_FEATURE_AUDIT.md).
+
+Managed cloud MySQL preparation: [deployment order and environment settings](docs/MANAGED_MYSQL_DEPLOYMENT.md). The default `render.yaml` uses an external managed database; nothing has been deployed.
+
 # ShopEase microservices
+
+Pre-deployment review: see the [15-feature audit](docs/SMART_FEATURE_AUDIT.md) and [Render/Vercel preparation](docs/RENDER_VERCEL_DEPLOYMENT.md). Deployment files are prepared locally; no deployment is authorized or performed. Production frontend builds now require an HTTPS `VITE_API_BASE_URL` ending in `/api`; local dev still uses Gateway on 8080 by default.
 
 The existing React store runs through Spring Cloud Gateway and six Eureka-discovered business services. The compatibility backend is not used or started.
 

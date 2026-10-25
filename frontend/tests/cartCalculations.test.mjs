@@ -52,7 +52,7 @@ test('cart financial calculation logic: shipping thresholds and tax computations
   assert.equal(grand2, 1274.4);
 });
 
-test('buildProductBundle pairs complementary accessories with 12% savings', () => {
+test('buildProductBundle pairs complementary accessories with the authoritative 10% three-product tier', () => {
   const mainLaptop = { id: 101, name: 'MacBook Air M2', category: 'Laptops', price: 99900, stockQuantity: 5 };
   const catalog = [
     { id: 101, name: 'MacBook Air M2', category: 'Laptops', price: 99900, stockQuantity: 5 },
@@ -67,7 +67,7 @@ test('buildProductBundle pairs complementary accessories with 12% savings', () =
   assert.equal(bundle.accessories.length, 2);
   assert.equal(bundle.allItems.length, 3);
   assert.equal(bundle.regularTotal, 103900); // 99900 + 1500 + 2500
-  assert.equal(bundle.discountPercent, 12);
-  assert.equal(bundle.bundleDiscount, Math.round((103900 * 12) / 100));
+  assert.equal(bundle.discountPercent, 10);
+  assert.equal(bundle.bundleDiscount, 10390);
   assert.equal(bundle.bundlePrice, bundle.regularTotal - bundle.bundleDiscount);
 });

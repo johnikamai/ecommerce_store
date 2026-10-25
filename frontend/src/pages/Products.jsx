@@ -1,3 +1,4 @@
+import BudgetMode from '../components/BudgetMode';
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, Plus, ChevronDown, Sparkles, ArrowRight, Star, X, Loader2, Camera, Tag, Check, Award } from 'lucide-react';
@@ -114,6 +115,15 @@ function Products() {
 
   // Admin add form
   const role = localStorage.getItem('role');
+  const [staffPermissions, setStaffPermissions] = useState([]);
+  useEffect(() => {
+    if (role!=='STAFF') return;
+    let active=true;
+    axiosClient.get('/staff/me').then(({data})=>{if(active)setStaffPermissions(data.permissions || []);}).catch(()=>{});
+    return ()=>{active=false;};
+  }, [role]);
+  const canCreateProduct = role==='ADMIN' || (role==='STAFF' && staffPermissions.includes('PRODUCT_CREATE'));
+
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -438,6 +448,7 @@ function Products() {
 
       {/* Controls */}
       <div className="flex flex-col gap-4 mb-[var(--space-6)]">
+        <BudgetMode />
         <h2 id="grid" className="font-[family-name:var(--font-heading)] text-[32px] font-bold">
           {browsing ? t('catalog.titleProducts') : t('catalog.titleShopByCategory')}
         </h2>
@@ -497,7 +508,7 @@ function Products() {
             </div>
           )}
 
-          {role === 'ADMIN' && (
+          {canCreateProduct && (
             <button
               onClick={() => setShowForm(!showForm)}
               className="inline-flex items-center gap-1.5 min-h-[44px] rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white px-4 text-sm font-semibold hover:bg-[var(--color-primary-hover)] transition-colors"
@@ -781,7 +792,7 @@ function Products() {
       </div>
 
       {/* Admin form */}
-      {role === 'ADMIN' && showForm && (
+      {canCreateProduct && showForm && (
         <form onSubmit={handleAddProduct} className="mb-8 p-6 rounded-[var(--radius-xl)] bg-[var(--color-card-bg-tint)] max-w-md">
           <h3 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-4">{t('catalog.addProductTitle')}</h3>
           <div className="space-y-3">
