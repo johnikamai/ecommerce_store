@@ -1,0 +1,2 @@
+package com.ecommerce.recommendation.repo;import com.ecommerce.common.ServiceClient;import com.ecommerce.recommendation.model.User;import java.util.*;
+@org.springframework.stereotype.Component public class UserRepository {private final ServiceClient http;public UserRepository(ServiceClient h){http=h;}public List<User> findAll(){return Arrays.asList(http.get("http://auth-service/internal/users",User[].class).orElseThrow());}}

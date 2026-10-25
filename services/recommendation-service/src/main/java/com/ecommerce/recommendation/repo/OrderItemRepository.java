@@ -1,0 +1,3 @@
+package com.ecommerce.recommendation.repo;
+import com.ecommerce.common.ServiceClient;import java.util.*;
+@org.springframework.stereotype.Component public class OrderItemRepository {private final ServiceClient http;public OrderItemRepository(ServiceClient h){http=h;}public List<Object[]> unitsSoldByProduct(){var rows=http.get("http://product-service/api/products/catalog",Map[].class).orElseThrow();List<Object[]> result=new ArrayList<>();for(var row:rows)result.add(new Object[]{row.get("id"),row.get("unitsSold")});return result;}}

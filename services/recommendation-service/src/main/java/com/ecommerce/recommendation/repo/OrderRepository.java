@@ -1,0 +1,3 @@
+package com.ecommerce.recommendation.repo;
+import com.ecommerce.common.ServiceClient;import com.ecommerce.recommendation.model.Order;import java.util.*;
+@org.springframework.stereotype.Component public class OrderRepository {private final ServiceClient http;public OrderRepository(ServiceClient h){http=h;}public List<Order> findAll(){return Arrays.asList(http.get("http://order-service/internal/orders",Order[].class).orElseThrow());}public List<Order> findByCustomerId(Long id){return findAll().stream().filter(o->o.getCustomer()!=null&&id.equals(o.getCustomer().getId())).toList();}}

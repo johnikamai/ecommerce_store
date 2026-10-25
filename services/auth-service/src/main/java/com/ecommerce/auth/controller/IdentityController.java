@@ -37,4 +37,6 @@ public class IdentityController {
     public ResponseEntity<?> customer(@PathVariable Long id) {
         return customers.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
+ @org.springframework.web.bind.annotation.GetMapping("/users") public Object users(){return users.findAll().stream().map(u->{var row=new java.util.LinkedHashMap<String,Object>();row.put("id",u.getId());row.put("username",u.getUsername());row.put("email",u.getEmail());row.put("role",u.getRole());row.put("enabled",u.isEnabled());row.put("customerId",u.getCustomerId());return row;}).toList();}
 }
+

@@ -1,0 +1,2 @@
+package com.ecommerce.recommendation.repo;import com.ecommerce.common.ServiceClient;
+@org.springframework.stereotype.Component public class AdminAlertRepository {private final ServiceClient http;public AdminAlertRepository(ServiceClient h){http=h;}public long countUnread(){return http.get("http://product-service/internal/admin-alert-count",Long.class).orElseThrow();}}

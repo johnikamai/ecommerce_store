@@ -1,0 +1,2 @@
+package com.ecommerce.recommendation.repo;import com.ecommerce.common.ServiceClient;import java.util.*;
+@org.springframework.stereotype.Component public class AddressRepository {private final ServiceClient http;public AddressRepository(ServiceClient h){http=h;}public List<Map> findByCustomerId(Long id){return Arrays.asList(http.get("http://order-service/internal/addresses/customer/"+id,Map[].class).orElseThrow());}}

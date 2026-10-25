@@ -1,0 +1,2 @@
+package com.ecommerce.product.controller;
+@org.springframework.web.bind.annotation.RestController public class InternalReportingController {private final com.ecommerce.product.repo.AdminAlertRepository alerts;public InternalReportingController(com.ecommerce.product.repo.AdminAlertRepository a){alerts=a;}@org.springframework.web.bind.annotation.GetMapping("/internal/admin-alert-count") public long count(){return alerts.countUnread();}}

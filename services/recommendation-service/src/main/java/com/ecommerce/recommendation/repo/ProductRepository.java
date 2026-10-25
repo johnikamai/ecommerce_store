@@ -1,0 +1,3 @@
+package com.ecommerce.recommendation.repo;
+import com.ecommerce.common.ServiceClient;import com.ecommerce.recommendation.model.Product;import java.util.*;
+@org.springframework.stereotype.Component public class ProductRepository {private final ServiceClient http;public ProductRepository(ServiceClient h){http=h;}public List<Product> findAll(){return Arrays.asList(http.get("http://product-service/api/products",Product[].class).orElseThrow());}public Optional<Product> findById(Long id){return http.get("http://product-service/api/products/"+id,Product.class);}public long count(){return findAll().size();}}

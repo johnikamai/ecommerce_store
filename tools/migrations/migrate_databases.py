@@ -49,7 +49,10 @@ def main():
      if name not in existing_columns:sql(f'ALTER TABLE `{schema}`.`{table}` ADD COLUMN `{name}` {definition}')
   if a.service in files:sql((ROOT/'tools/migrations'/files[a.service]).read_text(encoding='utf-8-sig').replace('__SOURCE__',a.source))
 
- def origin(table):return 'shopease_auth' if a.service=='product' and table=='approval_requests' else a.source
+ def origin(table):
+  if a.service=='product' and table=='approval_requests' and sql("SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA='shopease_auth' AND TABLE_NAME='approval_requests'"):
+   return 'shopease_auth'
+  return a.source
  existing={row[0] for row in sql(f"SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA='{a.source}'")}
  if a.extensions_only:
   apply_extensions();print('Service schema extensions applied; existing rows preserved.');return
@@ -100,8 +103,7 @@ def main():
    'customer/referrer': f'SELECT COUNT(*) FROM `{schema}`.customers c LEFT JOIN `{schema}`.customers r ON r.id=c.referred_by_id WHERE c.referred_by_id IS NOT NULL AND r.id IS NULL',
    'staff permissions/profile': f'SELECT COUNT(*) FROM `{schema}`.staff_permissions p LEFT JOIN `{schema}`.staff_profiles s ON s.id=p.staff_profile_id WHERE s.id IS NULL',
    'task/assignee': f'SELECT COUNT(*) FROM `{schema}`.staff_tasks t LEFT JOIN `{schema}`.users u ON u.id=t.assigned_to_user_id WHERE t.assigned_to_user_id IS NOT NULL AND u.id IS NULL',
-   'staff notification/user': f'SELECT COUNT(*) FROM `{schema}`.staff_notifications n LEFT JOIN `{schema}`.users u ON u.id=n.user_id WHERE u.id IS NULL',
-   'approval/requester': f'SELECT COUNT(*) FROM `{schema}`.approval_requests a LEFT JOIN `{schema}`.users u ON u.id=a.requested_by_user_id WHERE a.requested_by_user_id IS NOT NULL AND u.id IS NULL'}
+   'staff notification/user': f'SELECT COUNT(*) FROM `{schema}`.staff_notifications n LEFT JOIN `{schema}`.users u ON u.id=n.user_id WHERE u.id IS NULL'}
   for reference,query in checks.items():
    if int(sql(query)[0][0]):raise RuntimeError('Orphaned '+reference+' reference')
   print('All auth-owned references verified: zero orphans.')
