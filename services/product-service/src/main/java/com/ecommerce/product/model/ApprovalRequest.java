@@ -1,4 +1,4 @@
-package com.ecommerce.auth.model;
+package com.ecommerce.product.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
@@ -33,10 +33,11 @@ public class ApprovalRequest {
     @Column(nullable = false, length = 16)
     private ApprovalStatus status = ApprovalStatus.PENDING;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "requested_by_user_id")
-    @JsonIgnoreProperties({"password", "authorities"})
-    private User requestedBy;
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    @Column(name="requested_by_user_id") private Long requestedByUserId;
+    @Transient private User requestedBy;
+    public User getRequestedBy(){if(requestedBy==null&&requestedByUserId!=null){requestedBy=new User();requestedBy.setId(requestedByUserId);requestedBy.setUsername(requestedByUsername);}return requestedBy;}
+    public void setRequestedBy(User user){requestedBy=user;requestedByUserId=user==null?null:user.getId();}
 
     private String requestedByUsername;
 

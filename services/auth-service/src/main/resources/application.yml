@@ -15,6 +15,7 @@ spring:
     import: optional:file:./mail-credentials.properties
 eureka:
   client:
+    registry-fetch-interval-seconds: 5
     serviceUrl:
       defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
   instance:
@@ -33,3 +34,5 @@ brevo:
   sender:
     email: ${BREVO_SENDER_EMAIL:}
     name: ${BREVO_SENDER_NAME:ShopEase}
+
+spring.cloud.loadbalancer.cache.ttl: 5s

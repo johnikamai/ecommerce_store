@@ -11,11 +11,13 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.client.RestTemplate;
 
-@Configuration @EnableMethodSecurity @Import(ServiceHttpConfiguration.class)
+@Configuration @EnableMethodSecurity @Import({ServiceHttpConfiguration.class,AuthDependencyHealth.class})
 public class ProductSecurity {
     @Bean SecurityFilterChain productFilterChain(HttpSecurity http,RestTemplate serviceHttp,@Value("${services.internal-key}") String key) throws Exception {
         return http.csrf(c->c.disable()).sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(a->a.requestMatchers("/error","/health","/actuator/health","/internal/**","/products/**","/images/**").permitAll()
+            .authorizeHttpRequests(a->a.requestMatchers("/error","/health","/actuator/health","/internal/**","/products/**","/product-photos/**","/images/**").permitAll()
+                .requestMatchers(HttpMethod.POST,"/api/products/*/ask","/api/compatibility/**").permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET,"/api/products/**","/api/categories/**","/api/reviews/**","/api/price-history/**").permitAll()
                 .requestMatchers(HttpMethod.POST,"/api/products/**","/api/categories/**").hasAnyRole("ADMIN","STAFF")
                 .requestMatchers(HttpMethod.PUT,"/api/products/**","/api/categories/**").hasAnyRole("ADMIN","STAFF")

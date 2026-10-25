@@ -64,6 +64,10 @@
         </dependencies>
     </dependencyManagement>
     <build>
+        <resources>
+            <resource><directory>src/main/resources</directory></resource>
+            <resource><directory>../../backend/src/main/resources/static</directory><targetPath>static</targetPath><includes><include>products/**</include><include>product-photos/**</include><include>images/**</include></includes></resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

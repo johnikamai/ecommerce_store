@@ -32,8 +32,8 @@ async function main(){
  await request('/api/admin/users',{token:customer.token,status:403});
  await request('/api/staff/me',{token:customer.token,status:403});
  await request('/actuator/info',{direct:'http://localhost:8082',token:customer.token,owner:null});
- await request('/api/products',{direct:'http://localhost:8082',method:'POST',body:{},token:customer.token,status:403,owner:null});
- await request('/api/products',{direct:'http://localhost:8082',method:'POST',body:{},status:401,owner:null});
+ await request('/api/products',{method:'POST',body:{},token:customer.token,status:403,owner:'product-service'});
+ await request('/api/products',{method:'POST',body:{},status:401,owner:'product-service'});
  const admin=await signup('phase1_admin');
  fs.writeFileSync('.local/auth-phase-fixtures.json',JSON.stringify({customer,admin}));
  const setup=spawnSync(process.env.PYTHON||'python',['tools/tests/promote_test_admin.py'],{encoding:'utf8'});
@@ -49,12 +49,12 @@ async function main(){
  const me=await request('/api/staff/me',{token:staff.token});assert(me.authorities.includes('PERM_INVENTORY_UPDATE'));
  await request(`/api/admin/staff/${application.id}/decision`,{method:'POST',body:{action:'SUSPEND'},token:admin.token});
  await request('/api/staff/me',{token:staff.token,status:401});
- await request('/api/products',{direct:'http://localhost:8082',method:'POST',body:{},token:staff.token,status:401,owner:null});
+ await request('/api/products',{method:'POST',body:{},token:staff.token,status:401,owner:'product-service'});
  const reset=await request('/api/auth/forgot-password',{method:'POST',body:{username:customer.username}});
  const newPassword=`Changed!9aA${crypto.randomBytes(10).toString('hex')}`;
  await request('/api/auth/reset-password',{method:'POST',body:{username:customer.username,otp:reset.devOtp,newPassword}});
  await request(`/api/customers/${customer.customerId}`,{token:customer.token,status:401});
- await request('/api/products',{direct:'http://localhost:8082',method:'POST',body:{},token:customer.token,status:401,owner:null});
+ await request('/api/products',{method:'POST',body:{},token:customer.token,status:401,owner:'product-service'});
  await request('/api/auth/login',{method:'POST',body:{username:customer.username,password:customer.password},status:401});
  const refreshed=await request('/api/auth/login',{method:'POST',body:{username:customer.username,password:newPassword}});
  customer.password=newPassword;customer.token=refreshed.token;

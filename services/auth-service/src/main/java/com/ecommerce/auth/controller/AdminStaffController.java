@@ -1,7 +1,6 @@
 package com.ecommerce.auth.controller;
 
 import com.ecommerce.auth.model.*;
-import com.ecommerce.auth.service.ApprovalService;
 import com.ecommerce.auth.service.StaffActivityService;
 import com.ecommerce.auth.service.StaffService;
 import com.ecommerce.auth.service.StaffTaskService;
@@ -25,29 +24,22 @@ public class AdminStaffController {
 
     private final StaffService staffService;
     private final StaffTaskService taskService;
-    private final ApprovalService approvalService;
+
     private final StaffActivityService activityService;
 
     public AdminStaffController(StaffService staffService,
                                 StaffTaskService taskService,
-                                ApprovalService approvalService,
+
                                 StaffActivityService activityService) {
         this.staffService = staffService;
         this.taskService = taskService;
-        this.approvalService = approvalService;
+
         this.activityService = activityService;
     }
 
     // ------------------------------------------------------------- staff accounts
 
-    @GetMapping("/summary")
-    public ResponseEntity<?> summary() {
-        Map<String, Object> map = new LinkedHashMap<>();
-        map.put("staff", staffService.summary());
-        map.put("tasks", taskService.adminSummary());
-        map.put("approvals", approvalService.summary());
-        return ResponseEntity.ok(map);
-    }
+
 
     @GetMapping
     public ResponseEntity<?> list(@RequestParam(required = false) StaffStatus status,
@@ -128,19 +120,9 @@ public class AdminStaffController {
 
     // ------------------------------------------------------------- approvals
 
-    @GetMapping("/approvals")
-    public ResponseEntity<?> approvals(@RequestParam(required = false) ApprovalStatus status) {
-        return ResponseEntity.ok(approvalService.list(status));
-    }
 
-    @PostMapping("/approvals/{id}/decision")
-    public ResponseEntity<?> decideApproval(@PathVariable Long id,
-                                            @RequestBody Map<String, Object> body,
-                                            Authentication auth) {
-        boolean approve = Boolean.TRUE.equals(body.get("approve"));
-        String reason = body.get("reason") == null ? null : body.get("reason").toString();
-        return ResponseEntity.ok(approvalService.decide(id, approve, reason, auth.getName()));
-    }
+
+
 
     // ------------------------------------------------------------- audit
 

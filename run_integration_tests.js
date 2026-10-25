@@ -1,6 +1,6 @@
 // Each phase uses real owners through Gateway; all requires the complete migration.
 const {spawnSync}=require('node:child_process');
-const suites={auth:'tools/tests/auth_gateway.cjs'};
+const suites={auth:'tools/tests/auth_gateway.cjs',product:'tools/tests/product_gateway.cjs'};
 const requested=process.argv[2]||'all';
 const phases=requested==='all'?Object.keys(suites):[requested];
 for(const phase of phases){

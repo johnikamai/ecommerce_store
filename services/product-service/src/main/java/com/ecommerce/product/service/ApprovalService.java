@@ -1,9 +1,8 @@
-package com.ecommerce.auth.service;
+package com.ecommerce.product.service;
 
-import com.ecommerce.auth.model.*;
-import com.ecommerce.auth.repo.ApprovalRequestRepository;
-import com.ecommerce.auth.client.ProductClient;
-import com.ecommerce.auth.client.ProductView;
+import com.ecommerce.product.model.*;
+import com.ecommerce.product.repo.ApprovalRequestRepository;
+import com.ecommerce.product.repo.ProductRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,18 +25,19 @@ import java.util.NoSuchElementException;
 public class ApprovalService {
 
     private final ApprovalRequestRepository approvalRepository;
-    private final ProductClient productRepository;
+    private final ProductRepository productRepository;
+    private final PriceAlertService prices;
     private final StaffNotificationService notificationService;
     private final StaffActivityService activityService;
 
     public ApprovalService(ApprovalRequestRepository approvalRepository,
-                           ProductClient productRepository,
+                           ProductRepository productRepository,
                            StaffNotificationService notificationService,
-                           StaffActivityService activityService) {
+                           StaffActivityService activityService, PriceAlertService prices) {
         this.approvalRepository = approvalRepository;
         this.productRepository = productRepository;
         this.notificationService = notificationService;
-        this.activityService = activityService;
+        this.activityService = activityService;this.prices=prices;
     }
 
     @Transactional
@@ -48,7 +48,7 @@ public class ApprovalService {
         if (dto.getProductId() == null) {
             throw new IllegalArgumentException("A product must be selected");
         }
-        ProductView product = productRepository.findById(dto.getProductId())
+        Product product = productRepository.findById(dto.getProductId())
                 .orElseThrow(() -> new NoSuchElementException("Product not found: " + dto.getProductId()));
 
         if (dto.getType() == ApprovalType.PRICE_CHANGE
@@ -85,7 +85,7 @@ public class ApprovalService {
     }
 
     public List<ApprovalRequest> listForUser(Long userId) {
-        return approvalRepository.findByRequestedByIdOrderByCreatedAtDesc(userId);
+        return approvalRepository.findByRequestedByUserIdOrderByCreatedAtDesc(userId);
     }
 
     public ApprovalRequest get(Long id) {
@@ -103,7 +103,7 @@ public class ApprovalService {
 
     @Transactional
     public ApprovalRequest decide(Long id, boolean approve, String reason, String adminUsername) {
-        ApprovalRequest request = get(id);
+        ApprovalRequest request = approvalRepository.lock(id).orElseThrow(()->new NoSuchElementException("Approval request not found"));
         if (request.getStatus() != ApprovalStatus.PENDING) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "This request has already been decided");
         }
@@ -136,14 +136,16 @@ public class ApprovalService {
         if (request.getExecutedAt() != null) {
             return; // already applied - never double-apply
         }
-        ProductView product = productRepository.findById(request.getProductId())
+        Product product = productRepository.lock(request.getProductId())
                 .orElseThrow(() -> new NoSuchElementException("Product not found: " + request.getProductId()));
+        if(product.getPrice().compareTo(request.getPreviousPrice())!=0)throw new ResponseStatusException(HttpStatus.CONFLICT,"Product price changed since this request; create a new approval");
+        BigDecimal oldPrice=product.getPrice();
         if (request.getType() == ApprovalType.PRICE_CHANGE) {
             product.setPrice(request.getRequestedPrice());
         } else if (request.getType() == ApprovalType.DISCOUNT) {
             product.setPrice(discountedPrice(product.getPrice(), request.getDiscountPercent()));
         }
-        productRepository.applyPrice(request.getId(), product, request.getPreviousPrice());
+        productRepository.save(product);prices.recordPriceChange(product.getId(),oldPrice,product.getPrice());
         request.setExecutedAt(LocalDateTime.now());
     }
 

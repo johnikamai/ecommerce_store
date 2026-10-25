@@ -19,18 +19,29 @@ spring:
             allowedHeaders: "*"
             allowCredentials: true
       routes:
+        - id: product-staff-approvals
+          uri: lb://product-service
+          predicates:
+            - Path=/api/staff/approvals/**,/api/admin/staff/approvals/**,/api/admin/staff/summary
+          filters:
+            - AddResponseHeader=X-ShopEase-Backend, product-service
         - id: auth-service
           uri: lb://auth-service
           predicates:
             - Path=/api/auth/**,/api/customers/**,/api/staff/**,/api/admin/staff/**,/api/admin/users/**
           filters:
             - AddResponseHeader=X-ShopEase-Backend, auth-service
-        # Only these public reads have moved to product-service.
-        - id: product-read-service
+        # Recommendation endpoints remain on their current owner until Phase 6.
+        - id: pending-product-recommendations
+          uri: ${COMPATIBILITY_URI:http://localhost:8087}
+          predicates:
+            - Path=/api/products/*/recommendations
+          filters:
+            - AddResponseHeader=X-ShopEase-Backend, monolith-compatibility
+        - id: product-service
           uri: ${PRODUCT_SERVICE_URI:lb://product-service}
           predicates:
-            - Method=GET
-            - Path=/api/products,/api/products/{id:[0-9]+},/api/categories
+            - Path=/api/products/**,/api/categories/**,/api/reviews/**,/api/restock-requests/**,/api/compatibility/**,/api/admin/catalog/**,/api/admin/alerts/**,/api/admin/reviews/**,/products/**,/product-photos/**,/images/**
           filters:
             - AddResponseHeader=X-ShopEase-Backend, product-service
         # Explicit transitional fallback; keeps original JWT and ownership rules.
@@ -43,6 +54,7 @@ spring:
 
 eureka:
   client:
+    registry-fetch-interval-seconds: 5
     serviceUrl:
       defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
     register-with-eureka: true
@@ -55,3 +67,5 @@ management:
     web:
       exposure:
         include: health,info
+
+spring.cloud.loadbalancer.cache.ttl: 5s

@@ -36,3 +36,17 @@ Auth validates token signatures, expiry, credential fingerprints, current accoun
 ### Remaining phase work
 
 Full product catalog/search/CRUD/inventory/reviews, order/payment/notification/recommendation extraction, admin aggregate response enrichment, cross-service account deletion, price-approval execution, six-schema migration and final compatibility-off acceptance remain to be verified. `node run_integration_tests.js` intentionally fails full acceptance until all six real-service suites are present. The original hybrid smoke test is retained in `tools/tests/hybrid_smoke.cjs` for reference only.
+
+## Phase 2 — Product Service (verified)
+
+Full product ownership is now in `shopease_product`. Gateway routes product/category/catalog/search/review/restock/admin-catalog/admin-review/admin-stock-alert APIs and original product images to product-service. Product recommendation endpoints remain on their current owner until Phase 6.
+
+- Exact migration equality verified: 1,222 products, 15 categories, 49 reviews, existing admin alert and legacy inventory row; original `ecommerce_db` unchanged. Existing IDs and images retained.
+- 37 Product tests passed: search/review regressions, context startup, atomic multi-product rollback, stale-price rejection, two concurrent buyers for the last unit, idempotent reservation/commit/release, and price approval conflicts/retries. Auth's 21 tests, common security's 4 tests, and frontend's 21 tests passed again.
+- Real Gateway suite passed: full catalog, typo-tolerant search, existing reviews/AI summaries, admin category/product CRUD, category rename propagation, customer review purchase gating, restock subscribe/read/remove, product Q&A, price history, moderation, stock/catalog status, original image HTTP 200, and price approvals (201 -> approval 200 -> repeat decision 409).
+- Internal inventory HTTP tests verified reserve retry deducts stock once and release retry restores it once. Synthetic products/categories/subscriptions were removed; original catalog rows were not edited.
+- Staff price approvals moved from Auth to Product, removing the Auth-to-Product dependency. Auth staff tasks/lifecycle remain Auth-owned. Approval logs/notifications use idempotent events delivered to Auth's inbox.
+- Transactional outbox stores stock/price events until Notification Service is available. Sales and purchase eligibility are local read models seeded from actual source orders, not queries against another service schema. Order phase updates these through reservation commit/release.
+- Readiness now checks Auth discovery before Product is announced ready. Temporary missing identity instances produce 503 before executing business code.
+
+Commands: `node run_integration_tests.js auth` and `node run_integration_tests.js product`. Full acceptance still deliberately fails until all six suites exist. Order, Payment, Notification and Recommendation migration remain in progress.

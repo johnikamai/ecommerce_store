@@ -32,7 +32,7 @@ public class RemoteIdentityFilter extends OncePerRequestFilter {
             } catch(HttpClientErrorException.Unauthorized invalid) {
                 // Public resources remain accessible; protected routes reject below.
                 SecurityContextHolder.clearContext();
-            } catch(RestClientException unavailable) {
+            } catch(RestClientException | IllegalStateException unavailable) {
                 SecurityContextHolder.clearContext();response.sendError(503,"Identity service unavailable; retry shortly");return;
             }
         }

@@ -56,4 +56,3 @@ public class PriceHistory {
         this.reason    = reason;
     }
 }
-

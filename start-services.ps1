@@ -38,7 +38,7 @@ $localConfig = '--spring.config.additional-location=optional:file:./.local/appli
 Start-ShopEase 'discovery' 8761 "$projectRoot/discovery-server/target/discovery-server-1.0.0.jar" @()
 Start-ShopEase 'auth' 8081 "$projectRoot/services/auth-service/target/auth-service-1.0.0.jar" @($localConfig)
 Start-ShopEase 'compatibility' 8087 "$projectRoot/backend/target/ecommerce-system-0.0.1-SNAPSHOT.jar" @('--spring.profiles.active=compatibility', $localConfig)
-Start-ShopEase 'product' 8082 "$projectRoot/services/product-service/target/product-service-1.0.0.jar" @('--spring.profiles.active=compatibility', $localConfig)
+Start-ShopEase 'product' 8082 "$projectRoot/services/product-service/target/product-service-1.0.0.jar" @($localConfig)
 Start-ShopEase 'gateway' 8080 "$projectRoot/api-gateway/target/api-gateway-1.0.0.jar" @()
 if (!$NoFrontend) {
     if (!(Get-NetTCPConnection -LocalPort 5173 -State Listen -ErrorAction SilentlyContinue)) {

@@ -89,4 +89,3 @@ public class Product {
         return stockQuantity == null || stockQuantity <= 0;
     }
 }
-

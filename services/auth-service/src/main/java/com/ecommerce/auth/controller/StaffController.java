@@ -2,7 +2,6 @@ package com.ecommerce.auth.controller;
 
 import com.ecommerce.auth.model.*;
 import com.ecommerce.auth.repo.UserRepository;
-import com.ecommerce.auth.service.ApprovalService;
 import com.ecommerce.auth.service.StaffNotificationService;
 import com.ecommerce.auth.service.StaffService;
 import com.ecommerce.auth.service.StaffTaskService;
@@ -29,18 +28,18 @@ public class StaffController {
 
     private final StaffService staffService;
     private final StaffTaskService taskService;
-    private final ApprovalService approvalService;
+
     private final StaffNotificationService notificationService;
     private final UserRepository userRepository;
 
     public StaffController(StaffService staffService,
                            StaffTaskService taskService,
-                           ApprovalService approvalService,
+
                            StaffNotificationService notificationService,
                            UserRepository userRepository) {
         this.staffService = staffService;
         this.taskService = taskService;
-        this.approvalService = approvalService;
+
         this.notificationService = notificationService;
         this.userRepository = userRepository;
     }
@@ -116,17 +115,9 @@ public class StaffController {
         return ResponseEntity.ok(taskService.updateStatus(id, request, auth.getName(), false));
     }
 
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('PERM_PRICE_CHANGE_REQUEST')")
-    @GetMapping("/approvals")
-    public ResponseEntity<?> myApprovals(Authentication auth) {
-        return ResponseEntity.ok(approvalService.listForUser(currentUser(auth).getId()));
-    }
 
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('PERM_PRICE_CHANGE_REQUEST')")
-    @PostMapping("/approvals")
-    public ResponseEntity<?> createApproval(@RequestBody ApprovalRequestDto request, Authentication auth) {
-        return ResponseEntity.status(201).body(approvalService.create(request, currentUser(auth)));
-    }
+
+
 
     @GetMapping("/notifications")
     public ResponseEntity<?> notifications(Authentication auth) {
