@@ -17,7 +17,7 @@ if (!(Select-String -Path $localProperties -Pattern '^JWT_SECRET=' -Quiet) -and 
     Add-Content $localProperties ('JWT_SECRET=' + [Convert]::ToBase64String($keyBytes))
 }
 $java = (Get-Command java -ErrorAction Stop).Source
-$modules = @('services/service-common', 'services/auth-service', 'backend', 'discovery-server', 'services/product-service', 'api-gateway')
+$modules = @('services/service-common', 'services/auth-service', 'services/payment-service', 'services/order-service', 'backend', 'discovery-server', 'services/product-service', 'api-gateway')
 if ($Build) {
     foreach ($module in $modules) {
         & "$projectRoot/backend/mvnw.cmd" -f "$projectRoot/$module/pom.xml" install -DskipTests
@@ -39,6 +39,8 @@ Start-ShopEase 'discovery' 8761 "$projectRoot/discovery-server/target/discovery-
 Start-ShopEase 'auth' 8081 "$projectRoot/services/auth-service/target/auth-service-1.0.0.jar" @($localConfig)
 Start-ShopEase 'compatibility' 8087 "$projectRoot/backend/target/ecommerce-system-0.0.1-SNAPSHOT.jar" @('--spring.profiles.active=compatibility', $localConfig)
 Start-ShopEase 'product' 8082 "$projectRoot/services/product-service/target/product-service-1.0.0.jar" @($localConfig)
+Start-ShopEase 'payment' 8084 "$projectRoot/services/payment-service/target/payment-service-1.0.0.jar" @($localConfig)
+Start-ShopEase 'order' 8083 "$projectRoot/services/order-service/target/order-service-1.0.0.jar" @($localConfig)
 Start-ShopEase 'gateway' 8080 "$projectRoot/api-gateway/target/api-gateway-1.0.0.jar" @()
 if (!$NoFrontend) {
     if (!(Get-NetTCPConnection -LocalPort 5173 -State Listen -ErrorAction SilentlyContinue)) {
@@ -62,6 +64,8 @@ Wait-ShopEase 'discovery' 'http://localhost:8761/actuator/health' | Out-Null
 Wait-ShopEase 'auth' 'http://localhost:8081/actuator/health' | Out-Null
 Wait-ShopEase 'compatibility' 'http://localhost:8087/api/health' | Out-Null
 Wait-ShopEase 'product' 'http://localhost:8082/actuator/health' | Out-Null
+Wait-ShopEase 'payment' 'http://localhost:8084/actuator/health' | Out-Null
+Wait-ShopEase 'order' 'http://localhost:8083/actuator/health' | Out-Null
 $catalogCheck = Wait-ShopEase 'gateway' 'http://localhost:8080/api/products'
 if ($catalogCheck.Headers['X-ShopEase-Backend'] -ne 'product-service') {
     throw 'Port 8080 is not serving the expected Gateway product route. Check the existing process before restarting.'

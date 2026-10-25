@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Copy service-owned tables once, preserving source data and IDs; verify every copy.
 Credentials come from DB_PASSWORD/DB_PASS or ignored .local/application.properties.
-No DROP, DELETE, REPLACE, TRUNCATE, or UPDATE statements are used.
+Original source rows are never changed. Owned-schema extensions add columns and populate previously absent snapshots only.
 """
 import argparse, datetime, os, pathlib, re, shutil, subprocess, sys
 ROOT=pathlib.Path(__file__).resolve().parents[2]
@@ -33,11 +33,26 @@ def main():
   if result.returncode:raise RuntimeError(result.stderr.strip())
   return [line.split('\t') for line in result.stdout.splitlines() if line]
  schema='shopease_'+a.service
+ def apply_extensions():
+  files={'auth':'001_auth_extensions.sql','product':'002_product_extensions.sql','payment':'004_payment_extensions.sql','order':'003_order_extensions.sql'}
+  if a.service=='order':
+   columns={row[0] for row in sql(f"SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA='{schema}' AND TABLE_NAME='orders'")}
+   for name in ['checkout_key','reservation_id']:
+    if name not in columns:sql(f'ALTER TABLE `{schema}`.orders ADD COLUMN `{name}` VARCHAR(128) NULL')
+   indexes={row[0] for row in sql(f"SELECT INDEX_NAME FROM information_schema.STATISTICS WHERE TABLE_SCHEMA='{schema}' AND TABLE_NAME='orders'")}
+   if 'uk_order_checkout_key' not in indexes:sql(f'ALTER TABLE `{schema}`.orders ADD UNIQUE INDEX uk_order_checkout_key(checkout_key)')
+  if a.service=='payment':
+   additions={'payments':{'customer_id':'BIGINT','order_snapshot':'LONGTEXT'},'group_payments':{'member_snapshot':'LONGTEXT'}}
+   for table,columns in additions.items():
+    existing_columns={row[0] for row in sql(f"SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA='{schema}' AND TABLE_NAME='{table}'")}
+    for name,definition in columns.items():
+     if name not in existing_columns:sql(f'ALTER TABLE `{schema}`.`{table}` ADD COLUMN `{name}` {definition}')
+  if a.service in files:sql((ROOT/'tools/migrations'/files[a.service]).read_text(encoding='utf-8-sig').replace('__SOURCE__',a.source))
+
  def origin(table):return 'shopease_auth' if a.service=='product' and table=='approval_requests' else a.source
  existing={row[0] for row in sql(f"SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA='{a.source}'")}
  if a.extensions_only:
-  extension=ROOT/('tools/migrations/'+('001_auth_extensions.sql' if a.service=='auth' else '002_product_extensions.sql'))
-  sql(extension.read_text(encoding='utf-8-sig').replace('__SOURCE__',a.source));print('Service schema extensions applied; existing rows preserved.');return
+  apply_extensions();print('Service schema extensions applied; existing rows preserved.');return
  newly_copied=set()
  tables=OWNERS[a.service]
  missing=set(tables)-existing
@@ -62,10 +77,7 @@ def main():
    sql(f"START TRANSACTION WITH CONSISTENT SNAPSHOT; INSERT INTO `{schema}`.`{table}` ({names}) SELECT {names} FROM `{origin(table)}`.`{table}`; INSERT INTO `{schema}`._migration_ledger(table_name,source_count) SELECT '{table}',COUNT(*) FROM `{schema}`.`{table}`; COMMIT;")
    newly_copied.add(table)
    print('COPIED '+schema+'.'+table)
-  if a.service=='auth':sql((ROOT/'tools/migrations/001_auth_extensions.sql').read_text(encoding='utf-8-sig'))
-  if a.service=='product':
-   extra=(ROOT/'tools/migrations/002_product_extensions.sql').read_text(encoding='utf-8-sig').replace('__SOURCE__',a.source)
-   sql(extra)
+  apply_extensions()
  # Exact source equality is required at cutover. Re-running the importer after
  # service writes skips those tables; use ledger counts for historical evidence.
  failures=[]

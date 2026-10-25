@@ -15,11 +15,11 @@ import java.util.List;
 public class CustomerController {
 
     private final CustomerRepository customerRepository;
-    private final CustomerGuard customerGuard;
+    private final CustomerGuard customerGuard;private final com.ecommerce.auth.repo.CustomerOrderLedgerRepository ledger;
 
-    public CustomerController(CustomerRepository customerRepository, CustomerGuard customerGuard) {
+    public CustomerController(CustomerRepository customerRepository, CustomerGuard customerGuard,com.ecommerce.auth.repo.CustomerOrderLedgerRepository ledger) {
         this.customerRepository = customerRepository;
-        this.customerGuard = customerGuard;
+        this.customerGuard = customerGuard;this.ledger=ledger;
     }
 
     @GetMapping
@@ -111,6 +111,7 @@ public class CustomerController {
         if (!customerRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
+        if(ledger.existsByCustomerId(id))return ResponseEntity.badRequest().body("Cannot delete a customer with order history");
         customerRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }

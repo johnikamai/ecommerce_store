@@ -5,7 +5,7 @@ import org.springframework.context.annotation.*;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
-@Configuration
+@Configuration @Import(ServiceClient.class)
 public class ServiceHttpConfiguration {
     @Bean @LoadBalanced
     public RestTemplate serviceHttp() {
@@ -13,3 +13,4 @@ public class ServiceHttpConfiguration {
         return new RestTemplate(factory);
     }
 }
+

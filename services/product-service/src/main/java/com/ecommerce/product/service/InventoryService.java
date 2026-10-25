@@ -87,4 +87,12 @@ public class InventoryService {
         if(sales.findById(productId).map(s->s.getUnitsSold()>0).orElse(false))throw new ResponseStatusException(HttpStatus.CONFLICT,"Cannot delete a product referenced by order history");
         for(var reservation:reservations.findByStateNot("RELEASED"))if(items(reservation).stream().anyMatch(i->i.productId().equals(productId)))throw new ResponseStatusException(HttpStatus.CONFLICT,"Product has reserved stock");
     }
+    @Transactional
+    public Product adjust(String operationId,Long productId,int delta){
+        operationId(operationId);if(delta==0||Math.abs((long)delta)>100000)throw new IllegalArgumentException("Invalid stock adjustment");
+        var product=products.lock(productId).orElseThrow();String hash=fingerprint(Map.of("productId",productId,"delta",delta));
+        var known=operations.findById(operationId);if(known.isPresent()){if(!known.get().getRequestFingerprint().equals(hash))throw new ResponseStatusException(HttpStatus.CONFLICT,"Stock operation ID reused");return product;}
+        int before=product.getStockQuantity()==null?0:product.getStockQuantity();if((long)before+delta<0)throw new ResponseStatusException(HttpStatus.CONFLICT,"Insufficient stock");
+        product.setStockQuantity(before+delta);products.save(product);alerts.onStockChanged(product,before);var operation=new ProductOperation();operation.setId(operationId);operation.setRequestFingerprint(hash);operations.save(operation);return product;
+    }
 }

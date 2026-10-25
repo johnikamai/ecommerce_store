@@ -31,6 +31,8 @@ public class IdentityController {
             return ResponseEntity.ok(result);
         } catch(Exception invalid) { return ResponseEntity.status(401).build(); }
     }
+    @GetMapping("/customers")
+    public Object customers(){return customers.findAll();}
     @GetMapping("/customers/{id}")
     public ResponseEntity<?> customer(@PathVariable Long id) {
         return customers.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());

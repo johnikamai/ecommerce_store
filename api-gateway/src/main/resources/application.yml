@@ -19,6 +19,25 @@ spring:
             allowedHeaders: "*"
             allowCredentials: true
       routes:
+        - id: order-payment-commands
+          uri: lb://order-service
+          predicates:
+            - Method=POST,PUT
+            - Path=/api/payments,/api/payments/*/status
+          filters:
+            - AddResponseHeader=X-ShopEase-Backend, order-service
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/api/orders/**,/api/addresses/**,/api/wishlist/**,/api/returns/**,/api/group-orders/**,/api/admin/group-orders/**
+          filters:
+            - AddResponseHeader=X-ShopEase-Backend, order-service
+        - id: payment-service
+          uri: lb://payment-service
+          predicates:
+            - Path=/api/payments/**,/api/coupons/**
+          filters:
+            - AddResponseHeader=X-ShopEase-Backend, payment-service
         - id: product-staff-approvals
           uri: lb://product-service
           predicates:
