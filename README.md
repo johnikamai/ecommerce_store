@@ -37,6 +37,8 @@ Gateway runs on 8080; Eureka on 8761. Browser APIs target Gateway. Internal HTTP
 
 ## Validation and limitations
 
+**Latest verification found three remaining regressions:** account/profile deletion cleanup, unpaid COD return consistency, and `GET /api/health`. The expanded acceptance runner exits 1. See the [current verification report](docs/VERIFICATION_REPORT.md) for exact passed and failed tests. Full migration acceptance is not complete.
+
 All six Gateway suites plus group settlement and wishlist alert flows passed with **port 8087 stopped**. Java tests passed: Auth 23, Product 37, Order 58, Payment 5, Notification 2, Recommendation 53, shared security 4. Frontend tests: 21 passed; production build passed. See [migration evidence](docs/FULL_MIGRATION_PROGRESS.md).
 
 Payments are intentionally demo flows: no real card credentials are collected or stored. Existing Host Pays group settlement is preserved; individual gateway charges remain outside the original feature set. Real email/SMS needs Brevo/Twilio configuration; absent providers are recorded as `DEMO_SKIPPED`, while in-app notifications work normally. External provider delivery was not tested. The legacy Docker Compose file is not the validated startup path; the commands above use the existing local MySQL data and verified Windows launcher.

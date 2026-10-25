@@ -1,5 +1,7 @@
 # Full migration acceptance — 25 October 2026
 
+**Superseded acceptance conclusion:** a fresh clean verification found three regression failures. Full acceptance is incomplete. See [VERIFICATION_REPORT.md](VERIFICATION_REPORT.md) for the current results: 182 Java tests and 21 frontend tests pass; core Gateway journeys pass; account deletion, unpaid COD refund consistency and the public health contract fail. The expanded runner now exits 1.
+
 The six business services are running, registered in Eureka, and reachable through Gateway. **Compatibility backend port 8087 is stopped and is not a Gateway fallback or launcher dependency.** Original `ecommerce_db` was preserved. Earlier phase notes below are historical, not the current startup instructions.
 
 ## Verified results
