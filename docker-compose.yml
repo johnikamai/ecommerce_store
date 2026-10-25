@@ -1,0 +1,114 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: shopease-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: shopease_auth
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  discovery-server:
+    build: ./discovery-server
+    ports:
+      - "8761:8761"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - EUREKA_URI=http://discovery-server:8761/eureka
+    depends_on:
+      - discovery-server
+
+  auth-service:
+    build: ./services/auth-service
+    ports:
+      - "8081:8081"
+    environment:
+      - EUREKA_URI=http://discovery-server:8761/eureka
+      - AUTH_DB_URL=jdbc:mysql://mysql:3306/shopease_auth?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - DB_USER=root
+      - DB_PASS=root
+    depends_on:
+      - discovery-server
+      - mysql
+
+  product-service:
+    build: ./services/product-service
+    ports:
+      - "8082:8082"
+    environment:
+      - EUREKA_URI=http://discovery-server:8761/eureka
+      - PRODUCT_DB_URL=jdbc:mysql://mysql:3306/shopease_product?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - DB_USER=root
+      - DB_PASS=root
+    depends_on:
+      - discovery-server
+      - mysql
+
+  order-service:
+    build: ./services/order-service
+    ports:
+      - "8083:8083"
+    environment:
+      - EUREKA_URI=http://discovery-server:8761/eureka
+      - ORDER_DB_URL=jdbc:mysql://mysql:3306/shopease_order?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - DB_USER=root
+      - DB_PASS=root
+    depends_on:
+      - discovery-server
+      - mysql
+
+  payment-service:
+    build: ./services/payment-service
+    ports:
+      - "8084:8084"
+    environment:
+      - EUREKA_URI=http://discovery-server:8761/eureka
+      - PAYMENT_DB_URL=jdbc:mysql://mysql:3306/shopease_payment?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - DB_USER=root
+      - DB_PASS=root
+    depends_on:
+      - discovery-server
+      - mysql
+
+  notification-service:
+    build: ./services/notification-service
+    ports:
+      - "8085:8085"
+    environment:
+      - EUREKA_URI=http://discovery-server:8761/eureka
+      - NOTIF_DB_URL=jdbc:mysql://mysql:3306/shopease_notification?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - DB_USER=root
+      - DB_PASS=root
+    depends_on:
+      - discovery-server
+      - mysql
+
+  recommendation-service:
+    build: ./services/recommendation-service
+    ports:
+      - "8086:8086"
+    environment:
+      - EUREKA_URI=http://discovery-server:8761/eureka
+      - RECO_DB_URL=jdbc:mysql://mysql:3306/shopease_recommendation?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - DB_USER=root
+      - DB_PASS=root
+    depends_on:
+      - discovery-server
+      - mysql
+
+volumes:
+  mysql_data:

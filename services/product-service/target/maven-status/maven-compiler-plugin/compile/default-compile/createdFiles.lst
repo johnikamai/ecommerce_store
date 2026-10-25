@@ -1,0 +1,8 @@
+com\ecommerce\product\model\PriceHistory.class
+com\ecommerce\product\model\Product.class
+com\ecommerce\product\repo\CategoryRepository.class
+com\ecommerce\product\controller\HealthController.class
+com\ecommerce\product\repo\PriceHistoryRepository.class
+com\ecommerce\product\ProductServiceApp.class
+com\ecommerce\product\model\Category.class
+com\ecommerce\product\repo\ProductRepository.class
