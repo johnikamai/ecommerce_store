@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { bundlePercentFor, nextBundleTier } from '../utils/cartCalculations.js';
+export { bundlePercentFor, nextBundleTier } from '../utils/cartCalculations.js';
 
 const CartContext = createContext();
 
@@ -10,20 +12,9 @@ const storageKey = () => `shopease_cart_${localStorage.getItem('customerId') || 
  * its number is the one that gets charged, so the two must agree. Quantities
  * deliberately do not count: three of the same shirt is not a bundle.
  */
-export function bundlePercentFor(distinctProducts) {
-  if (distinctProducts >= 4) return 0.15;
-  if (distinctProducts === 3) return 0.1;
-  if (distinctProducts === 2) return 0.05;
-  return 0;
-}
+
 
 /** Distinct products needed for the next tier up, or 0 once the top tier is reached. */
-export function nextBundleTier(distinctProducts) {
-  if (distinctProducts < 2) return 2;
-  if (distinctProducts < 3) return 3;
-  if (distinctProducts < 4) return 4;
-  return 0;
-}
 
 function loadCart(key = storageKey()) {
   try {

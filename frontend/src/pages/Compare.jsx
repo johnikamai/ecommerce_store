@@ -386,6 +386,7 @@ export default function Compare() {
             </table>
           </div>
 
+          <ComparisonVerdictCard verdict={verdict} />
           {diffsOnly && visibleRows.length === 0 && (
             <p className="py-4 text-sm text-[var(--color-text-muted)]">{t('compare.noDifferences')}</p>
           )}

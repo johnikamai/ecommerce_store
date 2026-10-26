@@ -741,7 +741,7 @@ function ForgotPasswordForm({ onBack }) {
 
 function Login() {
   const { t } = useLanguage();
-  const [view, setView] = useState('customer'); // 'customer' | 'admin'
+  const [view, setView] = useState(() => new URLSearchParams(window.location.search).get('view') === 'staff' ? 'admin' : 'customer'); // 'customer' | 'admin'
 
   // Reaching the login page always means "not signed in" — clear any leftover
   // token/identity from earlier sessions so it can't be sent with the login

@@ -1,0 +1,2 @@
+package com.ecommerce.notification.model;
+@jakarta.persistence.Entity @jakarta.persistence.Table(name="service_inbox") public class InboxReceipt {@jakarta.persistence.Id @jakarta.persistence.Column(length=128) public String id;}

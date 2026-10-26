@@ -1,0 +1,345 @@
+# yaml-language-server: $schema=https://render.com/schema/render.yaml.json
+# REVIEW ONLY. Gateway maintenance mode and paused delivery require explicit approval to release.
+services:
+- type: pserv
+  name: shopease-mysql
+  runtime: docker
+  branch: feature/microservices-migration
+  region: singapore
+  plan: 1c-2g
+  dockerfilePath: ./deploy/mysql/Dockerfile
+  dockerContext: .
+  autoDeployTrigger: 'off'
+  disk:
+    name: shopease-mysql-data
+    mountPath: /var/lib/mysql
+    sizeGB: 10
+  envVars:
+  - key: MYSQL_ROOT_PASSWORD
+    generateValue: true
+  - key: AUTH_DB_PASSWORD
+    generateValue: true
+  - key: PRODUCT_DB_PASSWORD
+    generateValue: true
+  - key: ORDER_DB_PASSWORD
+    generateValue: true
+  - key: PAYMENT_DB_PASSWORD
+    generateValue: true
+  - key: NOTIFICATION_DB_PASSWORD
+    generateValue: true
+  - key: RECOMMENDATION_DB_PASSWORD
+    generateValue: true
+- type: pserv
+  name: shopease-discovery
+  runtime: docker
+  branch: feature/microservices-migration
+  region: singapore
+  plan: 1c-2g
+  dockerfilePath: ./discovery-server/Dockerfile
+  dockerContext: .
+  autoDeployTrigger: 'off'
+  envVars:
+  - fromGroup: shopease-runtime
+  - key: SERVICE_HOST
+    fromService:
+      name: shopease-discovery
+      type: pserv
+      property: host
+  - key: DISCOVERY_HOST
+    fromService:
+      name: shopease-discovery
+      type: pserv
+      property: host
+  numInstances: 1
+- type: web
+  name: shopease-gateway
+  runtime: docker
+  branch: feature/microservices-migration
+  region: singapore
+  plan: 1c-2g
+  dockerfilePath: ./api-gateway/Dockerfile
+  dockerContext: .
+  autoDeployTrigger: 'off'
+  envVars:
+  - fromGroup: shopease-runtime
+  - key: SERVICE_HOST
+    fromService:
+      name: shopease-gateway
+      type: web
+      property: host
+  - key: DISCOVERY_HOST
+    fromService:
+      name: shopease-discovery
+      type: pserv
+      property: host
+  - key: CORS_ALLOWED_ORIGINS
+    fromService:
+      name: shopease-auth
+      type: pserv
+      envVarKey: CORS_ALLOWED_ORIGINS
+  healthCheckPath: /actuator/health
+  maintenanceMode:
+    enabled: true
+  numInstances: 1
+- type: pserv
+  name: shopease-auth
+  runtime: docker
+  branch: feature/microservices-migration
+  region: singapore
+  plan: 1c-2g
+  dockerfilePath: ./services/auth-service/Dockerfile
+  dockerContext: .
+  autoDeployTrigger: 'off'
+  envVars:
+  - fromGroup: shopease-runtime
+  - key: SERVICE_HOST
+    fromService:
+      name: shopease-auth
+      type: pserv
+      property: host
+  - key: DISCOVERY_HOST
+    fromService:
+      name: shopease-discovery
+      type: pserv
+      property: host
+  - key: DB_NAME
+    value: shopease_auth
+  - key: DB_USERNAME
+    value: shopease_auth
+  - key: DB_HOST
+    fromService:
+      name: shopease-mysql
+      type: pserv
+      property: host
+  - key: DB_PASSWORD
+    fromService:
+      name: shopease-mysql
+      type: pserv
+      envVarKey: AUTH_DB_PASSWORD
+  - key: CORS_ALLOWED_ORIGINS
+    sync: false
+  - key: JWT_SECRET
+    sync: false
+  - key: BREVO_API_KEY
+    sync: false
+  - key: BREVO_SENDER_EMAIL
+    sync: false
+  - key: BREVO_SENDER_NAME
+    value: ShopEase
+  numInstances: 1
+- type: pserv
+  name: shopease-product
+  runtime: docker
+  branch: feature/microservices-migration
+  region: singapore
+  plan: 1c-2g
+  dockerfilePath: ./services/product-service/Dockerfile
+  dockerContext: .
+  autoDeployTrigger: 'off'
+  envVars:
+  - fromGroup: shopease-runtime
+  - key: SERVICE_HOST
+    fromService:
+      name: shopease-product
+      type: pserv
+      property: host
+  - key: DISCOVERY_HOST
+    fromService:
+      name: shopease-discovery
+      type: pserv
+      property: host
+  - key: DB_NAME
+    value: shopease_product
+  - key: DB_USERNAME
+    value: shopease_product
+  - key: DB_HOST
+    fromService:
+      name: shopease-mysql
+      type: pserv
+      property: host
+  - key: DB_PASSWORD
+    fromService:
+      name: shopease-mysql
+      type: pserv
+      envVarKey: PRODUCT_DB_PASSWORD
+  numInstances: 1
+- type: pserv
+  name: shopease-order
+  runtime: docker
+  branch: feature/microservices-migration
+  region: singapore
+  plan: 1c-2g
+  dockerfilePath: ./services/order-service/Dockerfile
+  dockerContext: .
+  autoDeployTrigger: 'off'
+  envVars:
+  - fromGroup: shopease-runtime
+  - key: SERVICE_HOST
+    fromService:
+      name: shopease-order
+      type: pserv
+      property: host
+  - key: DISCOVERY_HOST
+    fromService:
+      name: shopease-discovery
+      type: pserv
+      property: host
+  - key: DB_NAME
+    value: shopease_order
+  - key: DB_USERNAME
+    value: shopease_order
+  - key: DB_HOST
+    fromService:
+      name: shopease-mysql
+      type: pserv
+      property: host
+  - key: DB_PASSWORD
+    fromService:
+      name: shopease-mysql
+      type: pserv
+      envVarKey: ORDER_DB_PASSWORD
+  numInstances: 1
+- type: pserv
+  name: shopease-payment
+  runtime: docker
+  branch: feature/microservices-migration
+  region: singapore
+  plan: 1c-2g
+  dockerfilePath: ./services/payment-service/Dockerfile
+  dockerContext: .
+  autoDeployTrigger: 'off'
+  envVars:
+  - fromGroup: shopease-runtime
+  - key: SERVICE_HOST
+    fromService:
+      name: shopease-payment
+      type: pserv
+      property: host
+  - key: DISCOVERY_HOST
+    fromService:
+      name: shopease-discovery
+      type: pserv
+      property: host
+  - key: DB_NAME
+    value: shopease_payment
+  - key: DB_USERNAME
+    value: shopease_payment
+  - key: DB_HOST
+    fromService:
+      name: shopease-mysql
+      type: pserv
+      property: host
+  - key: DB_PASSWORD
+    fromService:
+      name: shopease-mysql
+      type: pserv
+      envVarKey: PAYMENT_DB_PASSWORD
+  numInstances: 1
+- type: pserv
+  name: shopease-notification
+  runtime: docker
+  branch: feature/microservices-migration
+  region: singapore
+  plan: 1c-2g
+  dockerfilePath: ./services/notification-service/Dockerfile
+  dockerContext: .
+  autoDeployTrigger: 'off'
+  envVars:
+  - fromGroup: shopease-runtime
+  - key: SERVICE_HOST
+    fromService:
+      name: shopease-notification
+      type: pserv
+      property: host
+  - key: DISCOVERY_HOST
+    fromService:
+      name: shopease-discovery
+      type: pserv
+      property: host
+  - key: DB_NAME
+    value: shopease_notification
+  - key: DB_USERNAME
+    value: shopease_notification
+  - key: DB_HOST
+    fromService:
+      name: shopease-mysql
+      type: pserv
+      property: host
+  - key: DB_PASSWORD
+    fromService:
+      name: shopease-mysql
+      type: pserv
+      envVarKey: NOTIFICATION_DB_PASSWORD
+  - key: BREVO_API_KEY
+    fromService:
+      name: shopease-auth
+      type: pserv
+      envVarKey: BREVO_API_KEY
+  - key: BREVO_SENDER_EMAIL
+    fromService:
+      name: shopease-auth
+      type: pserv
+      envVarKey: BREVO_SENDER_EMAIL
+  - key: BREVO_SENDER_NAME
+    fromService:
+      name: shopease-auth
+      type: pserv
+      envVarKey: BREVO_SENDER_NAME
+  numInstances: 1
+- type: pserv
+  name: shopease-recommendation
+  runtime: docker
+  branch: feature/microservices-migration
+  region: singapore
+  plan: 1c-2g
+  dockerfilePath: ./services/recommendation-service/Dockerfile
+  dockerContext: .
+  autoDeployTrigger: 'off'
+  envVars:
+  - fromGroup: shopease-runtime
+  - key: SERVICE_HOST
+    fromService:
+      name: shopease-recommendation
+      type: pserv
+      property: host
+  - key: DISCOVERY_HOST
+    fromService:
+      name: shopease-discovery
+      type: pserv
+      property: host
+  - key: DB_NAME
+    value: shopease_recommendation
+  - key: DB_USERNAME
+    value: shopease_recommendation
+  - key: DB_HOST
+    fromService:
+      name: shopease-mysql
+      type: pserv
+      property: host
+  - key: DB_PASSWORD
+    fromService:
+      name: shopease-mysql
+      type: pserv
+      envVarKey: RECOMMENDATION_DB_PASSWORD
+  numInstances: 1
+envVarGroups:
+- name: shopease-runtime
+  envVars:
+  - key: SPRING_PROFILES_ACTIVE
+    value: render
+  - key: PORT
+    value: '10000'
+  - key: DISCOVERY_PORT
+    value: '10000'
+  - key: DB_PORT
+    value: '3306'
+  - key: DB_SSL_MODE
+    value: REQUIRED
+  - key: DEMO_PAYMENTS
+    value: 'false'
+  - key: SERVICE_INTERNAL_KEY
+    generateValue: true
+  - key: NOTIFICATION_DELIVERY_ENABLED
+    value: 'false'
+previews:
+  generation: 'off'

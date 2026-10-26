@@ -45,8 +45,8 @@ function GroupOrders() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [showCreate, setShowCreate] = useState(false);
-  const [showJoin, setShowJoin] = useState(false);
-  const [joinCode, setJoinCode] = useState('');
+  const [showJoin, setShowJoin] = useState(() => new URLSearchParams(window.location.search).has('join'));
+  const [joinCode, setJoinCode] = useState(() => new URLSearchParams(window.location.search).get('join') || '');
   const [copied, setCopied] = useState(null);
   const [form, setForm] = useState({ name: '', shippingAddress: '', deadline: '', splitMethod: 'EQUAL' });
   const [busy, setBusy] = useState(false);

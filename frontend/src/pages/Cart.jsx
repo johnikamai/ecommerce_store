@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import BudgetMode from '../components/BudgetMode';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Banknote, CreditCard, Smartphone, MapPin, Plus, LocateFixed, Loader2, Split, Tag, CheckCircle2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
@@ -253,6 +254,7 @@ function Cart() {
   }, [quoteInput, quoteRevision, t]);
   const currentQuote = quote?.input === quoteInput && !quoteError ? quote : null;
 
+  const checkoutOperation = useRef({ body: '', key: '' });
   const handleCheckout = async () => {
     if (!currentQuote || placing) return;
     const shippingAddress = resolvedAddress?.trim() || null;
@@ -267,14 +269,20 @@ function Cart() {
     setError('');
     setPlacing(true);
     try {
-      await axiosClient.post('/orders', {
+      const orderBody = {
         customerId,
         items: items.map((i) => ({ productId: i.product.id, quantity: i.quantity })),
         couponCode: couponCode.trim().toUpperCase() || null,
         shippingAddress,
         paymentMethod,
         expectedTotal: currentQuote.total,
-      });
+      };
+      const bodyKey = JSON.stringify(orderBody);
+      if (checkoutOperation.current.body !== bodyKey) {
+        checkoutOperation.current = { body: bodyKey, key: crypto.randomUUID() };
+      }
+      await axiosClient.post('/orders', orderBody, { headers: { 'Idempotency-Key': checkoutOperation.current.key } });
+      checkoutOperation.current = { body: '', key: '' };
       clearCart();
       navigate('/orders');
     } catch (err) {
@@ -466,6 +474,7 @@ function Cart() {
 
       {quote?.demoPaymentsEnabled && <p className="text-sm mb-4">{t('fix.demoPayments')}</p>}
       {!quote?.demoPaymentsEnabled && <p className="text-sm mb-4">{t('fix.cashOnly')}</p>}
+      <BudgetMode authoritative quoteTotal={currentQuote?.total} quotePending={!currentQuote} />
       <BundleProgress serverBundleDiscount={currentQuote?.bundleDiscount} />
 
       <div className="flex items-center justify-between gap-6 flex-wrap p-6 rounded-[var(--radius-xl)] bg-[var(--color-card-bg-tint)]">

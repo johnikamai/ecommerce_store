@@ -1,16 +1,28 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import axiosClient from '../../api/axiosClient';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { LayoutDashboard, ListChecks, CheckCircle2, User, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 
 const NAV = [
   { to: '/staff/dashboard', labelKey: 'staff.portal.dashboard', icon: LayoutDashboard },
-  { to: '/staff/tasks', labelKey: 'staff.portal.tasks', icon: ListChecks },
-  { to: '/staff/approvals', labelKey: 'staff.portal.approvals', icon: CheckCircle2 },
+  { permission: 'TASK_VIEW', to: '/staff/tasks', labelKey: 'staff.portal.tasks', icon: ListChecks },
+  { permission: 'PRICE_CHANGE_REQUEST', to: '/staff/approvals', labelKey: 'staff.portal.approvals', icon: CheckCircle2 },
   { to: '/staff/profile', labelKey: 'staff.portal.profile', icon: User },
 ];
 
 export default function StaffLayout() {
   const { t } = useLanguage();
+  const [permissions, setPermissions] = useState(null);
+  const location = useLocation();
+  useEffect(() => {
+    let active=true;
+    axiosClient.get('/staff/me').then(({ data }) => { if(active)setPermissions(data.permissions || []); }).catch(()=>{if(active)setPermissions([]);});
+
+  return ()=>{active=false;};
+  }, [location.pathname]);
+  const permitted = item => !item.permission || permissions?.includes(item.permission) || localStorage.getItem('role')==='ADMIN';
+  const current = NAV.find(item => item.to===location.pathname);
 
   return (
     <div className="container-x py-[var(--space-8)]">
@@ -21,7 +33,7 @@ export default function StaffLayout() {
               {t('staff.portal.section')}
             </p>
             <nav className="flex lg:flex-col gap-1 overflow-x-auto">
-              {NAV.map((item) => (
+              {NAV.filter(permitted).map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
@@ -37,6 +49,7 @@ export default function StaffLayout() {
                   {t(item.labelKey)}
                 </NavLink>
               ))}
+              {(permissions?.includes('PRODUCT_CREATE') || permissions?.includes('PRODUCT_VIEW')) && <NavLink to="/products">Product catalogue</NavLink>}
             </nav>
             <div className="border-t border-[var(--color-border)] mt-4 pt-4">
               <NavLink
@@ -50,7 +63,7 @@ export default function StaffLayout() {
           </div>
         </aside>
         <main className="flex-1 min-w-0">
-          <Outlet />
+          {permissions===null ? <p>Loading permissions...</p> : current && !permitted(current) ? <p role="alert">You do not have permission to access this module.</p> : <Outlet />}
         </main>
       </div>
     </div>

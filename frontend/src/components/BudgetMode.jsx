@@ -1,4 +1,6 @@
 ﻿import { useState, useEffect } from 'react';
+import axiosClient from '../api/axiosClient';
+import { getCustomerId } from '../utils/customer';
 import { useCart } from '../context/CartContext';
 
 /**
@@ -10,20 +12,26 @@ import { useCart } from '../context/CartContext';
  *
  * Usage: <BudgetMode />  (rendered once inside Products.jsx)
  */
-export default function BudgetMode() {
+export default function BudgetMode({ quoteTotal, quotePending = false, authoritative = false }) {
   const [active,      setActive]      = useState(false);
   const [budget,      setBudget]      = useState('');
   const [inputBudget, setInputBudget] = useState('');
   const [editing,     setEditing]     = useState(false);
-  const { cartItems = [] } = useCart();
-
-  // Compute cart total from cartItems (each item has price + quantity)
-  const cartTotal = cartItems.reduce((sum, item) => {
-    const price = parseFloat(item.price ?? item.product?.price ?? 0);
-    const qty   = parseInt(item.quantity ?? item.qty ?? 1, 10);
-    return sum + price * qty;
-  }, 0);
-
+  const { items, grandTotal } = useCart();
+  const [quote, setQuote] = useState(null);
+  const [quoteError, setQuoteError] = useState('');
+  const quoteInput = JSON.stringify(items.map(i => ({ productId: i.product.id, quantity: i.quantity })));
+  useEffect(() => {
+    if (authoritative || !active || quoteTotal !== undefined || !items.length || !getCustomerId()) return;
+    const controller = new AbortController();
+    setQuote(null);
+    setQuoteError('');
+    axiosClient.post('/orders/quote', { customerId: getCustomerId(), shippingAddress: 'Budget estimate only - no order or shipment', paymentMethod: 'CASH', items: JSON.parse(quoteInput) }, { signal: controller.signal })
+      .then(({ data }) => { if (!controller.signal.aborted) setQuote({ input: quoteInput, total: data.total }); })
+      .catch(() => { if (!controller.signal.aborted) setQuoteError('Live quote unavailable; showing an estimate.'); });
+    return () => controller.abort();
+  }, [quoteInput, active, quoteTotal, authoritative]);
+  const cartTotal = Number(quoteTotal ?? (quote?.input === quoteInput ? quote.total : grandTotal));
   const budgetNum  = parseFloat(budget) || 0;
   const remaining  = budgetNum - cartTotal;
   const pct        = budgetNum > 0 ? Math.min(100, (cartTotal / budgetNum) * 100) : 0;
@@ -80,6 +88,7 @@ export default function BudgetMode() {
         >✕</button>
       </div>
 
+      {(quotePending || (!authoritative && active && items.length > 0 && quoteTotal === undefined && !quote)) && <p>{quoteError || "Checking current total… Guest totals are estimates until sign-in."}</p>}
       {editing || !budget ? (
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           <span style={{ fontSize: '0.9rem' }}>₹</span>
@@ -103,7 +112,7 @@ export default function BudgetMode() {
             cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem',
           }}>Set</button>
         </div>
-      ) : (
+      ) : quotePending ? <p>Calculating checkout total before showing your remaining budget…</p> : (
         <>
           {/* Progress bar */}
           <div style={{ background: 'var(--border)', borderRadius: 4, height: 8, marginBottom: 8, overflow: 'hidden' }}>
@@ -128,7 +137,7 @@ export default function BudgetMode() {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: '0.78rem', color: 'var(--muted)' }}>
-            <span>Cart: ₹{cartTotal.toLocaleString('en-IN')}</span>
+            <span>Cart including discounts, tax and delivery: ₹{cartTotal.toLocaleString('en-IN')}</span>
             <button
               onClick={() => { setEditing(true); setInputBudget(budget); }}
               style={{ background: 'none', border: 'none', cursor: 'pointer',

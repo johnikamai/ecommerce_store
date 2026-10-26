@@ -1,0 +1,2 @@
+package com.ecommerce.notification.controller;
+@org.springframework.web.bind.annotation.RestController public class EventController {private final com.ecommerce.notification.service.EventConsumer consumer;public EventController(com.ecommerce.notification.service.EventConsumer c){consumer=c;}@org.springframework.web.bind.annotation.PostMapping("/internal/events") public java.util.Map<String,Boolean> accept(@org.springframework.web.bind.annotation.RequestBody com.fasterxml.jackson.databind.JsonNode event){consumer.accept(event);return java.util.Map.of("accepted",true);}}

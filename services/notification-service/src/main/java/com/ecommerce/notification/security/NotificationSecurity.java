@@ -1,0 +1,6 @@
+package com.ecommerce.notification.security;
+import com.ecommerce.common.*;import org.springframework.context.annotation.*;import org.springframework.beans.factory.annotation.Value;import org.springframework.security.config.annotation.web.builders.HttpSecurity;import org.springframework.security.web.*;import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;import org.springframework.web.client.RestTemplate;
+@Configuration @Import({ServiceHttpConfiguration.class,AuthDependencyHealth.class})
+public class NotificationSecurity {
+ @Bean SecurityFilterChain filter(HttpSecurity http,RestTemplate client,@Value("${services.internal-key}")String key)throws Exception{return http.csrf(c->c.disable()).sessionManagement(s->s.sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS)).authorizeHttpRequests(a->a.requestMatchers("/error","/health","/actuator/health","/internal/**").permitAll().anyRequest().authenticated()).exceptionHandling(e->e.authenticationEntryPoint((r,s,x)->s.sendError(401))).addFilterBefore(new InternalServiceFilter(key),UsernamePasswordAuthenticationFilter.class).addFilterBefore(new RemoteIdentityFilter(client,key),UsernamePasswordAuthenticationFilter.class).build();}
+}

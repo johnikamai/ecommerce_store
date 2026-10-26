@@ -1,0 +1,2 @@
+package com.ecommerce.recommendation.repo;
+public interface QueryHistoryRepository extends org.springframework.data.jpa.repository.JpaRepository<com.ecommerce.recommendation.model.QueryHistory,String>{}

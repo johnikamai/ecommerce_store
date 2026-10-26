@@ -31,6 +31,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProductSeeder implements CommandLineRunner {
 
+    @org.springframework.beans.factory.annotation.Value("${app.catalog.seed-enabled:true}")
+    private boolean seedEnabled;
+
     /** Rows seeded with a generated placeholder in an earlier release. */
     private static final String LEGACY_PLACEHOLDER = "https://placehold.co/";
 
@@ -40,6 +43,7 @@ public class ProductSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        if (!seedEnabled) return;
         try {
             CatalogReport report = ensureCatalog();
             System.out.println("[ProductSeeder] " + report);
@@ -789,3 +793,5 @@ public class ProductSeeder implements CommandLineRunner {
             {"Thé vert", "Authentic Twinings grocery product. Thé vert", "Groceries & Food", "199", "45", "85", "Twinings", "Brand: Twinings | Food Grade Quality | Authentic Pack"}
     };
 }
+
+

@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/ecommerce_db}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: none

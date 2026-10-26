@@ -1,0 +1,225 @@
+# Local isolated rehearsal only. Does not reuse or delete existing MySQL volumes.
+name: shopease-preview
+services:
+  mysql:
+    build:
+      context: .
+      dockerfile: deploy/mysql/Dockerfile
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in an ignored
+        env file}
+      AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD:?Set AUTH_DB_PASSWORD in an ignored env
+        file}
+      PRODUCT_DB_PASSWORD: ${PRODUCT_DB_PASSWORD:?Set PRODUCT_DB_PASSWORD in an ignored
+        env file}
+      ORDER_DB_PASSWORD: ${ORDER_DB_PASSWORD:?Set ORDER_DB_PASSWORD in an ignored
+        env file}
+      PAYMENT_DB_PASSWORD: ${PAYMENT_DB_PASSWORD:?Set PAYMENT_DB_PASSWORD in an ignored
+        env file}
+      NOTIFICATION_DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD:?Set NOTIFICATION_DB_PASSWORD
+        in an ignored env file}
+      RECOMMENDATION_DB_PASSWORD: ${RECOMMENDATION_DB_PASSWORD:?Set RECOMMENDATION_DB_PASSWORD
+        in an ignored env file}
+    volumes:
+    - preview_mysql_data:/var/lib/mysql
+    healthcheck:
+      test:
+      - CMD
+      - mysqladmin
+      - ping
+      - --silent
+      interval: 10s
+      timeout: 5s
+      retries: 15
+  discovery-server:
+    build:
+      context: .
+      dockerfile: discovery-server/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: container
+      PORT: '10000'
+      SERVICE_HOST: discovery-server
+      DISCOVERY_HOST: discovery-server
+      DISCOVERY_PORT: '10000'
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      SERVICE_INTERNAL_KEY: ${SERVICE_INTERNAL_KEY:?Set SERVICE_INTERNAL_KEY}
+      DEMO_PAYMENTS: ${DEMO_PAYMENTS:-false}
+      NOTIFICATION_DELIVERY_ENABLED: 'false'
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: container
+      PORT: '10000'
+      SERVICE_HOST: api-gateway
+      DISCOVERY_HOST: discovery-server
+      DISCOVERY_PORT: '10000'
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      SERVICE_INTERNAL_KEY: ${SERVICE_INTERNAL_KEY:?Set SERVICE_INTERNAL_KEY}
+      DEMO_PAYMENTS: ${DEMO_PAYMENTS:-false}
+      NOTIFICATION_DELIVERY_ENABLED: 'false'
+    depends_on:
+      discovery-server:
+        condition: service_started
+    ports:
+    - 127.0.0.1:8080:10000
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: container
+      PORT: '10000'
+      SERVICE_HOST: auth-service
+      DISCOVERY_HOST: discovery-server
+      DISCOVERY_PORT: '10000'
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      SERVICE_INTERNAL_KEY: ${SERVICE_INTERNAL_KEY:?Set SERVICE_INTERNAL_KEY}
+      DEMO_PAYMENTS: ${DEMO_PAYMENTS:-false}
+      NOTIFICATION_DELIVERY_ENABLED: 'false'
+      DB_HOST: mysql
+      DB_PORT: '3306'
+      DB_SSL_MODE: REQUIRED
+      DB_NAME: shopease_auth
+      DB_USERNAME: shopease_auth
+      DB_PASSWORD: ${AUTH_DB_PASSWORD:?Set owned schema password}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET}
+      BREVO_API_KEY: ${BREVO_API_KEY:-}
+      BREVO_SENDER_EMAIL: ${BREVO_SENDER_EMAIL:-}
+      BREVO_SENDER_NAME: ${BREVO_SENDER_NAME:-ShopEase}
+    depends_on:
+      discovery-server:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+  product-service:
+    build:
+      context: .
+      dockerfile: services/product-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: container
+      PORT: '10000'
+      SERVICE_HOST: product-service
+      DISCOVERY_HOST: discovery-server
+      DISCOVERY_PORT: '10000'
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      SERVICE_INTERNAL_KEY: ${SERVICE_INTERNAL_KEY:?Set SERVICE_INTERNAL_KEY}
+      DEMO_PAYMENTS: ${DEMO_PAYMENTS:-false}
+      NOTIFICATION_DELIVERY_ENABLED: 'false'
+      DB_HOST: mysql
+      DB_PORT: '3306'
+      DB_SSL_MODE: REQUIRED
+      DB_NAME: shopease_product
+      DB_USERNAME: shopease_product
+      DB_PASSWORD: ${PRODUCT_DB_PASSWORD:?Set owned schema password}
+    depends_on:
+      discovery-server:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+  order-service:
+    build:
+      context: .
+      dockerfile: services/order-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: container
+      PORT: '10000'
+      SERVICE_HOST: order-service
+      DISCOVERY_HOST: discovery-server
+      DISCOVERY_PORT: '10000'
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      SERVICE_INTERNAL_KEY: ${SERVICE_INTERNAL_KEY:?Set SERVICE_INTERNAL_KEY}
+      DEMO_PAYMENTS: ${DEMO_PAYMENTS:-false}
+      NOTIFICATION_DELIVERY_ENABLED: 'false'
+      DB_HOST: mysql
+      DB_PORT: '3306'
+      DB_SSL_MODE: REQUIRED
+      DB_NAME: shopease_order
+      DB_USERNAME: shopease_order
+      DB_PASSWORD: ${ORDER_DB_PASSWORD:?Set owned schema password}
+    depends_on:
+      discovery-server:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+  payment-service:
+    build:
+      context: .
+      dockerfile: services/payment-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: container
+      PORT: '10000'
+      SERVICE_HOST: payment-service
+      DISCOVERY_HOST: discovery-server
+      DISCOVERY_PORT: '10000'
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      SERVICE_INTERNAL_KEY: ${SERVICE_INTERNAL_KEY:?Set SERVICE_INTERNAL_KEY}
+      DEMO_PAYMENTS: ${DEMO_PAYMENTS:-false}
+      NOTIFICATION_DELIVERY_ENABLED: 'false'
+      DB_HOST: mysql
+      DB_PORT: '3306'
+      DB_SSL_MODE: REQUIRED
+      DB_NAME: shopease_payment
+      DB_USERNAME: shopease_payment
+      DB_PASSWORD: ${PAYMENT_DB_PASSWORD:?Set owned schema password}
+    depends_on:
+      discovery-server:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: container
+      PORT: '10000'
+      SERVICE_HOST: notification-service
+      DISCOVERY_HOST: discovery-server
+      DISCOVERY_PORT: '10000'
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      SERVICE_INTERNAL_KEY: ${SERVICE_INTERNAL_KEY:?Set SERVICE_INTERNAL_KEY}
+      DEMO_PAYMENTS: ${DEMO_PAYMENTS:-false}
+      NOTIFICATION_DELIVERY_ENABLED: 'false'
+      DB_HOST: mysql
+      DB_PORT: '3306'
+      DB_SSL_MODE: REQUIRED
+      DB_NAME: shopease_notification
+      DB_USERNAME: shopease_notification
+      DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD:?Set owned schema password}
+      BREVO_API_KEY: ${BREVO_API_KEY:-}
+      BREVO_SENDER_EMAIL: ${BREVO_SENDER_EMAIL:-}
+      BREVO_SENDER_NAME: ${BREVO_SENDER_NAME:-ShopEase}
+    depends_on:
+      discovery-server:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+  recommendation-service:
+    build:
+      context: .
+      dockerfile: services/recommendation-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: container
+      PORT: '10000'
+      SERVICE_HOST: recommendation-service
+      DISCOVERY_HOST: discovery-server
+      DISCOVERY_PORT: '10000'
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      SERVICE_INTERNAL_KEY: ${SERVICE_INTERNAL_KEY:?Set SERVICE_INTERNAL_KEY}
+      DEMO_PAYMENTS: ${DEMO_PAYMENTS:-false}
+      NOTIFICATION_DELIVERY_ENABLED: 'false'
+      DB_HOST: mysql
+      DB_PORT: '3306'
+      DB_SSL_MODE: REQUIRED
+      DB_NAME: shopease_recommendation
+      DB_USERNAME: shopease_recommendation
+      DB_PASSWORD: ${RECOMMENDATION_DB_PASSWORD:?Set owned schema password}
+    depends_on:
+      discovery-server:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+volumes:
+  preview_mysql_data: {}

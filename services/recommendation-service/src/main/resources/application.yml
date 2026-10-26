@@ -1,0 +1,35 @@
+server:
+  port: 8086
+spring:
+  application:
+    name: recommendation-service
+  datasource:
+    url: ${RECOMMENDATION_DB_URL:jdbc:mysql://localhost:3306/shopease_recommendation?useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:${DB_USER:root}}
+    password: ${DB_PASSWORD:${DB_PASS:}}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  cloud:
+    loadbalancer:
+      cache:
+        ttl: 5s
+eureka:
+  client:
+    registry-fetch-interval-seconds: 5
+    serviceUrl:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+  instance:
+    prefer-ip-address: true
+    ip-address: ${EUREKA_INSTANCE_IP:127.0.0.1}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+services:
+  internal-key: ${SERVICE_INTERNAL_KEY:}
+app:
+  payments:
+    demo-enabled: ${DEMO_PAYMENTS:true}

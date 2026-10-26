@@ -1,0 +1,14 @@
+.git
+.local
+.codex
+.agents
+.aws
+frontend
+**/node_modules
+**/target
+**/.env
+**/.env.*
+**/*credentials*.properties
+**/*.log
+**/*.sql
+!deploy/mysql/*.sh

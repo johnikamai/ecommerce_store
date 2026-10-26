@@ -8,6 +8,8 @@ import ProductCard from '../components/ProductCard';
 import ReviewAiSummary from '../components/ReviewAiSummary';
 import PersonalizedRecommendations from '../components/PersonalizedRecommendations';
 import SmartBundleCard from '../components/SmartBundleCard';
+import PriceHistoryChart from '../components/PriceHistoryChart';
+import CompatibilityChecker from '../components/CompatibilityChecker';
 import { buildProductBundle } from '../utils/bundleEngine';
 import ProductImage from '../components/ProductImage';
 import { getCustomerId } from '../utils/customer';
@@ -766,6 +768,8 @@ export default function ProductDetail() {
       </div>
 
       {/* Smart Shopping Bundle with instant discount */}
+      <PriceHistoryChart productId={product.id} />
+      <CompatibilityChecker currentProduct={product} catalog={catalog} />
       {product && catalog.length > 0 && (
         <div className="mb-[var(--space-9)]">
           <SmartBundleCard bundle={buildProductBundle(product, catalog)} />

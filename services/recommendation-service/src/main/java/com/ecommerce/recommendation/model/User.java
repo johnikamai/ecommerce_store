@@ -1,0 +1,1 @@
+package com.ecommerce.recommendation.model;@lombok.Data @com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown=true) public class User {private Long id;private String username,email;private Role role;private boolean enabled;private Long customerId;}

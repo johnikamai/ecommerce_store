@@ -1,0 +1,38 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: auth-service
+  datasource:
+    url: ${AUTH_DB_URL:jdbc:mysql://localhost:3306/shopease_auth?useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:${DB_USER:root}}
+    password: ${DB_PASSWORD:${DB_PASS:}}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: true
+  config:
+    import: optional:file:./mail-credentials.properties
+eureka:
+  client:
+    registry-fetch-interval-seconds: 5
+    serviceUrl:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+  instance:
+    prefer-ip-address: true
+    ip-address: ${EUREKA_INSTANCE_IP:127.0.0.1}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+services:
+  internal-key: ${SERVICE_INTERNAL_KEY:}
+brevo:
+  api:
+    key: ${BREVO_API_KEY:}
+  sender:
+    email: ${BREVO_SENDER_EMAIL:}
+    name: ${BREVO_SENDER_NAME:ShopEase}
+
+spring.cloud.loadbalancer.cache.ttl: 5s

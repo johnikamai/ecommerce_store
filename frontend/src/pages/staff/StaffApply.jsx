@@ -107,7 +107,7 @@ export default function StaffApply() {
       </div>
 
       <p className="mt-6 text-sm text-[var(--color-text-secondary)]">
-        <Link to="/" className="text-[var(--color-primary)] font-semibold">{t('staff.apply.signIn')}</Link>
+        <Link to="/?view=staff" className="text-[var(--color-primary)] font-semibold">{t('staff.apply.signIn')}</Link>
       </p>
     </div>
   );

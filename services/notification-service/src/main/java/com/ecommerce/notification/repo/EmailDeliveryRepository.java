@@ -1,0 +1,2 @@
+package com.ecommerce.notification.repo;
+public interface EmailDeliveryRepository extends org.springframework.data.jpa.repository.JpaRepository<com.ecommerce.notification.model.EmailDelivery,String>{long deleteByCustomerId(Long customerId);java.util.List<com.ecommerce.notification.model.EmailDelivery> findTop20ByStateAndNextAttemptAtLessThanEqual(String state,java.time.Instant now);}

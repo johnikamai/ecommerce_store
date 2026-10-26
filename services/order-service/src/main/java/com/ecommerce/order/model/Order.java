@@ -1,0 +1,157 @@
+package com.ecommerce.order.model;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "orders")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Order {
+    @Column(name="checkout_key",unique=true,length=128) private String checkoutKey;
+    @Column(name="reservation_id",length=128) private String reservationId;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Version
+    @Column(nullable = false, columnDefinition = "bigint default 0")
+    private long version;
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    @Column(name="customer_id",nullable=false) private Long customerId;
+    @Transient private Customer customer;
+    public Customer getCustomer(){if(customer==null&&customerId!=null){customer=new Customer();customer.setId(customerId);}return customer;}
+    public void setCustomer(Customer value){customer=value;customerId=value==null?null:value.getId();}
+
+    private LocalDateTime orderDate = LocalDateTime.now();
+
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status = OrderStatus.PLACED;
+
+    // Legacy rows earned rewards at checkout. New orders earn them on delivery.
+    @Column(columnDefinition = "boolean default true")
+    private Boolean rewardsAwarded = false;
+
+    private BigDecimal totalAmount = BigDecimal.ZERO;
+
+    // Optional promo code applied at checkout (stored for the record).
+    private String couponCode;
+
+    // Amount knocked off by the coupon (stored so the invoice stays auditable).
+    private BigDecimal discountAmount = BigDecimal.ZERO;
+
+    // Amount knocked off by the multi-item bundle tier. Kept separate from
+    // discountAmount so the cart and the invoice can show *why* the order was
+    // cheaper; the two are applied one after the other and both stack.
+    private BigDecimal bundleDiscountAmount = BigDecimal.ZERO;
+
+    // Discounted value of the goods alone, captured before shipping and tax are
+    // added. Loyalty points and lifetime-spend tiers are measured against this,
+    // not against totalAmount, so a customer cannot climb tiers faster purely
+    // because the tax they paid went up.
+    //
+    // Deliberately left null rather than zero: rows written before this field
+    // existed read back as null, which is how getMerchandiseTotalForScoring()
+    // tells "an old order" apart from "a genuine zero-value order".
+    private BigDecimal merchandiseTotal;
+
+    // Delivery charged at checkout. Zero once the order crosses the free-shipping
+    // threshold; stored explicitly so the invoice can show the line even when it
+    // is nil, which is what makes a "FREE" row legible to a customer.
+    private BigDecimal shippingAmount = BigDecimal.ZERO;
+
+    // Tax charged on the discounted goods value. Kept separate from shipping
+    // because a zero-rated delivery charge should not inflate the tax base.
+    private BigDecimal taxAmount = BigDecimal.ZERO;
+
+    // Delivery snapshot captured at checkout (address book entry or manual entry).
+    private String shippingAddress;
+
+    // Payment method chosen at checkout: CASH (COD), UPI or CARD.
+    private String paymentMethod;
+
+    // Current payment state for this order (null for legacy orders).
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus paymentStatus;
+
+    // ---- Order tracking ----
+    //
+    // These are persisted here but deliberately NOT serialized onto the order
+    // JSON. GET /api/orders/{id}/tracking (OrderService.trackingFor) is the
+    // single source of truth for tracking, and it returns a superset of these
+    // fields plus the derived milestone rail and scan history.
+    //
+    // Exposing them in both places let the two drift apart, and embedding the
+    // scan history in every order response cost an extra query per order on
+    // list endpoints that never display it.
+
+    // Courier reference, issued when the parcel is handed over. Null until then.
+    @JsonIgnore
+    private String trackingNumber;
+
+    // Carrier name, e.g. "Delhivery". Null for digital goods or unfulfilled orders.
+    @JsonIgnore
+    private String carrier;
+
+    // Promised delivery date shown to the customer, set when the order ships.
+    @JsonIgnore
+    private LocalDateTime expectedDelivery;
+
+    // When the parcel actually left the warehouse and when it arrived.
+    @JsonIgnore
+    private LocalDateTime shippedAt;
+    @JsonIgnore
+    private LocalDateTime deliveredAt;
+
+    // Append-only scan history powering the customer-facing tracker. Read only
+    // through the tracking endpoint, which shapes it for display.
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<OrderStatusEvent> statusEvents = new ArrayList<>();
+
+    public void addStatusEvent(OrderStatusEvent event) {
+        event.setOrder(this);
+        statusEvents.add(event);
+    }
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<OrderItem> orderItems = new ArrayList<>();
+
+    // The statuses this order may legally move to right now. Computed, not stored,
+    // so the admin console can offer exactly the options the backend accepts
+    // instead of listing every status and failing on the invalid ones.
+    @Transient
+    @com.fasterxml.jackson.annotation.JsonProperty(access=com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
+    public List<String> getAllowedNextStatuses() {
+        return status == null ? List.of() : status.allowedNextOrdered().stream().map(Enum::name).toList();
+    }
+
+    /**
+     * Discounted goods value, falling back to the grand total for orders placed
+     * before this breakdown existed.
+     *
+     * Those legacy rows have no merchandiseTotal stored at all, so they read back
+     * null. Falling back to totalAmount keeps them contributing their real spend
+     * toward a lifetime tier; treating them as zero would silently demote every
+     * long-standing customer the first time tiers were recomputed.
+     */
+    @JsonIgnore
+    public BigDecimal getMerchandiseTotalForScoring() {
+        if (merchandiseTotal != null) return merchandiseTotal;
+        return totalAmount != null ? totalAmount : BigDecimal.ZERO;
+    }
+}

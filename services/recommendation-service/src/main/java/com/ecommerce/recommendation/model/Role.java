@@ -1,0 +1,1 @@
+package com.ecommerce.recommendation.model;public enum Role {ADMIN,STAFF,CUSTOMER}

@@ -1,0 +1,222 @@
+package com.ecommerce.auth.security;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
+public class SecurityConfig {
+
+    private final JwtAuthFilter jwtAuthFilter;
+    private final CustomUserDetailsService customUserDetailsService;
+    private final RateLimitFilter rateLimitFilter;
+
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter,
+                          CustomUserDetailsService customUserDetailsService,
+                          RateLimitFilter rateLimitFilter) {
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.customUserDetailsService = customUserDetailsService;
+        this.rateLimitFilter = rateLimitFilter;
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/health", "/api/health", "/actuator/health", "/internal/**").permitAll()
+                        .requestMatchers("/index.html", "/favicon.svg", "/icons.svg", "/assets/**", "/images/**", "/product-photos/**", "/products/**").permitAll()
+                        .requestMatchers("/api/auth/change-password", "/api/auth/email/**").authenticated()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        // Error dispatch must not 403 to anonymous users
+                        .requestMatchers("/error").permitAll()
+
+        // The shopping assistant is a browsing tool like search, so it has to
+        // work before sign-in. It only ever reads the public catalogue and is
+        // rate limited in AssistantController.
+        .requestMatchers("/api/assistant/**").permitAll()
+                        // Public reads
+                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/categories").permitAll()
+                        // Customer-owned writes (owner check in controllers)
+                        .requestMatchers(HttpMethod.POST, "/api/orders").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/orders/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/orders/customer/**").authenticated()
+                        // Order tracking is the customer's own parcel, so any signed-in
+                        // user may read it; CustomerGuard in the controller enforces
+                        // ownership. Must sit above the staff/admin order rules below.
+                        .requestMatchers(HttpMethod.GET, "/api/orders/*/tracking").authenticated()
+                        // Personalized recommendations are derived from the signed-in
+                        // shopper's own order history, which is customer-private data.
+                        .requestMatchers("/api/recommendations/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/reviews").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/reviews/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/reviews/**").authenticated()
+                        .requestMatchers("/api/addresses/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/restock-requests").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/restock-requests/customer/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/restock-requests/**").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers(HttpMethod.GET, "/api/customers/*").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/customers/*").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/customers/*").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/payments/customer/**").authenticated()
+                        // Receipts are the customer's own document, so any signed-in user may
+                        // fetch one; CustomerGuard inside the controller enforces ownership.
+                        // Must sit above the blanket /api/payments/** admin rule below.
+                        .requestMatchers(HttpMethod.GET, "/api/payments/*/receipt").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/payments/order/*").authenticated()
+                        .requestMatchers("/api/notifications/**").authenticated()
+                        // Staff management. The public application endpoint is the
+                        // only unauthenticated staff route (it is rate limited by
+                        // RateLimitFilter); everything else needs a signed-in staff
+                        // or admin account, and admin management is admin-only.
+                        // Fine-grained PERM_* checks are applied per-endpoint with
+                        // @PreAuthorize inside the controllers.
+                        .requestMatchers(HttpMethod.POST, "/api/staff/apply").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/staff/application-status").permitAll()
+                        .requestMatchers("/api/admin/staff/**").hasRole("ADMIN")
+                        .requestMatchers("/api/staff/**").hasAnyRole("ADMIN", "STAFF")
+                        // Staff: catalog work. Creating and editing products is a
+                        // catalog task, but deletion is not - a staff account should
+                        // never be able to remove the whole catalog.
+                        .requestMatchers(HttpMethod.POST, "/api/products/**").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers(HttpMethod.PUT, "/api/products/**").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/categories/**").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers(HttpMethod.PUT, "/api/categories/**").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers(HttpMethod.DELETE, "/api/categories/**").hasRole("ADMIN")
+                        // Staff read orders so they can answer "where is my order?".
+                        // Read only - changing status, issuing refunds or cancelling
+                        // stays admin. Sits above the blanket admin rule below, and
+                        // below the customer-scoped rule so a customer still only
+                        // ever reaches their own orders.
+                        .requestMatchers(HttpMethod.GET, "/api/orders").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers(HttpMethod.GET, "/api/orders/**").hasAnyRole("ADMIN", "STAFF")
+                        // Customer returns - must be before admin blanket rules
+                        .requestMatchers(HttpMethod.GET, "/api/returns/customer/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/returns").authenticated()
+                        // Public coupon suggestions expose offers; management remains admin-only.
+                        .requestMatchers(HttpMethod.GET, "/api/coupons/recommend").permitAll()
+                        // Admin only
+                        .requestMatchers("/api/coupons/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/returns/**").hasRole("ADMIN")
+                        .requestMatchers("/api/returns").hasRole("ADMIN")
+                        .requestMatchers("/api/orders/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/customers").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/customers").hasRole("ADMIN")
+                        .requestMatchers("/api/payments").hasRole("ADMIN")
+                        .requestMatchers("/api/payments/**").hasRole("ADMIN")
+                        .anyRequest().authenticated())
+                .exceptionHandling(e -> e.authenticationEntryPoint((request, response, ex) -> response.sendError(401, "Sign in required")))
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(rateLimitFilter, JwtAuthFilter.class);
+
+        return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        // Spring Security 6 removed the DaoAuthenticationProvider(UserDetailsService)
+        // convenience constructor. Use the no-arg form and wire both dependencies via setters.
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(customUserDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    /**
+     * Allowed browser origins.
+     *
+     * The deployed storefront is a separate origin from the API, so the browser
+     * sends a preflight before every JSON request. If that origin is missing the
+     * preflight is rejected and the browser reports a generic network error, which
+     * looks like "the backend is down" even though it is answering fine.
+     *
+     * These are always allowed and cannot be switched off, because losing them
+     * takes the whole storefront down with no visible cause. Extra origins come
+     * from CORS_ALLOWED_ORIGINS.
+     */
+    private static final List<String> REQUIRED_ORIGINS = List.of(
+            "https://ecommerce-store-shopease.vercel.app",
+            "http://localhost:5173");
+
+    /**
+     * Reads extra origins from a comma-separated env var.
+     *
+     * REQUIRED_ORIGINS is always the baseline: returning an empty list when the
+     * variable is unset silently revoked localhost and the deployed storefront
+     * too, so every browser request failed with 403 while the log just showed
+     * an empty list.
+     *
+     * Entries are trimmed and unquoted because the value is usually typed by hand
+     * into a dashboard: a stray quote or a space after the comma otherwise becomes
+     * part of the origin, and since no browser ever sends that exact string every
+     * request is rejected while the log shows no clue why.
+     */
+    private static List<String> configuredOrigins() {
+        List<String> origins = new ArrayList<>(REQUIRED_ORIGINS);
+        String raw = System.getenv("CORS_ALLOWED_ORIGINS");
+        if (raw == null || raw.isBlank()) {
+            return origins;
+        }
+        for (String part : raw.split(",")) {
+            String cleaned = part.trim().replaceAll("^[\"']|[\"']$", "");
+            if (!cleaned.isBlank() && !origins.contains(cleaned)) {
+                origins.add(cleaned);
+            }
+        }
+        return origins;
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        List<String> origins = configuredOrigins();
+        System.out.println("[CORS] allowed origins: " + origins);
+        CorsConfiguration cfg = new CorsConfiguration();
+        cfg.setAllowedOrigins(origins);
+        cfg.setAllowedOriginPatterns(List.of("http://localhost:[*]"));
+        cfg.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        cfg.setAllowedHeaders(List.of("*"));
+        cfg.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", cfg);
+        return source;
+    }
+}

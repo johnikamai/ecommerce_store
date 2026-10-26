@@ -120,6 +120,8 @@ public class SecurityConfig {
                         // Customer returns - must be before admin blanket rules
                         .requestMatchers(HttpMethod.GET, "/api/returns/customer/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/returns").authenticated()
+                        // Public coupon suggestions expose offers; management remains admin-only.
+                        .requestMatchers(HttpMethod.GET, "/api/coupons/recommend").permitAll()
                         // Admin only
                         .requestMatchers("/api/coupons/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -218,3 +220,4 @@ public class SecurityConfig {
         return source;
     }
 }
+

@@ -1,5 +1,5 @@
 ﻿import { useEffect, useState } from 'react';
-import axiosClient from '../utils/axiosClient';
+import axiosClient from '../api/axiosClient';
 
 /**
  * F7: Product Price History Graph

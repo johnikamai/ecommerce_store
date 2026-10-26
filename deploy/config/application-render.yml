@@ -1,0 +1,65 @@
+# External profile copied into every Java image; local defaults are unchanged.
+server:
+  address: 0.0.0.0
+  port: ${PORT:10000}
+  forward-headers-strategy: framework
+  shutdown: graceful
+spring:
+  datasource:
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/${DB_NAME}?sslMode=${DB_SSL_MODE:REQUIRED}&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: ${CORS_ALLOWED_ORIGINS}
+            allowedOriginPatterns: ${CORS_ALLOWED_ORIGINS}
+            allowedMethods: GET,POST,PUT,PATCH,DELETE,OPTIONS
+            allowedHeaders: Authorization,Content-Type,Idempotency-Key
+            allowCredentials: true
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://${DISCOVERY_HOST}:${DISCOVERY_PORT:10000}/eureka/
+    registry-fetch-interval-seconds: 5
+  instance:
+    hostname: ${SERVICE_HOST}
+    prefer-ip-address: false
+    non-secure-port: ${PORT:10000}
+    instance-id: ${spring.application.name}:${SERVICE_HOST}:${PORT:10000}
+    health-check-url-path: /actuator/health
+    status-page-url-path: /actuator/info
+  server:
+    enable-self-preservation: true
+    eviction-interval-timer-in-ms: 60000
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+services:
+  notification:
+    delivery-enabled: ${NOTIFICATION_DELIVERY_ENABLED:false}
+  internal-key: ${SERVICE_INTERNAL_KEY:}
+app:
+  catalog:
+    seed-enabled: false
+  payments:
+    demo-enabled: ${DEMO_PAYMENTS:false}
+brevo:
+  api:
+    key: ${BREVO_API_KEY:}
+  sender:
+    email: ${BREVO_SENDER_EMAIL:}
+    name: ${BREVO_SENDER_NAME:ShopEase}

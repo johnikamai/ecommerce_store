@@ -1,0 +1,5 @@
+package com.ecommerce.notification.service;
+import com.ecommerce.notification.repo.*;import org.springframework.stereotype.Service;import org.springframework.scheduling.annotation.Scheduled;import java.time.Instant;
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name="services.notification.delivery-enabled",havingValue="true",matchIfMissing=true)
+@Service public class EmailWorker {private final EmailDeliveryRepository deliveries;private final CustomerRepository customers;private final MailService mail;public EmailWorker(EmailDeliveryRepository d,CustomerRepository c,MailService m){deliveries=d;customers=c;mail=m;}
+ @Scheduled(fixedDelay=5000) public void deliver(){for(var job:deliveries.findTop20ByStateAndNextAttemptAtLessThanEqual("PENDING",Instant.now())){try{if(!mail.isConfigured()){job.state="DEMO_SKIPPED";}else{var customer=customers.findById(job.customerId).orElseThrow();if(mail.sendHtml(customer.getEmail(),job.subject,job.html))job.state="SENT";}}catch(RuntimeException retry){}job.attempts++;job.nextAttemptAt=Instant.now().plusSeconds(Math.min(3600,30L*job.attempts));deliveries.save(job);}}}

@@ -1,0 +1,2 @@
+package com.ecommerce.recommendation.model;
+@jakarta.persistence.Entity @jakarta.persistence.Table(name="query_history") public class QueryHistory {@jakarta.persistence.Id public String id;public Long customerId;public String endpoint;@jakarta.persistence.Column(columnDefinition="longtext") public String requestPayload;public java.time.Instant createdAt;}

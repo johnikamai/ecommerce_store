@@ -1,0 +1,31 @@
+server:
+  port: 8761
+
+spring:
+  application:
+    name: discovery-server
+  # Force IPv4 preference to fix 'Cannot determine local hostname' on machines
+  # where DNS only resolves to IPv6 addresses (common on Windows with Java 17+/25)
+  inetaddress:
+    prefer-ipv4-stack: true
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
+  server:
+    wait-time-in-ms-when-sync-empty: 0
+    # Disable self-preservation in dev to prevent false eviction warnings
+    enable-self-preservation: false
+    renewal-threshold-update-interval-ms: 15000
+    eviction-interval-timer-in-ms: 5000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

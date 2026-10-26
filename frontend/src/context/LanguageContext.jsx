@@ -54,7 +54,7 @@ export function LanguageProvider({ children }) {
       let text = dict[key] ?? DICTIONARIES[DEFAULT_LOCALE][key] ?? key;
       if (vars) {
         for (const [name, replacement] of Object.entries(vars)) {
-          text = text.replaceAll(`{${name}}`, String(replacement));
+          text = text.replaceAll(`{{${name}}}`, String(replacement)).replaceAll(`{${name}}`, String(replacement));
         }
       }
       return text;
@@ -70,7 +70,8 @@ export function LanguageProvider({ children }) {
       return new Intl.NumberFormat(numberLocale, {
         style: 'currency',
         currency: 'INR',
-        maximumFractionDigits: 0,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
       }).format(amount);
     };
 

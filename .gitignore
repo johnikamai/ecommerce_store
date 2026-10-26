@@ -21,3 +21,29 @@ Thumbs.db
 *_pid*.txt
 hs_err_pid*.log
 replay_pid*.log
+ 
+# Maven build output
+target/
+**/target/
+
+# Maven build output
+target/
+**/target/
+
+.local/
+*.jar.original
+
+
+__pycache__/
+*.pyc
+
+# Deployment secrets and database exports
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+**/mail-credentials.properties
+**/*.dump
+**/*backup*.sql
